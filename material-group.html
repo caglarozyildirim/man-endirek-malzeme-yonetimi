@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Malzeme Grubu Yonetimi - IMMA</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        /* Filter Section */
+        .filter-section {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .filter-group {
+            flex: 1;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* Action Buttons in Header */
+        .card-header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-header-actions h3 {
+            margin: 0;
+        }
+
+        /* Read-only form styling */
+        .form-control:read-only:not([readonly]) {
+            background-color: #fff;
+        }
+
+        .form-control[readonly] {
+            background-color: #f5f5f5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">M</div>
+                <div class="brand-text">
+                    <span class="brand-name">IMMA</span>
+                    <span class="brand-subtitle">Endirek Malzeme Yonetimi</span>
+                </div>
+            </a>
+            <ul class="navbar-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="material-list.html" class="nav-link active">
+                        <span class="nav-icon">📦</span>
+                        Ana Veriler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-list.html" class="dropdown-item">Malzeme Listesi</a>
+                        <a href="supplier-list.html" class="dropdown-item">Tedarikçi Listesi</a>
+                        <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
+                        <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
+                        <a href="material-group.html" class="dropdown-item active">Malzeme Grupları</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="mrp.html" class="nav-link">
+                        <span class="nav-icon">📈</span>
+                        MRP
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="srm-list.html" class="nav-link">
+                        <span class="nav-icon">🛒</span>
+                        Satınalma
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="srm-list.html" class="dropdown-item">Talep Listesi</a>
+                        <a href="goods-receipt.html" class="dropdown-item">Mal Kabul</a>
+                        <a href="po-list.html" class="dropdown-item">Satınalma Siparişleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="budget-management.html" class="nav-link">
+                        <span class="nav-icon">💰</span>
+                        Bütçe
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="budget-management.html" class="dropdown-item">Bütçe Yönetimi</a>
+                        <a href="budget-preference.html" class="dropdown-item">Bütçe Tercihleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="material-request-list.html" class="nav-link">
+                        <span class="nav-icon">📋</span>
+                        Talepler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-request-list.html" class="dropdown-item">Talep Listesi</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="transfer-list.html" class="nav-link">
+                        <span class="nav-icon">🏭</span>
+                        Stok
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
+                        <a href="warehouse-transfer.html" class="dropdown-item">Depo Transferi</a>
+                        <a href="transfer-list.html" class="dropdown-item">Transfer Listesi</a>
+                        <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
+                        <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
+                        <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+            </ul>
+            <div class="navbar-user">
+                <span class="user-name">Ahmet Yilmaz</span>
+                <div class="user-avatar">AY</div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="modern-container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Malzeme Grubu Yonetimi</h1>
+                <p class="page-subtitle">Ana Veriler > Malzeme Grubu Yonetimi</p>
+            </div>
+        </div>
+
+        <div class="dev-note info">
+            <h4>Ekran Bilgisi: 6 MMG - Maintain Material Group (Liste)</h4>
+            <p><strong>Amaç:</strong> Sistemdeki tüm malzeme gruplarının listelenmesi, filtrelenmesi ve yönetilmesi.</p>
+            <p><strong>Tablo:</strong> Material Group (Data Structure IMMA.xlsx - "Material Group" sheet)</p>
+            <p><strong>Not:</strong> Bu sayfa sadece LİSTELEME içindir. Form işlemleri (oluştur/düzenle/görüntüle) material-group-detail.html sayfasındadır.</p>
+        </div>
+
+        <!-- Veritabanı İşlemleri -->
+        <div class="dev-note success">
+            <h4>✅ Veritabanı İşlemleri (Data Structure IMMA.xlsx)</h4>
+            <p><strong>API Endpoint:</strong> GET /api/material-groups</p>
+            <p><strong>Kayıt Tablosu:</strong> Material Group</p>
+            <p><strong>Material Group Tablo Alanları:</strong></p>
+            <ul>
+                <li>Id (int) - Sistem otomatik oluşturur</li>
+                <li>Code (int, 6) - Malzeme grubu kodu</li>
+                <li>Title (text, 64) - Malzeme grubu adı</li>
+            </ul>
+            <p><strong>Ek Alanlar (Screen Designs 6 MMG):</strong></p>
+            <ul>
+                <li>Inactivation check - Aktif/Pasif durumu</li>
+                <li>Created By, Inactivated By, Reactivated By - Kullanıcı bilgileri</li>
+            </ul>
+        </div>
+
+        <!-- FILTER SECTION -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Filtrele ve Ara</h3>
+            </div>
+            <div class="card-body">
+                <div class="filter-section">
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label>Grup Kodu</label>
+                            <input type="text" id="filterCode" class="form-control" placeholder="Grup kodu ile ara...">
+                        </div>
+                        <div class="filter-group">
+                            <label>Grup Adi</label>
+                            <input type="text" id="filterName" class="form-control" placeholder="Grup adi ile ara...">
+                        </div>
+                        <div class="filter-group">
+                            <label>Durum</label>
+                            <select id="filterStatus" class="form-control">
+                                <option value="">Tumu</option>
+                                <option value="active" selected>Aktif</option>
+                                <option value="inactive">Pasif</option>
+                            </select>
+                        </div>
+                        <div class="filter-actions">
+                            <button class="btn btn-primary" id="applyFilterBtn">Ara</button>
+                            <button class="btn btn-outline" id="clearFilterBtn">Temizle</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LIST SECTION -->
+        <div class="card" style="margin-top: 20px;">
+            <div class="card-header card-header-actions">
+                <h3>Malzeme Grubu Listesi</h3>
+                <a href="material-group-detail.html?mode=create" class="btn btn-primary">+ Yeni Grup Ekle</a>
+            </div>
+            <div class="card-body">
+                <table class="table table-hover" id="materialGroupTable">
+                    <thead>
+                        <tr>
+                            <th>Sira</th>
+                            <th>Grup ID</th>
+                            <th>Grup Kodu</th>
+                            <th>Grup Adi</th>
+                            <th>Durum</th>
+                            <th>Islemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>GRP-00001</td>
+                            <td>200123</td>
+                            <td>Rulmanlar ve Yataklar</td>
+                            <td><span class="status-badge status-active">Aktif</span></td>
+                            <td>
+                                <a href="material-group-detail.html?mode=view&id=GRP-00001" class="btn btn-sm btn-info">Görüntüle</a>
+                                <a href="material-group-detail.html?mode=edit&id=GRP-00001" class="btn btn-sm btn-primary">Düzenle</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>GRP-00002</td>
+                            <td>200234</td>
+                            <td>Elektrik Motorları</td>
+                            <td><span class="status-badge status-active">Aktif</span></td>
+                            <td>
+                                <a href="material-group-detail.html?mode=view&id=GRP-00002" class="btn btn-sm btn-info">Görüntüle</a>
+                                <a href="material-group-detail.html?mode=edit&id=GRP-00002" class="btn btn-sm btn-primary">Düzenle</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>GRP-00003</td>
+                            <td>200345</td>
+                            <td>Kayış ve Kasnak Grupları</td>
+                            <td><span class="status-badge status-active">Aktif</span></td>
+                            <td>
+                                <a href="material-group-detail.html?mode=view&id=GRP-00003" class="btn btn-sm btn-info">Görüntüle</a>
+                                <a href="material-group-detail.html?mode=edit&id=GRP-00003" class="btn btn-sm btn-primary">Düzenle</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>GRP-00004</td>
+                            <td>200456</td>
+                            <td>Hidrolik Parçalar</td>
+                            <td><span class="status-badge status-active">Aktif</span></td>
+                            <td>
+                                <a href="material-group-detail.html?mode=view&id=GRP-00004" class="btn btn-sm btn-info">Görüntüle</a>
+                                <a href="material-group-detail.html?mode=edit&id=GRP-00004" class="btn btn-sm btn-primary">Düzenle</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td>GRP-00005</td>
+                            <td>200567</td>
+                            <td>Pnömatik Parçalar (Eski)</td>
+                            <td><span class="status-badge status-pending">Pasif</span></td>
+                            <td>
+                                <a href="material-group-detail.html?mode=view&id=GRP-00005" class="btn btn-sm btn-info">Görüntüle</a>
+                                <a href="material-group-detail.html?mode=edit&id=GRP-00005" class="btn btn-sm btn-primary">Düzenle</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td>GRP-00006</td>
+                            <td>200678</td>
+                            <td>Yağlar ve Yağlama Malzemeleri</td>
+                            <td><span class="status-badge status-active">Aktif</span></td>
+                            <td>
+                                <a href="material-group-detail.html?mode=view&id=GRP-00006" class="btn btn-sm btn-info">Görüntüle</a>
+                                <a href="material-group-detail.html?mode=edit&id=GRP-00006" class="btn btn-sm btn-primary">Düzenle</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>7</td>
+                            <td>GRP-00007</td>
+                            <td>200789</td>
+                            <td>Elektrik Malzemeleri</td>
+                            <td><span class="status-badge status-active">Aktif</span></td>
+                            <td>
+                                <a href="material-group-detail.html?mode=view&id=GRP-00007" class="btn btn-sm btn-info">Görüntüle</a>
+                                <a href="material-group-detail.html?mode=edit&id=GRP-00007" class="btn btn-sm btn-primary">Düzenle</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>8</td>
+                            <td>GRP-00008</td>
+                            <td>200890</td>
+                            <td>Contalar ve Sızdırmazlık</td>
+                            <td><span class="status-badge status-pending">Pasif</span></td>
+                            <td>
+                                <a href="material-group-detail.html?mode=view&id=GRP-00008" class="btn btn-sm btn-info">Görüntüle</a>
+                                <a href="material-group-detail.html?mode=edit&id=GRP-00008" class="btn btn-sm btn-primary">Düzenle</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Filter elements
+            const filterCodeInput = document.getElementById('filterCode');
+            const filterNameInput = document.getElementById('filterName');
+            const filterStatusSelect = document.getElementById('filterStatus');
+            const applyBtn = document.getElementById('applyFilterBtn');
+            const clearBtn = document.getElementById('clearFilterBtn');
+            const table = document.getElementById('materialGroupTable');
+
+            // Apply filters function
+            function applyFilters() {
+                const filterCode = filterCodeInput.value.toLowerCase().trim();
+                const filterName = filterNameInput.value.toLowerCase().trim();
+                const filterStatus = filterStatusSelect.value;
+
+                const rows = table.querySelectorAll('tbody tr');
+
+                rows.forEach(row => {
+                    const code = row.cells[2].textContent.toLowerCase().trim();
+                    const name = row.cells[3].textContent.toLowerCase().trim();
+                    const statusBadge = row.cells[4].querySelector('.status-badge');
+                    const status = statusBadge ? statusBadge.textContent.toLowerCase().trim() : '';
+
+                    let showRow = true;
+
+                    // Filter by code
+                    if (filterCode && !code.includes(filterCode)) {
+                        showRow = false;
+                    }
+
+                    // Filter by name
+                    if (filterName && !name.includes(filterName)) {
+                        showRow = false;
+                    }
+
+                    // Filter by status
+                    if (filterStatus === 'active' && status !== 'aktif') {
+                        showRow = false;
+                    }
+                    if (filterStatus === 'inactive' && status !== 'pasif') {
+                        showRow = false;
+                    }
+
+                    row.style.display = showRow ? '' : 'none';
+                });
+            }
+
+            // Clear filters function
+            function clearFilters() {
+                filterCodeInput.value = '';
+                filterNameInput.value = '';
+                filterStatusSelect.value = '';
+
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    row.style.display = '';
+                });
+            }
+
+            // Event listeners
+            applyBtn.addEventListener('click', applyFilters);
+            clearBtn.addEventListener('click', clearFilters);
+
+            // Enter key support for filter inputs
+            filterCodeInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') applyFilters();
+            });
+            filterNameInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') applyFilters();
+            });
+
+            // Apply default filter on page load
+            applyFilters();
+        });
+    </script>
+</body>
+</html>

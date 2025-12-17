@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Depo Tipi Yonetimi - IMMA</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">M</div>
+                <div class="brand-text">
+                    <span class="brand-name">IMMA</span>
+                    <span class="brand-subtitle">Endirek Malzeme Yonetimi</span>
+                </div>
+            </a>
+            <ul class="navbar-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="material-list.html" class="nav-link active">
+                        <span class="nav-icon">📦</span>
+                        Ana Veriler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-list.html" class="dropdown-item">Malzeme Listesi</a>
+                        <a href="supplier-list.html" class="dropdown-item">Tedarikçi Listesi</a>
+                        <a href="storage-type-list.html" class="dropdown-item active">Depo Tipi Listesi</a>
+                        <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
+                        <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="mrp.html" class="nav-link">
+                        <span class="nav-icon">📈</span>
+                        MRP
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="srm-list.html" class="nav-link">
+                        <span class="nav-icon">🛒</span>
+                        Satınalma
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="srm-list.html" class="dropdown-item">Talep Listesi</a>
+                        <a href="goods-receipt.html" class="dropdown-item">Mal Kabul</a>
+                        <a href="po-list.html" class="dropdown-item">Satınalma Siparişleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="budget-management.html" class="nav-link">
+                        <span class="nav-icon">💰</span>
+                        Bütçe
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="budget-management.html" class="dropdown-item">Bütçe Yönetimi</a>
+                        <a href="budget-preference.html" class="dropdown-item">Bütçe Tercihleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="material-request-list.html" class="nav-link">
+                        <span class="nav-icon">📋</span>
+                        Talepler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-request-list.html" class="dropdown-item">Talep Listesi</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="transfer-list.html" class="nav-link">
+                        <span class="nav-icon">🏭</span>
+                        Stok
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
+                        <a href="warehouse-transfer.html" class="dropdown-item">Depo Transferi</a>
+                        <a href="transfer-list.html" class="dropdown-item">Transfer Listesi</a>
+                        <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
+                        <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
+                        <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+            </ul>
+            <div class="navbar-user">
+                <span class="user-name">Ahmet Yilmaz</span>
+                <div class="user-avatar">AY</div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="modern-container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title" id="pageTitle">Yeni Depo Tipi Oluştur</h1>
+                <p class="page-subtitle">Ana Veriler > Depo Tipi Yönetimi</p>
+            </div>
+        </div>
+
+        <!-- Developer Notes - Screen Designs IMMA.xlsx "3 STM" -->
+        <div class="dev-note info">
+            <h4>Ekran Bilgisi: 3 STM - Storage Type Maintenance</h4>
+            <p><strong>Amaç:</strong> CVCD pattern ile depo tipi verilerinin oluşturma, görüntüleme ve düzenleme işlemleri.</p>
+            <p><strong>Fonksiyonlar:</strong></p>
+            <ul>
+                <li>Depo Tipi Oluştur (Create) - URL: ?mode=create</li>
+                <li>Depo Tipi Görüntüle (View) - URL: ?id=xxx&mode=view</li>
+                <li>Depo Tipi Düzenle (Change/Edit) - URL: ?id=xxx&mode=edit</li>
+            </ul>
+            <p><strong>Excel Spec:</strong> Screen Designs IMMA.xlsx - "3 STM"</p>
+            <p><strong>Not:</strong> Liste görünümü storage-type-list.html sayfasındadır.</p>
+        </div>
+
+        <!-- STORAGE FORM - Data Structure IMMA.xlsx "Storage Type" sheet -->
+        <div class="card">
+            <div class="card-header">
+                <h3 id="formTitle">Yeni Depo Tipi Oluştur</h3>
+            </div>
+            <div class="card-body">
+                <!-- Row 1: Depo Tipi ID, Depo Tipi -->
+                <div class="form-row">
+                    <div class="form-group col-3">
+                        <label>Depo Tipi ID</label>
+                        <input type="text" class="form-control" id="storageTypeId" readonly placeholder="Otomatik oluşturulur">
+                        <small class="form-hint">Sistem otomatik oluşturur</small>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Depo Tipi <span class="required">*</span></label>
+                        <select class="form-control" id="storageType" required>
+                            <option value="">Seçiniz...</option>
+                            <option value="1">1 - Depo</option>
+                            <option value="2">2 - Lokasyon</option>
+                            <option value="3">3 - Raf</option>
+                        </select>
+                        <input type="text" class="form-control" id="storageTypeText" readonly style="display: none;">
+                        <small class="form-hint">char(1): 1=Depo, 2=Lokasyon, 3=Raf</small>
+                    </div>
+                </div>
+
+                <!-- Row 2: Depo Kodu, Depo Adı -->
+                <div class="form-row">
+                    <div class="form-group col-3">
+                        <label>Depo Kodu <span class="required">*</span></label>
+                        <input type="text" class="form-control" id="storageCode" maxlength="12" placeholder="Max 12 karakter" required>
+                        <small class="form-hint">Text(12)</small>
+                    </div>
+                    <div class="form-group col-6">
+                        <label>Depo Adı <span class="required">*</span></label>
+                        <input type="text" class="form-control" id="storageTitle" maxlength="16" placeholder="Max 16 karakter" required>
+                        <small class="form-hint">text(16)</small>
+                    </div>
+                </div>
+
+                <!-- Row 3: İlişkili Lokasyon Kodu, Varsayılan Alt Depo Tipi Kodu -->
+                <div class="form-row">
+                    <div class="form-group col-3">
+                        <label>İlişkili Lokasyon Kodu</label>
+                        <input type="text" class="form-control" id="relatedLocationCode" maxlength="12" placeholder="Max 12 karakter">
+                        <small class="form-hint">Text(12)</small>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Varsayılan Alt Depo Tipi Kodu</label>
+                        <input type="text" class="form-control" id="defaultSubStorageTypeCode" maxlength="12" placeholder="Max 12 karakter">
+                        <small class="form-hint">Text(12)</small>
+                    </div>
+                </div>
+
+                <hr style="margin: 20px 0;">
+
+                <!-- Row 4: Oluşturan Kullanıcı, Oluşturma Tarihi -->
+                <div class="form-row">
+                    <div class="form-group col-6">
+                        <label>Oluşturan Kullanıcı</label>
+                        <input type="text" class="form-control" id="createdByUserInfo" readonly value="-">
+                        <small class="form-hint">int(8)</small>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Oluşturma Tarihi</label>
+                        <input type="text" class="form-control" id="creationDateTime" readonly value="-">
+                        <small class="form-hint">datetime</small>
+                    </div>
+                </div>
+
+                <hr style="margin: 20px 0;">
+
+                <!-- Row 5: Pasif Checkbox -->
+                <div class="form-row">
+                    <div class="form-group col-3">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" id="inactivationCheckBox" style="width: 18px; height: 18px;">
+                            <label for="inactivationCheckBox" style="margin: 0;">Pasif Yap</label>
+                        </div>
+                        <small class="form-hint">bool</small>
+                    </div>
+                </div>
+
+                <!-- Row 6: Pasif Yapan Kullanıcı, Pasif Yapma Tarihi -->
+                <div class="form-row">
+                    <div class="form-group col-6">
+                        <label>Pasif Yapan Kullanıcı</label>
+                        <input type="text" class="form-control" id="inactivatedByUserInfo" readonly value="-">
+                        <small class="form-hint">int(8)</small>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Pasif Yapma Tarihi</label>
+                        <input type="text" class="form-control" id="inactivationDateTime" readonly value="-">
+                        <small class="form-hint">datetime</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Action Buttons -->
+        <div class="form-actions" style="margin-top: 20px;">
+            <button class="btn btn-primary" id="saveBtn">
+                Kaydet
+            </button>
+            <button class="btn btn-primary" id="editBtn" style="display: none;">
+                Düzenle
+            </button>
+            <button class="btn btn-secondary" id="cancelBtn" onclick="window.location.href='storage-type-list.html'">
+                İptal
+            </button>
+        </div>
+
+        <!-- Veritabanı İşlemleri - Data Structure IMMA.xlsx "Storage Type" sheet -->
+        <div class="dev-note success">
+            <h4>✅ Veritabanı İşlemleri (Data Structure IMMA.xlsx - "Storage Type" sheet)</h4>
+            <p><strong>API Endpoints:</strong></p>
+            <ul>
+                <li>POST /api/storage-types - Yeni depo tipi oluştur</li>
+                <li>PUT /api/storage-types/{id} - Depo tipi güncelle</li>
+                <li>GET /api/storage-types/{id} - Depo tipi detay görüntüle</li>
+            </ul>
+            <p><strong>Kayıt Tablosu:</strong></p>
+            <ol>
+                <li><strong>Storage</strong> - Depo tipi kaydı</li>
+            </ol>
+            <p><strong>Storage Tablo Alanları (Data Structure IMMA.xlsx):</strong></p>
+            <ul>
+                <li>Storage type Id - Sistem otomatik oluşturur</li>
+                <li>Storage type (char, 1) - Depo tipi kodu</li>
+                <li>Storage Code (Text, 12) - Depo kodu</li>
+                <li>Storage Title (text, 16) - Depo adı</li>
+                <li>Created By user info (int, 8) - Oluşturan kullanıcı ID</li>
+                <li>Creation date time (datetime) - Oluşturma zamanı</li>
+                <li>Inactivation check box (bool) - Pasif checkbox</li>
+                <li>Inactivation date time (datetime) - Pasif yapma zamanı</li>
+                <li>Inactivated by user info (int, 8) - Pasif yapan kullanıcı ID</li>
+                <li>Related Location Code (Text, 12) - İlişkili lokasyon kodu</li>
+                <li>Default sub storage type code (Text, 12) - Varsayılan alt depo tipi kodu</li>
+            </ul>
+            <p><strong>Storage Types (Data Structure IMMA.xlsx):</strong></p>
+            <ul>
+                <li>1 = Storage (Depo)</li>
+                <li>2 = Location (Lokasyon)</li>
+                <li>3 = Bin (Raf)</li>
+            </ul>
+        </div>
+    </main>
+
+    <script>
+        // CVCD Pattern Implementation - Storage Type Management
+        // Based on Data Structure IMMA.xlsx - "Storage Type" sheet
+        // Storage table fields: Storage type Id, Storage type, Storage Code, Storage Title,
+        // Created By user info, Creation date time, Inactivation check box,
+        // Inactivation date time, Inactivated by user info, Related Location Code,
+        // Default sub storage type code
+
+        // Demo storage data (simulating database - Storage table)
+        // Storage type values per Data Structure IMMA.xlsx:
+        // 1 = Storage (Depo)
+        // 2 = Location (Lokasyon)
+        // 3 = Bin (Raf)
+        const storageData = [
+            {
+                storageTypeId: '1',
+                storageType: '1',
+                storageCode: 'MERKEZ',
+                storageTitle: 'Merkez Depo',
+                createdByUserInfo: 'Fatma Şahin - Depo Sorumlusu',
+                creationDateTime: '10.11.2025 14:30',
+                inactivationCheckBox: false,
+                inactivationDateTime: '-',
+                inactivatedByUserInfo: '-',
+                relatedLocationCode: '',
+                defaultSubStorageTypeCode: 'LOC-001'
+            },
+            {
+                storageTypeId: '2',
+                storageType: '2',
+                storageCode: 'LOC-001',
+                storageTitle: 'A Blok 1. Kat',
+                createdByUserInfo: 'Fatma Şahin - Depo Sorumlusu',
+                creationDateTime: '10.11.2025 15:00',
+                inactivationCheckBox: false,
+                inactivationDateTime: '-',
+                inactivatedByUserInfo: '-',
+                relatedLocationCode: 'MERKEZ',
+                defaultSubStorageTypeCode: 'BIN-001'
+            },
+            {
+                storageTypeId: '3',
+                storageType: '3',
+                storageCode: 'BIN-001',
+                storageTitle: 'A01-R01-K01',
+                createdByUserInfo: 'Fatma Şahin - Depo Sorumlusu',
+                creationDateTime: '10.11.2025 15:30',
+                inactivationCheckBox: false,
+                inactivationDateTime: '-',
+                inactivatedByUserInfo: '-',
+                relatedLocationCode: 'LOC-001',
+                defaultSubStorageTypeCode: ''
+            }
+        ];
+
+        let currentMode = 'create'; // create, edit, view
+        let currentId = null;
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Parse URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const mode = urlParams.get('mode') || 'create';
+            const id = urlParams.get('id');
+
+            currentMode = mode;
+            currentId = id;
+
+            // Initialize based on mode
+            if (mode === 'create') {
+                initCreateMode();
+            } else if (mode === 'edit' && id) {
+                initEditMode(id);
+            } else if (mode === 'view' && id) {
+                initViewMode(id);
+            } else {
+                // Default to create mode
+                initCreateMode();
+            }
+        });
+
+        // Initialize CREATE mode
+        function initCreateMode() {
+            currentMode = 'create';
+            currentId = null;
+
+            // Update titles
+            document.getElementById('pageTitle').textContent = 'Yeni Depo Tipi Oluştur';
+            document.getElementById('formTitle').textContent = 'Yeni Depo Tipi Oluştur';
+
+            // Enable all fields
+            enableForm();
+
+            // Clear form
+            clearForm();
+
+            // Show save button, hide edit button
+            document.getElementById('saveBtn').style.display = 'inline-block';
+            document.getElementById('saveBtn').textContent = 'Kaydet';
+            document.getElementById('editBtn').style.display = 'none';
+            document.getElementById('cancelBtn').textContent = 'İptal';
+        }
+
+        // Initialize EDIT mode
+        function initEditMode(storageId) {
+            currentMode = 'edit';
+            currentId = storageId;
+
+            // Find storage
+            const storage = storageData.find(s => s.storageTypeId === storageId);
+            if (!storage) {
+                alert('Depo tipi bulunamadı!');
+                window.location.href = 'storage-type-list.html';
+                return;
+            }
+
+            // Update titles
+            document.getElementById('pageTitle').textContent = `Depo Tipi Düzenle: ${storage.storageTitle}`;
+            document.getElementById('formTitle').textContent = `Depo Tipi Düzenle: ${storage.storageTitle}`;
+
+            // Enable form
+            enableForm();
+
+            // Fill form with data
+            fillForm(storage);
+
+            // Show save button, hide edit button
+            document.getElementById('saveBtn').style.display = 'inline-block';
+            document.getElementById('saveBtn').textContent = 'Kaydet';
+            document.getElementById('editBtn').style.display = 'none';
+            document.getElementById('cancelBtn').textContent = 'İptal';
+        }
+
+        // Initialize VIEW mode
+        function initViewMode(storageId) {
+            currentMode = 'view';
+            currentId = storageId;
+
+            // Find storage
+            const storage = storageData.find(s => s.storageTypeId === storageId);
+            if (!storage) {
+                alert('Depo tipi bulunamadı!');
+                window.location.href = 'storage-type-list.html';
+                return;
+            }
+
+            // Update titles
+            document.getElementById('pageTitle').textContent = `Depo Tipi Detay: ${storage.storageTitle}`;
+            document.getElementById('formTitle').textContent = `Depo Tipi Detay: ${storage.storageTitle}`;
+
+            // Fill form with data
+            fillForm(storage);
+
+            // Disable all fields (read-only)
+            disableForm();
+
+            // Show storage type as text instead of dropdown in view mode
+            document.getElementById('storageType').style.display = 'none';
+            document.getElementById('storageTypeText').style.display = 'block';
+            document.getElementById('storageTypeText').value = getStorageTypeTitle(storage.storageType);
+
+            // Hide save button, show edit button
+            document.getElementById('saveBtn').style.display = 'none';
+            document.getElementById('editBtn').style.display = 'inline-block';
+
+            // Update cancel button text
+            document.getElementById('cancelBtn').textContent = 'Listeye Dön';
+        }
+
+        // Fill form with storage data
+        function fillForm(storage) {
+            document.getElementById('storageTypeId').value = storage.storageTypeId;
+            document.getElementById('storageType').value = storage.storageType;
+            document.getElementById('storageCode').value = storage.storageCode;
+            document.getElementById('storageTitle').value = storage.storageTitle;
+            document.getElementById('relatedLocationCode').value = storage.relatedLocationCode;
+            document.getElementById('defaultSubStorageTypeCode').value = storage.defaultSubStorageTypeCode;
+            document.getElementById('createdByUserInfo').value = storage.createdByUserInfo;
+            document.getElementById('creationDateTime').value = storage.creationDateTime;
+            document.getElementById('inactivationCheckBox').checked = storage.inactivationCheckBox;
+            document.getElementById('inactivatedByUserInfo').value = storage.inactivatedByUserInfo;
+            document.getElementById('inactivationDateTime').value = storage.inactivationDateTime;
+        }
+
+        // Clear form
+        function clearForm() {
+            document.getElementById('storageTypeId').value = '';
+            document.getElementById('storageType').value = '';
+            document.getElementById('storageCode').value = '';
+            document.getElementById('storageTitle').value = '';
+            document.getElementById('relatedLocationCode').value = '';
+            document.getElementById('defaultSubStorageTypeCode').value = '';
+            document.getElementById('createdByUserInfo').value = '-';
+            document.getElementById('creationDateTime').value = '-';
+            document.getElementById('inactivationCheckBox').checked = false;
+            document.getElementById('inactivatedByUserInfo').value = '-';
+            document.getElementById('inactivationDateTime').value = '-';
+        }
+
+        // Enable form fields
+        function enableForm() {
+            document.querySelectorAll('.form-control').forEach(input => {
+                if (input.id !== 'storageTypeId' && input.id !== 'createdByUserInfo' &&
+                    input.id !== 'creationDateTime' && input.id !== 'inactivatedByUserInfo' &&
+                    input.id !== 'inactivationDateTime') {
+                    input.disabled = false;
+                }
+            });
+            document.getElementById('inactivationCheckBox').disabled = false;
+
+            // Show dropdown, hide text display for storage type
+            document.getElementById('storageType').style.display = 'block';
+            document.getElementById('storageTypeText').style.display = 'none';
+        }
+
+        // Disable form fields (read-only mode)
+        function disableForm() {
+            document.querySelectorAll('.form-control').forEach(input => {
+                input.disabled = true;
+            });
+            document.getElementById('inactivationCheckBox').disabled = true;
+        }
+
+        // Get storage type title from value
+        // Per Data Structure IMMA.xlsx - Storage Types:
+        // 1 = Storage (Depo), 2 = Location (Lokasyon), 3 = Bin (Raf)
+        function getStorageTypeTitle(typeValue) {
+            const typeMap = {
+                '1': '1 - Depo',
+                '2': '2 - Lokasyon',
+                '3': '3 - Raf'
+            };
+            return typeMap[typeValue] || '';
+        }
+
+        // Inactivation checkbox change handler
+        document.getElementById('inactivationCheckBox').addEventListener('change', function() {
+            if (this.checked) {
+                const currentUser = 'Ahmet Yılmaz - Sistem Admin';
+                const currentDate = new Date().toLocaleString('tr-TR');
+                document.getElementById('inactivatedByUserInfo').value = currentUser;
+                document.getElementById('inactivationDateTime').value = currentDate;
+            } else {
+                document.getElementById('inactivatedByUserInfo').value = '-';
+                document.getElementById('inactivationDateTime').value = '-';
+            }
+        });
+
+        // Edit button handler - switches from view mode to edit mode
+        document.getElementById('editBtn').addEventListener('click', function() {
+            if (currentId) {
+                window.location.href = `storage-type.html?id=${currentId}&mode=edit`;
+            }
+        });
+
+        // Save button handler
+        document.getElementById('saveBtn').addEventListener('click', function() {
+            // Get form values
+            const storageType = document.getElementById('storageType').value;
+            const storageCode = document.getElementById('storageCode').value.trim();
+            const storageTitle = document.getElementById('storageTitle').value.trim();
+            const relatedLocationCode = document.getElementById('relatedLocationCode').value.trim();
+            const defaultSubStorageTypeCode = document.getElementById('defaultSubStorageTypeCode').value.trim();
+
+            // Validation
+            if (!storageType) {
+                alert('Depo Tipi zorunlu alandır.');
+                document.getElementById('storageType').focus();
+                return;
+            }
+            if (!storageCode) {
+                alert('Depo Kodu zorunlu alandır.');
+                document.getElementById('storageCode').focus();
+                return;
+            }
+            if (!storageTitle) {
+                alert('Depo Adı zorunlu alandır.');
+                document.getElementById('storageTitle').focus();
+                return;
+            }
+
+            const storageTypeTitle = getStorageTypeTitle(storageType);
+
+            // Determine action
+            if (currentMode === 'create') {
+                // Create new storage
+                if (confirm(`Yeni depo tipi oluşturulacak:\n\nDepo Tipi: ${storageTypeTitle}\nDepo Kodu: ${storageCode}\nDepo Adı: ${storageTitle}\n\nDevam etmek istiyor musunuz?`)) {
+                    // In real app: POST /api/storage-types
+                    alert(`Depo tipi başarıyla oluşturuldu!\n\nDepo Tipi: ${storageTypeTitle}\nDepo Kodu: ${storageCode}\nDepo Adı: ${storageTitle}`);
+
+                    // Redirect to list
+                    window.location.href = 'storage-type-list.html';
+                }
+            } else if (currentMode === 'edit') {
+                // Update existing storage
+                if (confirm(`Depo tipi güncellenecek:\n\nID: ${currentId}\nDepo Tipi: ${storageTypeTitle}\nDepo Kodu: ${storageCode}\nDepo Adı: ${storageTitle}\n\nDevam etmek istiyor musunuz?`)) {
+                    // In real app: PUT /api/storage-types/{id}
+                    alert(`Depo tipi başarıyla güncellendi!\n\nID: ${currentId}\nDepo Tipi: ${storageTypeTitle}\nDepo Kodu: ${storageCode}\nDepo Adı: ${storageTitle}`);
+
+                    // Redirect to list
+                    window.location.href = 'storage-type-list.html';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

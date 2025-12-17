@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kullanıcı Bilgileri - IMMA</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- NAVBAR - Top Navigation (Maximo Style) -->
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">M</div>
+                <div class="brand-text">
+                    <span class="brand-name">IMMA</span>
+                    <span class="brand-subtitle">Endirek Malzeme Yönetimi</span>
+                </div>
+            </a>
+                        <ul class="navbar-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="material-list.html" class="nav-link">
+                        <span class="nav-icon">📦</span>
+                        Ana Veriler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-list.html" class="dropdown-item">Malzeme Listesi</a>
+                        <a href="supplier-list.html" class="dropdown-item">Tedarikçi Listesi</a>
+                        <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
+                        <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
+                        <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="mrp.html" class="nav-link">
+                        <span class="nav-icon">📈</span>
+                        MRP
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="srm-list.html" class="nav-link">
+                        <span class="nav-icon">🛒</span>
+                        Satınalma
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="srm-list.html" class="dropdown-item">Talep Listesi</a>
+                        <a href="goods-receipt.html" class="dropdown-item">Mal Kabul</a>
+                        <a href="po-list.html" class="dropdown-item">Satınalma Siparişleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="budget-management.html" class="nav-link">
+                        <span class="nav-icon">💰</span>
+                        Bütçe
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="budget-management.html" class="dropdown-item">Bütçe Yönetimi</a>
+                        <a href="budget-preference.html" class="dropdown-item">Bütçe Tercihleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="material-request-list.html" class="nav-link">
+                        <span class="nav-icon">📋</span>
+                        Talepler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-request-list.html" class="dropdown-item">Talep Listesi</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="transfer-list.html" class="nav-link">
+                        <span class="nav-icon">🏭</span>
+                        Stok
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
+                        <a href="warehouse-transfer.html" class="dropdown-item">Depo Transferi</a>
+                        <a href="transfer-list.html" class="dropdown-item">Transfer Listesi</a>
+                        <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
+                        <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
+                        <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+            </ul>
+            <div class="navbar-user">
+                <span class="user-name">Ahmet Yılmaz</span>
+                <div class="user-avatar">AY</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="modern-container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Kullanıcı Bilgileri</h1>
+                <p class="page-subtitle">Hesabım</p>
+            </div>
+                <div class="header-actions">
+                    <button class="btn btn-danger" onclick="logout()">
+                        🚪 Çıkış Yap
+                    </button>
+                </div>
+            </header>
+
+            <!-- Developer Notes - Main -->
+            <div class="dev-note info">
+                <h4>📋 Ekran Bilgisi: Kullanıcı Bilgileri (Screen 27 - UI)</h4>
+                <p><strong>Amaç:</strong> Oturum açmış kullanıcının bilgilerini ve yetkilerini görüntüleme.</p>
+                <p><strong>Kimlik Doğrulama:</strong> Windows Authentication (IAM) ile SAP entegrasyonu</p>
+                <p><strong>Kullanıcı Verisi:</strong> SAP HR modülünden otomatik senkronize edilir</p>
+            </div>
+
+            <div class="dev-note warning">
+                <h4>⚠️ Kimlik Doğrulama Akışı</h4>
+                <ol>
+                    <li>Kullanıcı Windows/AD hesabı ile oturum açar</li>
+                    <li>IAM sistemi kimliği doğrular</li>
+                    <li>SAP_User tablosundan kullanıcı bilgileri çekilir</li>
+                    <li>USR_UserRole ve USR_RolePermission tablolarından yetkiler alınır</li>
+                    <li>JWT token oluşturulur ve session başlar</li>
+                </ol>
+            </div>
+
+            <!-- Kullanici Profil Karti -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Profil Bilgileri</h3>
+                    <button class="btn btn-primary" onclick="switchToCommonUser()">
+                        Ortak Kullaniciya Gec
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="user-profile">
+                        <div class="profile-avatar">
+                            <div class="avatar-placeholder">AY</div>
+                        </div>
+                        <div class="profile-details">
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <label>Ad:</label>
+                                    <span><strong>Ahmet</strong></span>
+                                </div>
+                                <div class="info-item">
+                                    <label>Soyad:</label>
+                                    <span><strong>Yilmaz</strong></span>
+                                </div>
+                                <div class="info-item">
+                                    <label>Sistem Kullanici ID:</label>
+                                    <span>USR-00458</span>
+                                </div>
+                                <div class="info-item">
+                                    <label>Windows Kullanici ID:</label>
+                                    <span>ayilmaz</span>
+                                </div>
+                                <div class="info-item">
+                                    <label>Sirket Sicil No:</label>
+                                    <span>10045678</span>
+                                </div>
+                                <div class="info-item">
+                                    <label>Son Giris:</label>
+                                    <span>12.12.2025 08:45</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kullanici Departman Atamalari -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Departman Atamalari</h3>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Departman Kodu</th>
+                                <th>Departman Adi</th>
+                                <th>Departmandaki Rol</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>BAKIM</td>
+                                <td>Bakim Bolumu</td>
+                                <td><span class="status-badge status-active">Bolum Lideri</span></td>
+                            </tr>
+                            <tr>
+                                <td>URETIM</td>
+                                <td>Uretim Bolumu</td>
+                                <td><span class="status-badge status-preparing">Uye</span></td>
+                            </tr>
+                            <tr>
+                                <td>KALITE</td>
+                                <td>Kalite Kontrol</td>
+                                <td><span class="status-badge status-pending">Gozlemci</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Yetkilendirme Rolleri -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Yetkilendirme Rolleri</h3>
+                </div>
+                <div class="card-body">
+                    <div class="dev-note">
+                        <h4>Rol Tabanli Yetki Sistemi (RBAC)</h4>
+                        <p>Kullaniciya roller atanir, roller ise yetkilere sahiptir.</p>
+                        <ul>
+                            <li><strong>Tablo:</strong> USR_User - USR_UserRole - USR_Role - USR_RolePermission - USR_Permission</li>
+                            <li>Bir kullanici birden fazla role sahip olabilir</li>
+                            <li>Yetkiler OR mantigi ile birlestirilir</li>
+                        </ul>
+                    </div>
+
+                    <h4>Dogrudan Sahip Olunan Roller:</h4>
+                    <div class="role-badges">
+                        <span class="status-badge status-active">Malzeme Anahtar Kullanici</span>
+                        <span class="status-badge status-active">SRM Talep Olusturucu</span>
+                        <span class="status-badge status-preparing">Butce Goruntuleyici</span>
+                    </div>
+
+                    <h4 style="margin-top: 20px;">Vekalet ile Kazanilan Roller:</h4>
+                    <div class="role-badges">
+                        <span class="status-badge status-pending">Departman Onaylayici (Vekil)</span>
+                    </div>
+
+                    <h4 style="margin-top: 20px;">Yetkiler:</h4>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Modül</th>
+                                <th>Görüntüle</th>
+                                <th>Oluştur</th>
+                                <th>Düzenle</th>
+                                <th>Sil</th>
+                                <th>Onayla</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Malzeme Verileri</td>
+                                <td class="text-success">✅</td>
+                                <td class="text-success">✅</td>
+                                <td class="text-success">✅</td>
+                                <td class="text-danger">❌</td>
+                                <td class="text-danger">❌</td>
+                            </tr>
+                            <tr>
+                                <td>Malzeme Talebi</td>
+                                <td class="text-success">✅</td>
+                                <td class="text-success">✅</td>
+                                <td class="text-success">✅</td>
+                                <td class="text-danger">❌</td>
+                                <td class="text-danger">❌</td>
+                            </tr>
+                            <tr>
+                                <td>SRM Talebi</td>
+                                <td class="text-success">✅</td>
+                                <td class="text-success">✅</td>
+                                <td class="text-success">✅</td>
+                                <td class="text-danger">❌</td>
+                                <td class="text-danger">❌</td>
+                            </tr>
+                            <tr>
+                                <td>Mal Kabul</td>
+                                <td class="text-success">✅</td>
+                                <td class="text-danger">❌</td>
+                                <td class="text-danger">❌</td>
+                                <td class="text-danger">❌</td>
+                                <td class="text-danger">❌</td>
+                            </tr>
+                            <tr>
+                                <td>Bütçe Yönetimi</td>
+                                <td class="text-success">✅</td>
+                                <td class="text-danger">❌</td>
+                                <td class="text-danger">❌</td>
+                                <td class="text-danger">❌</td>
+                                <td class="text-danger">❌</td>
+                            </tr>
+                            <tr>
+                                <td>Stok İşlemleri</td>
+                                <td class="text-success">✅</td>
+                                <td class="text-danger">❌</td>
+                                <td class="text-danger">❌</td>
+                                <td class="text-danger">❌</td>
+                                <td class="text-danger">❌</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Vekalet Bilgileri -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Vekalet Bilgileri</h3>
+                </div>
+                <div class="card-body">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>Su An Vekalet Edilen Kisi:</label>
+                            <span><strong>Mehmet Demir</strong> - Bakim Muduru</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Vekalet Donemi:</label>
+                            <span>01.12.2025 - 31.12.2025</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary" style="margin-top: 16px;" onclick="showOnBehalfHistory()">
+                        Vekalet Gecmisini Goruntule
+                    </button>
+                </div>
+            </div>
+
+            <!-- Session Info -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Oturum Bilgileri</h3>
+                </div>
+                <div class="card-body">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>Giriş Zamanı:</label>
+                            <span>11.12.2025 08:30:15</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Son Aktivite:</label>
+                            <span>11.12.2025 14:45:22</span>
+                        </div>
+                        <div class="info-item">
+                            <label>IP Adresi:</label>
+                            <span>10.20.30.45</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Tarayıcı:</label>
+                            <span>Chrome 120.0</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Oturum Süresi:</label>
+                            <span>6 saat 15 dakika</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Token Geçerliliği:</label>
+                            <span>1 saat 45 dakika</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Log -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Son Aktiviteler</h3>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Tarih/Saat</th>
+                                <th>İşlem</th>
+                                <th>Detay</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>11.12.2025 14:30</td>
+                                <td>Malzeme Talebi Oluşturuldu</td>
+                                <td>MR-2025-001234</td>
+                            </tr>
+                            <tr>
+                                <td>11.12.2025 11:15</td>
+                                <td>SRM Talebi Oluşturuldu</td>
+                                <td>SRM-2025-000456</td>
+                            </tr>
+                            <tr>
+                                <td>11.12.2025 09:45</td>
+                                <td>Malzeme Görüntülendi</td>
+                                <td>01.00001-0001</td>
+                            </tr>
+                            <tr>
+                                <td>11.12.2025 08:30</td>
+                                <td>Oturum Açıldı</td>
+                                <td>Windows Authentication</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Database Schema -->
+            <div class="dev-note success">
+                <h4>✅ Kullanıcı Veritabanı Yapısı</h4>
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Tablo</th>
+                            <th>Açıklama</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>SAP_User</strong></td>
+                            <td>SAP'den senkronize edilen kullanıcı bilgileri</td>
+                        </tr>
+                        <tr>
+                            <td><strong>USR_User</strong></td>
+                            <td>IMMA kullanıcı kaydı (SAP_UserID ile ilişkili)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>USR_Role</strong></td>
+                            <td>Rol tanımları</td>
+                        </tr>
+                        <tr>
+                            <td><strong>USR_UserRole</strong></td>
+                            <td>Kullanıcı-Rol ilişkisi</td>
+                        </tr>
+                        <tr>
+                            <td><strong>USR_Permission</strong></td>
+                            <td>Yetki tanımları</td>
+                        </tr>
+                        <tr>
+                            <td><strong>USR_RolePermission</strong></td>
+                            <td>Rol-Yetki ilişkisi</td>
+                        </tr>
+                        <tr>
+                            <td><strong>USR_Session</strong></td>
+                            <td>Aktif oturum bilgileri</td>
+                        </tr>
+                        <tr>
+                            <td><strong>AUD_UserActivity</strong></td>
+                            <td>Kullanıcı aktivite logları</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="dev-note">
+                <h4>📊 Yetki Kontrol API'si</h4>
+                <p>Her API çağrısında yetki kontrolü yapılır:</p>
+                <code>GET /api/auth/check-permission?module=MaterialRequest&action=CREATE</code>
+                <p>Middleware katmanında JWT token decode edilir ve yetkiler kontrol edilir.</p>
+            </div>
+        </main>
+    </div>
+
+    <style>
+        .user-profile {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+        .profile-avatar {
+            flex-shrink: 0;
+        }
+        .avatar-placeholder {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-light));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: bold;
+        }
+        .profile-details {
+            flex: 1;
+        }
+        .role-badges {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+    </style>
+
+    <script>
+        function logout() {
+            if (confirm('Çıkış yapmak istediğinizden emin misiniz?')) {
+                alert('Oturum sonlandırıldı. Giriş sayfasına yönlendiriliyorsunuz...');
+            }
+        }
+
+        function switchToCommonUser() {
+            if (confirm('Common User moduna geçmek istediğinizden emin misiniz?\n\nBu modda departman bazlı yetkileriniz kısıtlanacaktır.')) {
+                alert('Common User moduna geçildi.\n\nTüm departman bazlı yetkiler devre dışı bırakıldı.');
+            }
+        }
+
+        function showOnBehalfHistory() {
+            alert('On Behalf History\n\n' +
+                '1. 01.09.2025 - 30.09.2025: Mehmet Demir (FID) - Aktif\n' +
+                '2. 01.06.2025 - 30.06.2025: Ali Yilmaz (FIPC) - Tamamlandi\n' +
+                '3. 15.03.2025 - 31.03.2025: Fatma Kaya (FIDA) - Tamamlandi');
+        }
+    </script>
+</body>
+</html>

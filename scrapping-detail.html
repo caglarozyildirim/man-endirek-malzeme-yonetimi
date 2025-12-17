@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hurda Belgesi Detay - IMMA</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">M</div>
+                <div class="brand-text">
+                    <span class="brand-name">IMMA</span>
+                    <span class="brand-subtitle">Endirek Malzeme Yonetimi</span>
+                </div>
+            </a>
+            <ul class="navbar-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="material-list.html" class="nav-link">
+                        <span class="nav-icon">📦</span>
+                        Ana Veriler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-list.html" class="dropdown-item">Malzeme Listesi</a>
+                        <a href="supplier-list.html" class="dropdown-item">Tedarikci Listesi</a>
+                        <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
+                        <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
+                        <a href="material-group.html" class="dropdown-item">Malzeme Gruplari</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="mrp.html" class="nav-link">
+                        <span class="nav-icon">📈</span>
+                        MRP
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="srm-list.html" class="nav-link">
+                        <span class="nav-icon">🛒</span>
+                        Satinalma
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="srm-list.html" class="dropdown-item">Talep Listesi</a>
+                        <a href="goods-receipt.html" class="dropdown-item">Mal Kabul</a>
+                        <a href="po-list.html" class="dropdown-item">Satinalma Siparisleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="budget-management.html" class="nav-link">
+                        <span class="nav-icon">💰</span>
+                        Butce
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="budget-management.html" class="dropdown-item">Butce Yonetimi</a>
+                        <a href="budget-preference.html" class="dropdown-item">Butce Tercihleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="material-request-list.html" class="nav-link">
+                        <span class="nav-icon">📋</span>
+                        Talepler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-request-list.html" class="dropdown-item">Talep Listesi</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="transfer-list.html" class="nav-link active">
+                        <span class="nav-icon">🏭</span>
+                        Stok
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="direct-issue.html" class="dropdown-item">Dogrudan Cikis</a>
+                        <a href="warehouse-transfer.html" class="dropdown-item">Depo Transferi</a>
+                        <a href="transfer-list.html" class="dropdown-item">Transfer Listesi</a>
+                        <a href="inventory-counting.html" class="dropdown-item">Sayim Islemleri</a>
+                        <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayimi</a>
+                        <a href="scrapping.html" class="dropdown-item active">Hurda Islemleri</a>
+                    </div>
+                </li>
+            </ul>
+            <div class="navbar-user">
+                <span class="user-name">Ahmet Yilmaz</span>
+                <div class="user-avatar">AY</div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="modern-container">
+        <!-- Developer Note -->
+        <div class="dev-note info">
+            <h4>Detay Sayfasi - Data Structure & Screen Designs IMMA.xlsx Uyumlu</h4>
+            <p><strong>Stock Correction Header (Data Structure):</strong> document_id, title, description, correction_type, created_by/for_user_info, approver_1/2/3, euro/try_total_value, comment/document_group_id</p>
+            <p><strong>Stock Correction Item (Data Structure):</strong> item_number, stock_record_id, selected_quantity</p>
+            <p><strong>Screen Designs Ek Alanlar:</strong> material_number, material_title, material_group, cost_id, storage, location, bin, unit_of_measure, currency, unit_value, stock_value (total), open_mr/srm/po</p>
+        </div>
+
+        <div class="page-header">
+            <div>
+                <h1 class="page-title" id="pageTitle">Hurda Belgesi Detay</h1>
+                <p class="page-subtitle">Stok > Hurda Islemleri > <span id="breadcrumbAction">Goruntule</span></p>
+            </div>
+            <div class="page-actions">
+                <a href="scrapping.html" class="btn btn-outline">← Listeye Don</a>
+                <button class="btn btn-primary" id="editModeBtn" style="display: none;">Duzenle</button>
+            </div>
+        </div>
+
+        <!-- Belge Bilgileri Card -->
+        <div class="card">
+            <div class="card-header">
+                <h3 id="formTitle">Belge Bilgileri (Stock Correction Header)</h3>
+            </div>
+            <div class="card-body">
+                <form id="scrappingForm">
+                    <div class="form-row">
+                        <div class="form-group col-4">
+                            <label>Belge No (stock_correction_document_id)</label>
+                            <input type="text" id="documentId" class="form-control" readonly>
+                        </div>
+                        <div class="form-group col-4">
+                            <label>Olusturma Tarihi (creation_datetime)</label>
+                            <input type="datetime-local" id="creationDateTime" class="form-control">
+                        </div>
+                        <div class="form-group col-4">
+                            <label>Durum</label>
+                            <input type="text" id="status" class="form-control" readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-12">
+                            <label>Belge Basligi (document_title) <span class="required">*</span></label>
+                            <input type="text" id="documentTitle" class="form-control" placeholder="Orn: Hasarli Malzemeler - Hat 1" required maxlength="64">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-12">
+                            <label>Belge Aciklamasi (document_description) <span class="required">*</span></label>
+                            <textarea id="documentDescription" class="form-control" rows="3" placeholder="Stok duzeltmesinin nedenini detayli aciklayin..." maxlength="64"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-6">
+                            <label>Duzeltme Tipi (correction_type) <span class="required">*</span></label>
+                            <select id="correctionType" class="form-control" required>
+                                <option value="">Seciniz...</option>
+                                <option value="H">Hurda</option>
+                                <option value="D">Hasar (Damage)</option>
+                                <option value="Q">Kalite Hatasi (Quality)</option>
+                                <option value="E">Son Kullanma (Expiry)</option>
+                                <option value="O">Diger (Other)</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-6">
+                            <label>Ilgili Kullanici (created_for_user_info)</label>
+                            <select id="createdFor" class="form-control">
+                                <option value="">Seciniz...</option>
+                                <option value="101">USR-101 - Mehmet Demir</option>
+                                <option value="102">USR-102 - Ayse Kara</option>
+                                <option value="103">USR-103 - Fatma Yildiz</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-6">
+                            <label>Olusturan (created_by_user_info)</label>
+                            <input type="text" id="createdBy" class="form-control" readonly value="USR-100 - Ahmet Yilmaz">
+                        </div>
+                        <div class="form-group col-6">
+                            <label>Maliyet Merkezi (cost_id)</label>
+                            <select id="costId" class="form-control">
+                                <option value="">Seciniz...</option>
+                                <option value="cost1">COST-001 - Uretim</option>
+                                <option value="cost2">COST-002 - Bakim</option>
+                                <option value="cost3">COST-003 - Kalite</option>
+                                <option value="cost4">COST-004 - Depo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Deger Alanlari -->
+                    <div class="form-row" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                        <div class="form-group col-6">
+                            <label>EUR Toplam Deger (euro_total_value)</label>
+                            <input type="text" id="euroTotalValue" class="form-control" readonly placeholder="0,00 €">
+                        </div>
+                        <div class="form-group col-6">
+                            <label>TRY Toplam Deger (try_total_value)</label>
+                            <input type="text" id="tryTotalValue" class="form-control" readonly placeholder="0,00 ₺">
+                        </div>
+                    </div>
+
+                    <!-- Grup ID'leri -->
+                    <div class="form-row">
+                        <div class="form-group col-6">
+                            <label>Comment Group ID (comment_group_id)</label>
+                            <input type="text" id="commentGroupId" class="form-control" readonly placeholder="Otomatik olusturulur">
+                        </div>
+                        <div class="form-group col-6">
+                            <label>Document Group ID (document_group_id)</label>
+                            <input type="text" id="documentGroupId" class="form-control" readonly placeholder="Otomatik olusturulur">
+                        </div>
+                    </div>
+
+                    <div class="form-actions" style="margin-top: 30px;" id="formActions">
+                        <a href="scrapping.html" class="btn btn-outline">Iptal</a>
+                        <button type="submit" class="btn btn-primary">Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Onay Mekanizmasi Card -->
+        <div class="card" id="approvalCard" style="margin-top: 20px; display: none;">
+            <div class="card-header">
+                <h3>Onay Sureci (Data Structure: Approver 1/2/3)</h3>
+            </div>
+            <div class="card-body" style="overflow-x: auto;">
+                <table class="table table-sm" style="min-width: 900px; white-space: nowrap;">
+                    <thead>
+                        <tr>
+                            <th style="min-width: 80px;">Seviye</th>
+                            <th style="min-width: 180px;">Onaylayici ID (approver_X_user_id)</th>
+                            <th style="min-width: 180px;">Onaylayan (X_approved_by_user_id)</th>
+                            <th style="min-width: 160px;">Onay Tarihi (X_approved_datetime)</th>
+                            <th style="min-width: 120px;">Durum (X_approval)</th>
+                            <th style="min-width: 150px;">Gerekli mi? (X_requirement_check)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="approvalTableBody">
+                        <tr>
+                            <td><strong>Onay 1</strong></td>
+                            <td id="approver1Id">-</td>
+                            <td id="approved1By">-</td>
+                            <td id="approved1DateTime">-</td>
+                            <td id="approval1Status"><span class="badge badge-secondary">-</span></td>
+                            <td><span class="badge badge-info">Her zaman gerekli</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Onay 2</strong></td>
+                            <td id="approver2Id">-</td>
+                            <td id="approved2By">-</td>
+                            <td id="approved2DateTime">-</td>
+                            <td id="approval2Status"><span class="badge badge-secondary">-</span></td>
+                            <td id="approval2Required"><span class="badge badge-secondary">5000-25000₺ arasi</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Onay 3</strong></td>
+                            <td id="approver3Id">-</td>
+                            <td id="approved3By">-</td>
+                            <td id="approved3DateTime">-</td>
+                            <td id="approval3Status"><span class="badge badge-secondary">-</span></td>
+                            <td id="approval3Required"><span class="badge badge-secondary">25000₺ uzeri</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Belge Kalemleri Card -->
+        <div class="card" id="itemsCard" style="margin-top: 20px; display: none;">
+            <div class="card-header">
+                <h3>Belge Kalemleri (Stock Correction Item)</h3>
+            </div>
+            <div class="card-body" style="overflow-x: auto;">
+                <table class="table table-sm" style="min-width: 2200px; white-space: nowrap;">
+                    <thead>
+                        <tr>
+                            <th style="min-width: 60px;">Sira No</th>
+                            <th style="min-width: 120px;">Stok Kayit ID</th>
+                            <th style="min-width: 120px;">Malzeme No</th>
+                            <th style="min-width: 180px;">Malzeme Adi</th>
+                            <th style="min-width: 100px;">Malzeme Grubu</th>
+                            <th style="min-width: 80px;">Maliyet ID</th>
+                            <th style="min-width: 80px;">Depo</th>
+                            <th style="min-width: 80px;">Lokasyon</th>
+                            <th style="min-width: 60px;">Raf</th>
+                            <th style="min-width: 80px;">Stok Mik.</th>
+                            <th style="min-width: 80px;">Secilen Mik.</th>
+                            <th style="min-width: 60px;">Birim</th>
+                            <th style="min-width: 60px;">PB</th>
+                            <th style="min-width: 90px;">Birim Deger</th>
+                            <th style="min-width: 100px;">Stok Degeri</th>
+                            <th style="min-width: 90px;">EUR Deger</th>
+                            <th style="min-width: 90px;">TRY Deger</th>
+                            <th style="min-width: 50px;">MR</th>
+                            <th style="min-width: 50px;">SRM</th>
+                            <th style="min-width: 50px;">PO</th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemsTableBody">
+                    </tbody>
+                    <tfoot>
+                        <tr style="font-weight: bold; background: #f8f9fa;">
+                            <td colspan="15" style="text-align: right;">Toplam:</td>
+                            <td id="totalEur">0,00 €</td>
+                            <td id="totalTry">0,00 ₺</td>
+                            <td colspan="3"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- Ek Dosyalar Card -->
+        <div class="card" id="attachmentsCard" style="margin-top: 20px; display: none;">
+            <div class="card-header">
+                <h3>Ek Dosyalar (Document Group)</h3>
+            </div>
+            <div class="card-body">
+                <div id="attachmentsList">
+                    <p class="text-muted">Henuz ek dosya yok.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Yorumlar Card -->
+        <div class="card" id="commentsCard" style="margin-top: 20px; display: none;">
+            <div class="card-header">
+                <h3>Yorumlar (Comment Group)</h3>
+            </div>
+            <div class="card-body">
+                <div id="commentsList">
+                    <p class="text-muted">Henuz yorum yok.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <style>
+        .required { color: #dc3545; font-weight: bold; }
+        .form-control[readonly] { background-color: #f5f5f5; }
+        .form-control:disabled { background-color: #f5f5f5; cursor: not-allowed; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; }
+        .badge-success { background: #28a745; color: white; }
+        .badge-warning { background: #ffc107; color: #333; }
+        .badge-danger { background: #dc3545; color: white; }
+        .badge-info { background: #17a2b8; color: white; }
+        .badge-secondary { background: #6c757d; color: white; }
+    </style>
+
+    <script>
+        const documents = {
+            'SC-2025-000089': {
+                id: 'SC-2025-000089',
+                title: 'Hasarli Malzemeler - Hat 1',
+                description: 'Hat 1 uretim hattinda hasar goren malzemelerin stoktan dusurulmesi',
+                correctionType: 'D',
+                creationDateTime: '2025-12-15T14:30',
+                createdBy: 'USR-100 - Ahmet Yilmaz',
+                createdFor: '101',
+                costId: 'cost2',
+                status: 'Onay Bekliyor',
+                euroTotalValue: '75,00 €',
+                tryTotalValue: '2.725,00 ₺',
+                commentGroupId: 'CMG-089',
+                documentGroupId: 'DOC-089',
+                approvals: {
+                    approver1Id: 'USR-101',
+                    approved1By: '-',
+                    approved1DateTime: '-',
+                    approval1: null,
+                    approver2Required: false,
+                    approver3Required: false
+                },
+                items: [
+                    { no: 1, stockRecordId: 'STK-2025-8901', materialNo: '02.00001-0001', materialDesc: 'Konveyor Kayisi 500mm', materialGroup: 'Mekanik', costId: 'COST-156', storage: 'MRK-01', location: 'A-12', bin: 'R05', stockQty: 50, selectedQty: 15, unit: 'MT', currency: 'TRY', unitValue: 125.00, stockValue: 6250.00, eurValue: 51.65, tryValue: 1875.00, mr: 1, srm: 0, po: 0 },
+                    { no: 2, stockRecordId: 'STK-2025-8902', materialNo: '02.00005-0001', materialDesc: 'Baret (Sari)', materialGroup: 'ISG', costId: 'COST-157', storage: 'MRK-01', location: 'A-12', bin: 'R06', stockQty: 25, selectedQty: 10, unit: 'AD', currency: 'TRY', unitValue: 85.00, stockValue: 2125.00, eurValue: 23.41, tryValue: 850.00, mr: 0, srm: 0, po: 0 }
+                ],
+                attachments: [
+                    { name: 'hasar_foto_1.jpg', size: '254 KB', date: '15.12.2025 14:35' }
+                ],
+                comments: [
+                    { user: 'Ahmet Yilmaz', date: '15.12.2025 14:32', text: 'Uretim muduru ile gorusuldu, malzeme tamir edilemez durumda.' },
+                    { user: 'Mehmet Demir', date: '15.12.2025 15:10', text: 'Onaya sunulmasi uygundur.' }
+                ]
+            },
+            'SC-2025-000088': {
+                id: 'SC-2025-000088',
+                title: 'Kalite Kontrolu Red - Boya Defekti',
+                description: 'Kalite kontrolunden gecemeyen boyali metal paneller',
+                correctionType: 'Q',
+                creationDateTime: '2025-12-14T10:15',
+                createdBy: 'USR-102 - Mehmet Demir',
+                createdFor: '103',
+                costId: 'cost3',
+                status: 'Onaylandi',
+                euroTotalValue: '232,88 €',
+                tryTotalValue: '8.450,00 ₺',
+                commentGroupId: 'CMG-088',
+                documentGroupId: 'DOC-088',
+                approvals: {
+                    approver1Id: 'USR-101',
+                    approved1By: 'USR-101 (Depo Sorumlusu)',
+                    approved1DateTime: '14.12.2025 11:00',
+                    approval1: true,
+                    approver2Required: true,
+                    approver2Id: 'USR-102',
+                    approved2By: 'USR-102 (Depo Muduru)',
+                    approved2DateTime: '14.12.2025 11:45',
+                    approval2: true,
+                    approver3Required: false
+                },
+                items: [
+                    { no: 1, stockRecordId: 'STK-2025-7756', materialNo: '03.00123-0002', materialDesc: 'Metal Panel - Boyali (Mavi)', materialGroup: 'Yapisal', costId: 'COST-089', storage: 'MRK-02', location: 'B-05', bin: 'R12', stockQty: 100, selectedQty: 50, unit: 'AD', currency: 'TRY', unitValue: 169.00, stockValue: 16900.00, eurValue: 232.88, tryValue: 8450.00, mr: 0, srm: 1, po: 0 }
+                ],
+                attachments: [
+                    { name: 'kalite_raporu.pdf', size: '1.2 MB', date: '14.12.2025 10:20' },
+                    { name: 'boya_defekt_1.jpg', size: '380 KB', date: '14.12.2025 10:22' },
+                    { name: 'boya_defekt_2.jpg', size: '425 KB', date: '14.12.2025 10:22' }
+                ],
+                comments: [
+                    { user: 'Mehmet Demir', date: '14.12.2025 10:18', text: 'Kalite kontrol tarafindan reddedilen parti. Tedarikci ile gorusulecek.' }
+                ]
+            }
+        };
+
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return { mode: params.get('mode') || 'view', id: params.get('id') || null };
+        }
+
+        function initializePage() {
+            const { mode, id } = getUrlParams();
+            const formElements = document.querySelectorAll('#scrappingForm select, #scrappingForm input:not([readonly]), #scrappingForm textarea');
+
+            switch(mode) {
+                case 'view':
+                    document.getElementById('pageTitle').textContent = 'Hurda Belgesi Goruntule';
+                    document.getElementById('breadcrumbAction').textContent = 'Goruntule';
+                    document.getElementById('editModeBtn').style.display = 'inline-block';
+                    document.getElementById('formActions').style.display = 'none';
+                    document.getElementById('itemsCard').style.display = 'block';
+                    document.getElementById('approvalCard').style.display = 'block';
+                    document.getElementById('attachmentsCard').style.display = 'block';
+                    document.getElementById('commentsCard').style.display = 'block';
+                    formElements.forEach(el => el.disabled = true);
+                    document.getElementById('editModeBtn').addEventListener('click', function() {
+                        window.location.href = `scrapping-detail.html?mode=edit&id=${id}`;
+                    });
+                    if (id && documents[id]) loadData(documents[id]);
+                    break;
+                case 'edit':
+                    document.getElementById('pageTitle').textContent = 'Hurda Belgesi Duzenle';
+                    document.getElementById('breadcrumbAction').textContent = 'Duzenle';
+                    document.getElementById('editModeBtn').style.display = 'none';
+                    document.getElementById('formActions').style.display = 'flex';
+                    document.getElementById('itemsCard').style.display = 'block';
+                    document.getElementById('approvalCard').style.display = 'block';
+                    document.getElementById('attachmentsCard').style.display = 'block';
+                    document.getElementById('commentsCard').style.display = 'block';
+                    formElements.forEach(el => el.disabled = false);
+                    if (id && documents[id]) loadData(documents[id]);
+                    break;
+                case 'create':
+                    document.getElementById('pageTitle').textContent = 'Yeni Hurda Belgesi';
+                    document.getElementById('breadcrumbAction').textContent = 'Yeni';
+                    document.getElementById('editModeBtn').style.display = 'none';
+                    document.getElementById('formActions').style.display = 'flex';
+                    document.getElementById('itemsCard').style.display = 'none';
+                    document.getElementById('approvalCard').style.display = 'none';
+                    document.getElementById('attachmentsCard').style.display = 'none';
+                    document.getElementById('commentsCard').style.display = 'none';
+                    document.getElementById('documentId').value = 'SC-2025-' + String(Math.floor(Math.random() * 900000) + 100000);
+                    document.getElementById('creationDateTime').value = new Date().toISOString().slice(0, 16);
+                    document.getElementById('status').value = 'Taslak';
+                    formElements.forEach(el => el.disabled = false);
+                    break;
+            }
+        }
+
+        function loadData(doc) {
+            // Header fields
+            document.getElementById('documentId').value = doc.id;
+            document.getElementById('documentTitle').value = doc.title;
+            document.getElementById('documentDescription').value = doc.description;
+            document.getElementById('correctionType').value = doc.correctionType;
+            document.getElementById('creationDateTime').value = doc.creationDateTime;
+            document.getElementById('createdBy').value = doc.createdBy;
+            document.getElementById('createdFor').value = doc.createdFor;
+            document.getElementById('costId').value = doc.costId;
+            document.getElementById('status').value = doc.status;
+            document.getElementById('euroTotalValue').value = doc.euroTotalValue;
+            document.getElementById('tryTotalValue').value = doc.tryTotalValue;
+            document.getElementById('commentGroupId').value = doc.commentGroupId;
+            document.getElementById('documentGroupId').value = doc.documentGroupId;
+
+            // Approvals
+            if (doc.approvals) {
+                const a = doc.approvals;
+                document.getElementById('approver1Id').textContent = a.approver1Id || '-';
+                document.getElementById('approved1By').textContent = a.approved1By || '-';
+                document.getElementById('approved1DateTime').textContent = a.approved1DateTime || '-';
+                document.getElementById('approval1Status').innerHTML = a.approval1 === true ? '<span class="badge badge-success">Onaylandi</span>' :
+                    (a.approval1 === false ? '<span class="badge badge-danger">Reddedildi</span>' : '<span class="badge badge-warning">Bekliyor</span>');
+
+                if (a.approver2Required) {
+                    document.getElementById('approver2Id').textContent = a.approver2Id || '-';
+                    document.getElementById('approved2By').textContent = a.approved2By || '-';
+                    document.getElementById('approved2DateTime').textContent = a.approved2DateTime || '-';
+                    document.getElementById('approval2Status').innerHTML = a.approval2 === true ? '<span class="badge badge-success">Onaylandi</span>' :
+                        (a.approval2 === false ? '<span class="badge badge-danger">Reddedildi</span>' : '<span class="badge badge-warning">Bekliyor</span>');
+                    document.getElementById('approval2Required').innerHTML = '<span class="badge badge-info">Evet</span>';
+                }
+
+                if (a.approver3Required) {
+                    document.getElementById('approver3Id').textContent = a.approver3Id || '-';
+                    document.getElementById('approved3By').textContent = a.approved3By || '-';
+                    document.getElementById('approved3DateTime').textContent = a.approved3DateTime || '-';
+                    document.getElementById('approval3Status').innerHTML = a.approval3 === true ? '<span class="badge badge-success">Onaylandi</span>' :
+                        (a.approval3 === false ? '<span class="badge badge-danger">Reddedildi</span>' : '<span class="badge badge-warning">Bekliyor</span>');
+                    document.getElementById('approval3Required').innerHTML = '<span class="badge badge-info">Evet</span>';
+                }
+            }
+
+            // Load items
+            const tbody = document.getElementById('itemsTableBody');
+            tbody.innerHTML = '';
+            let totalEur = 0, totalTry = 0;
+            doc.items.forEach(item => {
+                totalEur += item.eurValue;
+                totalTry += item.tryValue;
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.no}</td>
+                    <td><span class="text-muted">${item.stockRecordId}</span></td>
+                    <td>${item.materialNo}</td>
+                    <td>${item.materialDesc}</td>
+                    <td><span class="badge badge-secondary">${item.materialGroup}</span></td>
+                    <td><span class="text-muted">${item.costId || '-'}</span></td>
+                    <td>${item.storage || '-'}</td>
+                    <td>${item.location || '-'}</td>
+                    <td>${item.bin || '-'}</td>
+                    <td>${item.stockQty}</td>
+                    <td><strong>${item.selectedQty}</strong></td>
+                    <td>${item.unit}</td>
+                    <td>${item.currency || 'TRY'}</td>
+                    <td>${item.unitValue.toFixed(2)} ₺</td>
+                    <td>${item.stockValue ? item.stockValue.toFixed(2) + ' ₺' : '-'}</td>
+                    <td>${item.eurValue.toFixed(2)} €</td>
+                    <td>${item.tryValue.toFixed(2)} ₺</td>
+                    <td>${item.mr > 0 ? '<span class="badge badge-warning">' + item.mr + '</span>' : '-'}</td>
+                    <td>${item.srm > 0 ? '<span class="badge badge-info">' + item.srm + '</span>' : '-'}</td>
+                    <td>${item.po > 0 ? '<span class="badge badge-success">' + item.po + '</span>' : '-'}</td>
+                `;
+                tbody.appendChild(row);
+            });
+            document.getElementById('totalEur').textContent = totalEur.toFixed(2) + ' €';
+            document.getElementById('totalTry').textContent = totalTry.toFixed(2) + ' ₺';
+
+            // Load attachments
+            const attachmentsList = document.getElementById('attachmentsList');
+            if (doc.attachments && doc.attachments.length > 0) {
+                attachmentsList.innerHTML = '<ul style="padding-left: 20px;">' +
+                    doc.attachments.map(att => `<li><a href="#" class="text-primary">${att.name}</a> (${att.size}) - ${att.date}</li>`).join('') +
+                    '</ul>';
+            }
+
+            // Load comments
+            const commentsList = document.getElementById('commentsList');
+            if (doc.comments && doc.comments.length > 0) {
+                commentsList.innerHTML = doc.comments.map(c => `
+                    <div style="padding: 8px; background: #f1f3f5; border-radius: 4px; margin-bottom: 8px;">
+                        <small class="text-muted">${c.user} - ${c.date}</small><br>
+                        ${c.text}
+                    </div>
+                `).join('');
+            }
+        }
+
+        document.getElementById('scrappingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const { mode } = getUrlParams();
+            const action = mode === 'create' ? 'olusturuldu' : 'guncellendi';
+            alert(`Hurda belgesi ${action}!\n\n(Backend entegrasyonu ile calisacak)`);
+            window.location.href = 'scrapping.html';
+        });
+
+        document.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+</body>
+</html>

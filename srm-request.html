@@ -1,0 +1,2053 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRM Talebi - IMMA</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- ============================================
+         NAVBAR - Top Navigation (Maximo Style)
+         ============================================ -->
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">M</div>
+                <div class="brand-text">
+                    <span class="brand-name">IMMA</span>
+                    <span class="brand-subtitle">Endirek Malzeme Yönetimi</span>
+                </div>
+            </a>
+            <ul class="navbar-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="material-list.html" class="nav-link">
+                        <span class="nav-icon">📦</span>
+                        Ana Veriler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-list.html" class="dropdown-item">Malzeme Listesi</a>
+                        <a href="supplier-list.html" class="dropdown-item">Tedarikçi Listesi</a>
+                        <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
+                        <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
+                        <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="mrp.html" class="nav-link">
+                        <span class="nav-icon">📈</span>
+                        MRP
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="srm-list.html" class="nav-link active">
+                        <span class="nav-icon">🛒</span>
+                        Satınalma
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="srm-list.html" class="dropdown-item active">Talep Listesi</a>
+                        <a href="goods-receipt.html" class="dropdown-item">Mal Kabul</a>
+                        <a href="po-list.html" class="dropdown-item">Satınalma Siparişleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="budget-management.html" class="nav-link">
+                        <span class="nav-icon">💰</span>
+                        Bütçe
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="budget-management.html" class="dropdown-item">Bütçe Yönetimi</a>
+                        <a href="budget-preference.html" class="dropdown-item">Bütçe Tercihleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="material-request-list.html" class="nav-link">
+                        <span class="nav-icon">📋</span>
+                        Talepler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-request-list.html" class="dropdown-item">Talep Listesi</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="transfer-list.html" class="nav-link">
+                        <span class="nav-icon">🏭</span>
+                        Stok
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
+                        <a href="warehouse-transfer.html" class="dropdown-item">Depo Transferi</a>
+                        <a href="transfer-list.html" class="dropdown-item">Transfer Listesi</a>
+                        <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
+                        <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
+                        <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+            </ul>
+            <div class="navbar-user">
+                <span class="user-name">Ahmet Yılmaz</span>
+                <div class="user-avatar">AY</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ============================================
+         MAIN CONTENT - FORM-ONLY PAGE
+         ============================================ -->
+    <main class="modern-container">
+        <!-- Page Header - Dynamic based on URL mode -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title" id="pageTitle">Yeni SRM Talebi</h1>
+                <p class="page-subtitle">Satınalma > SRM Talebi</p>
+            </div>
+            <div class="page-actions">
+                <button class="btn btn-secondary" onclick="window.location.href='srm-list.html'">Talep Listesi</button>
+            </div>
+        </div>
+
+        <!-- Developer Notes -->
+        <div class="dev-note info">
+            <h4>Ekran Bilgisi: 10 SRM RC - SRM Request Creation</h4>
+            <p><strong>URL Modes:</strong></p>
+            <ul>
+                <li><strong>?mode=create:</strong> Yeni talep oluşturma (tüm alanlar boş, form editable)</li>
+                <li><strong>?id=xxx&mode=edit:</strong> Mevcut talep düzenleme (veriler yüklü, form editable)</li>
+                <li><strong>?id=xxx&mode=view:</strong> Talep görüntüleme (veriler yüklü, tüm alanlar readonly)</li>
+            </ul>
+            <p><strong>Fonksiyonlar:</strong></p>
+            <ul>
+                <li>a) Dogrudan Talep Olusturma</li>
+                <li>b) SRM Onerisinden Talep Olusturma</li>
+                <li>c) Tedarikci ve Bilgi Kaydi Secimi</li>
+                <li>d) Malzeme Arama ve Secimi</li>
+                <li>e) Otomatik Toplam Hesaplama</li>
+                <li>f) Butce Kontrolu</li>
+            </ul>
+            <p><strong>Action Buttons:</strong></p>
+            <ul>
+                <li><strong>Kaydet:</strong> Talebi gönder (onay akışı başlar)</li>
+                <li><strong>Taslak Kaydet:</strong> Taslak olarak kaydet (daha sonra düzenlenebilir)</li>
+                <li><strong>İptal:</strong> Formu iptal et ve srm-list.html'e dön</li>
+            </ul>
+        </div>
+
+        <!-- ============================================
+             SECTION 1: SRM REQUEST HEADER
+             ============================================ -->
+        <div class="card">
+            <div class="card-header">
+                <h3>SRM Talep Başlığı</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-row">
+                    <div class="form-group col-3">
+                        <label>Talep No</label>
+                        <input type="text" id="requestNo" class="form-control" value="SRM-2025-000456" readonly>
+                        <small class="form-hint">Otomatik oluşturulur</small>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Talep Tarihi <span class="required">*</span></label>
+                        <input type="date" id="requestDate" class="form-control" value="2025-12-15">
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Talep Eden</label>
+                        <input type="text" id="requestor" class="form-control" value="Mehmet Demir" readonly>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Durum</label>
+                        <input type="text" id="status" class="form-control" value="Taslak" readonly>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-3">
+                        <label>Departman</label>
+                        <input type="text" id="department" class="form-control" value="Üretim - Boyahane" readonly>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Öncelik <span class="required">*</span></label>
+                        <select class="form-control" id="prioritySelect">
+                            <option value="1">1 - Düşük</option>
+                            <option value="2" selected>2 - Normal</option>
+                            <option value="3">3 - Yüksek</option>
+                            <option value="4">4 - Acil</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Maliyet Merkezi <span class="required">*</span></label>
+                        <select class="form-control" id="costCenterSelect">
+                            <option value="">Seçiniz...</option>
+                            <option value="CC001" selected>CC001 - Üretim</option>
+                            <option value="CC002">CC002 - Bakım</option>
+                            <option value="CC003">CC003 - Kalite</option>
+                            <option value="CC004">CC004 - Lojistik</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>İstenen Teslim Tarihi <span class="required">*</span></label>
+                        <input type="date" id="deliveryDate" class="form-control" min="2025-12-22">
+                    </div>
+                </div>
+                <!-- Row 3: Currency and SRM Number - Data Structure 10 SRM RC -->
+                <div class="form-row">
+                    <div class="form-group col-3">
+                        <label>Para Birimi <span class="required">*</span></label>
+                        <select class="form-control" id="currencyCode">
+                            <option value="TRY" selected>TRY - Türk Lirası</option>
+                            <option value="EUR">EUR - Euro</option>
+                            <option value="USD">USD - Amerikan Doları</option>
+                        </select>
+                        <small class="form-hint">Currency code (text, 3)</small>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>SRM Numarası</label>
+                        <input type="text" id="srmNumber" class="form-control" readonly placeholder="SAP entegrasyonu sonrası">
+                        <small class="form-hint">SRM Number (int, 10)</small>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Sipariş Tarihi</label>
+                        <input type="date" id="orderDate" class="form-control">
+                        <small class="form-hint">Order date</small>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Beklenen Teslim Tarihi</label>
+                        <input type="date" id="expectedDeliveryDate" class="form-control">
+                        <small class="form-hint">Expected delivery date</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================
+             SECTION: SUPPLIER SELECTION - Screen Designs 10 SRM RC
+             ============================================ -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Tedarikçi Bilgileri</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-row">
+                    <div class="form-group col-3">
+                        <label>Tedarikçi SAP No <span class="required">*</span></label>
+                        <div class="supplier-autocomplete">
+                            <input type="text" id="supplierSapNo" class="form-control" placeholder="SAP No veya ünvan yazın..." autocomplete="off">
+                            <div class="supplier-dropdown" id="supplierDropdown">
+                                <!-- Dropdown items will be populated dynamically -->
+                            </div>
+                        </div>
+                        <small class="form-hint">Yazmaya başlayın - dinamik arama</small>
+                    </div>
+                    <div class="form-group col-4">
+                        <label>Tedarikçi Ünvan 1</label>
+                        <input type="text" id="supplierTitle1" class="form-control" readonly placeholder="Tedarikçi seçildiğinde otomatik dolar">
+                        <small class="form-hint">Supplier title 1 (text, 50)</small>
+                    </div>
+                    <div class="form-group col-4">
+                        <label>Tedarikçi Ünvan 2</label>
+                        <input type="text" id="supplierTitle2" class="form-control" readonly placeholder="Tedarikçi seçildiğinde otomatik dolar">
+                        <small class="form-hint">Supplier title 2 (text, 50)</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================
+             SECTION: CONTRACT INFO - Screen Designs 10 SRM RC
+             ============================================ -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Kontrat Bilgileri</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-row">
+                    <div class="form-group col-3">
+                        <label>Kontrat Numarası</label>
+                        <input type="text" id="contractNumber" class="form-control" value="CNT-2025-00123" readonly>
+                        <small class="form-hint">Contract number (int, 10)</small>
+                    </div>
+                    <div class="form-group col-2">
+                        <label>Kontrat Para Birimi</label>
+                        <input type="text" id="contractCurrency" class="form-control" value="EUR" readonly>
+                        <small class="form-hint">Contract Currency</small>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Kontrat Limiti</label>
+                        <input type="text" id="contractLimit" class="form-control" value="500.000,00 EUR" readonly>
+                        <small class="form-hint">Contract Limit</small>
+                    </div>
+                    <div class="form-group col-2">
+                        <label>Açık Limit</label>
+                        <input type="text" id="contractOpenLimit" class="form-control" value="125.000,00 EUR" readonly>
+                        <small class="form-hint">Open limit</small>
+                    </div>
+                    <div class="form-group col-2">
+                        <label>Kontrat Bitiş</label>
+                        <input type="date" id="contractEndDate" class="form-control" value="2025-12-31" readonly>
+                        <small class="form-hint">End of contract date</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================
+             SECTION 2: SRM REQUEST ITEMS (Multi-line)
+             ============================================ -->
+        <div class="card">
+            <div class="card-header">
+                <h3>SRM Talep Kalemleri</h3>
+                <div class="card-header-actions">
+                    <button class="btn btn-primary btn-sm" id="addItemBtn">+ Kalem Ekle</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table" id="itemsTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px;">#</th>
+                                <th style="width: 140px;">Malzeme No <span class="required">*</span></th>
+                                <th>Malzeme Açıklaması</th>
+                                <th style="width: 70px;">Birim</th>
+                                <th style="width: 100px;">Talep Miktarı <span class="required">*</span></th>
+                                <th style="width: 120px;">Birim Fiyat (TL)</th>
+                                <th style="width: 130px;">Toplam Değer (TL)</th>
+                                <th style="width: 150px;">Tedarikçi (Opsiyonel)</th>
+                                <th style="width: 130px;">İstenen Teslim</th>
+                                <th style="width: 200px;">Notlar</th>
+                                <th style="width: 70px;">İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control form-control-sm material-no" value="01.00001-0001" readonly>
+                                        <button class="btn btn-sm btn-outline material-search-btn" title="Malzeme Ara">🔍</button>
+                                    </div>
+                                </td>
+                                <td class="material-desc">Elektrik Motoru 5.5kW 1500rpm</td>
+                                <td class="material-unit">AD</td>
+                                <td><input type="number" class="form-control form-control-sm item-quantity" value="10" min="1"></td>
+                                <td class="item-price">16.583,00</td>
+                                <td class="item-total"><strong>165.830,00</strong></td>
+                                <td>
+                                    <select class="form-control form-control-sm item-supplier">
+                                        <option value="">Seçiniz...</option>
+                                        <option value="SUP001" selected>ABC Endustriyel</option>
+                                        <option value="SUP002">XYZ Teknik</option>
+                                    </select>
+                                </td>
+                                <td><input type="date" class="form-control form-control-sm item-delivery" value="2025-12-30"></td>
+                                <td><input type="text" class="form-control form-control-sm item-notes" placeholder="Not..."></td>
+                                <td><button class="btn btn-sm btn-danger delete-item-btn">🗑️</button></td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control form-control-sm material-no" value="01.00002-0001" readonly>
+                                        <button class="btn btn-sm btn-outline material-search-btn" title="Malzeme Ara">🔍</button>
+                                    </div>
+                                </td>
+                                <td class="material-desc">Rulman 6205-2RS SKF</td>
+                                <td class="material-unit">AD</td>
+                                <td><input type="number" class="form-control form-control-sm item-quantity" value="200" min="1"></td>
+                                <td class="item-price">460,63</td>
+                                <td class="item-total"><strong>92.126,00</strong></td>
+                                <td>
+                                    <select class="form-control form-control-sm item-supplier">
+                                        <option value="">Seçiniz...</option>
+                                        <option value="SUP001" selected>ABC Endustriyel</option>
+                                        <option value="SUP002">XYZ Teknik</option>
+                                    </select>
+                                </td>
+                                <td><input type="date" class="form-control form-control-sm item-delivery" value="2025-12-28"></td>
+                                <td><input type="text" class="form-control form-control-sm item-notes" placeholder="Not..." value="Acil"></td>
+                                <td><button class="btn btn-sm btn-danger delete-item-btn">🗑️</button></td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control form-control-sm material-no" value="01.00015-0003" readonly>
+                                        <button class="btn btn-sm btn-outline material-search-btn" title="Malzeme Ara">🔍</button>
+                                    </div>
+                                </td>
+                                <td class="material-desc">Hidrolik Yağ ISO 46 - 20LT</td>
+                                <td class="material-unit">LT</td>
+                                <td><input type="number" class="form-control form-control-sm item-quantity" value="100" min="1"></td>
+                                <td class="item-price">850,00</td>
+                                <td class="item-total"><strong>85.000,00</strong></td>
+                                <td>
+                                    <select class="form-control form-control-sm item-supplier">
+                                        <option value="">Seçiniz...</option>
+                                        <option value="SUP003" selected>Shell Türkiye</option>
+                                        <option value="SUP004">Castrol</option>
+                                    </select>
+                                </td>
+                                <td><input type="date" class="form-control form-control-sm item-delivery" value="2026-01-05"></td>
+                                <td><input type="text" class="form-control form-control-sm item-notes" placeholder="Not..."></td>
+                                <td><button class="btn btn-sm btn-danger delete-item-btn">🗑️</button></td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-summary">
+                                <td colspan="6" style="text-align: right;"><strong>Genel Toplam:</strong></td>
+                                <td colspan="5"><strong id="grandTotal">342.956,00 TL</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <!-- Historical Issue Data - Screen Designs 10 SRM RC -->
+                <div class="historical-data-section" style="margin-top: 20px;">
+                    <h4 style="margin-bottom: 15px; color: #555;">Tarihsel Çıkış Verileri (Seçili Malzemeler)</h4>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered" id="historicalDataTable">
+                            <thead style="background: #f8f9fa;">
+                                <tr>
+                                    <th rowspan="2" style="vertical-align: middle;">Malzeme No</th>
+                                    <th colspan="3" style="text-align: center; background: #e3f2fd;">Son 3 Ay Çıkış</th>
+                                    <th colspan="3" style="text-align: center; background: #fff3e0;">Son 3 Yıl Çıkış</th>
+                                    <th rowspan="2" style="vertical-align: middle; text-align: center;">Açık PO</th>
+                                    <th rowspan="2" style="vertical-align: middle; text-align: center;">Açık SRM</th>
+                                </tr>
+                                <tr>
+                                    <th style="text-align: center; font-size: 11px;">1. Ay</th>
+                                    <th style="text-align: center; font-size: 11px;">2. Ay</th>
+                                    <th style="text-align: center; font-size: 11px;">3. Ay</th>
+                                    <th style="text-align: center; font-size: 11px;">1. Yıl</th>
+                                    <th style="text-align: center; font-size: 11px;">2. Yıl</th>
+                                    <th style="text-align: center; font-size: 11px;">3. Yıl</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>01.00001-0001</strong></td>
+                                    <td style="text-align: center;">5</td>
+                                    <td style="text-align: center;">8</td>
+                                    <td style="text-align: center;">12</td>
+                                    <td style="text-align: center;">95</td>
+                                    <td style="text-align: center;">112</td>
+                                    <td style="text-align: center;">88</td>
+                                    <td style="text-align: center; color: #1976d2;"><strong>0</strong></td>
+                                    <td style="text-align: center; color: #f57c00;"><strong>0</strong></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>01.00002-0001</strong></td>
+                                    <td style="text-align: center;">45</td>
+                                    <td style="text-align: center;">52</td>
+                                    <td style="text-align: center;">38</td>
+                                    <td style="text-align: center;">520</td>
+                                    <td style="text-align: center;">485</td>
+                                    <td style="text-align: center;">510</td>
+                                    <td style="text-align: center; color: #1976d2;"><strong>50</strong></td>
+                                    <td style="text-align: center; color: #f57c00;"><strong>0</strong></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>01.00015-0003</strong></td>
+                                    <td style="text-align: center;">20</td>
+                                    <td style="text-align: center;">25</td>
+                                    <td style="text-align: center;">18</td>
+                                    <td style="text-align: center;">250</td>
+                                    <td style="text-align: center;">280</td>
+                                    <td style="text-align: center;">265</td>
+                                    <td style="text-align: center; color: #1976d2;"><strong>0</strong></td>
+                                    <td style="text-align: center; color: #f57c00;"><strong>20</strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <small class="form-hint">
+                        <strong>Açıklama:</strong> Last month's/year's total issued quantity (Screen Designs 10 SRM RC) -
+                        Open purchasing order quantity, Open SRM Request quantity
+                    </small>
+                </div>
+
+                <!-- Euro Conversion Section - Screen Designs 10 SRM RC -->
+                <div class="euro-conversion-section" style="margin-top: 20px; padding: 15px; background: #f5f5f5; border-radius: 8px;">
+                    <h4 style="margin-bottom: 15px; color: #555;">Euro Dönüşümü</h4>
+                    <div class="form-row">
+                        <div class="form-group col-3">
+                            <label>Genel Toplam (TL)</label>
+                            <input type="text" class="form-control" id="totalTL" value="342.956,00" readonly>
+                        </div>
+                        <div class="form-group col-2">
+                            <label>EUR/TL Kuru</label>
+                            <input type="text" class="form-control" id="eurRate" value="35,85" readonly>
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Euro Toplam</label>
+                            <input type="text" class="form-control" id="totalEUR" value="9.565,90 EUR" readonly style="font-weight: bold; color: #1565c0;">
+                            <small class="form-hint">Euro Currency / Euro Unit Price</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dev-note warning" style="margin-top: 15px;">
+                    <h4>Malzeme Ekleme Kuralları</h4>
+                    <ul>
+                        <li>Malzeme numarası searchable - malzeme arama popup'ı açılır</li>
+                        <li>Miktar girildikçe toplam otomatik hesaplanır</li>
+                        <li>Her kalem için tedarikçi seçimi opsiyoneldir</li>
+                        <li>Teslimat tarihi her kalem için farklı olabilir</li>
+                        <li>Kalem notları opsiyoneldir (özel talepler için)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Budget Check Section -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Bütçe Kontrolü</h3>
+            </div>
+            <div class="card-body">
+                <div class="budget-summary">
+                    <div class="budget-item">
+                        <label>Maliyet Merkezi:</label>
+                        <span id="budgetCostCenter">CC001 - Üretim</span>
+                    </div>
+                    <div class="budget-item">
+                        <label>Yıllık Bütçe:</label>
+                        <span>5.000.000,00 TL</span>
+                    </div>
+                    <div class="budget-item">
+                        <label>Kullanılan:</label>
+                        <span>3.250.000,00 TL</span>
+                    </div>
+                    <div class="budget-item">
+                        <label>Kalan Bütçe:</label>
+                        <span class="text-success"><strong>1.750.000,00 TL</strong></span>
+                    </div>
+                    <div class="budget-item">
+                        <label>Bu Talep:</label>
+                        <span id="budgetRequestAmount">342.956,00 TL</span>
+                    </div>
+                    <div class="budget-item">
+                        <label>Talepten Sonra:</label>
+                        <span class="text-success"><strong>1.407.044,00 TL</strong></span>
+                    </div>
+                </div>
+
+                <div class="alert alert-success" style="margin-top: 15px;" id="budgetAlert">
+                    ✅ Bütçe yeterli. Talep oluşturulabilir.
+                </div>
+            </div>
+        </div>
+
+        <!-- Notes and Justification -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Notlar ve Gerekçe</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label>Talep Gerekçesi <span class="required">*</span></label>
+                    <textarea class="form-control" id="justification" rows="3" placeholder="Neden bu malzemelere ihtiyaç duyulduğunu açıklayın...">Üretim hattı bakımı için gerekli yedek parçalar. Kritik stok seviyesine ulaşılmıştır.</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Ek Notlar</label>
+                    <textarea class="form-control" id="additionalNotes" rows="2" placeholder="Tedarikçi tercihi, özel gereksinimler vb."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="form-actions" style="margin-top: 20px;" id="actionButtons">
+            <button class="btn btn-primary btn-lg" id="submitBtn">
+                Kaydet
+            </button>
+            <button class="btn btn-secondary" id="saveDraftBtn">
+                Taslak Kaydet
+            </button>
+            <button class="btn btn-outline" id="cancelBtn">
+                İptal
+            </button>
+        </div>
+
+        <!-- ============================================
+             DEVELOPER NOTES
+             ============================================ -->
+        <div class="dev-note info" style="margin-top: 30px;">
+            <h4>Form Mode Implementation Details</h4>
+            <p><strong>CREATE Mode (?mode=create):</strong></p>
+            <ul>
+                <li>Page title: "Yeni SRM Talebi"</li>
+                <li>All fields editable (except auto-generated ones)</li>
+                <li>Empty form ready for new data entry</li>
+                <li>Action buttons: Kaydet, Taslak Kaydet, İptal</li>
+            </ul>
+            <p><strong>EDIT Mode (?id=xxx&mode=edit):</strong></p>
+            <ul>
+                <li>Page title: "SRM Talebi Düzenle: [SRM-2025-000456]"</li>
+                <li>All editable fields enabled</li>
+                <li>Data loaded from API based on id parameter</li>
+                <li>Action buttons: Kaydet, Taslak Kaydet, İptal</li>
+            </ul>
+            <p><strong>VIEW Mode (?id=xxx&mode=view):</strong></p>
+            <ul>
+                <li>Page title: "SRM Talebi Detay: [SRM-2025-000456]"</li>
+                <li>All fields readonly/disabled</li>
+                <li>Data loaded from API based on id parameter</li>
+                <li>Action buttons: İptal (returns to srm-list.html)</li>
+                <li>Add Item button hidden</li>
+                <li>Delete item buttons hidden</li>
+            </ul>
+            <p><strong>JavaScript Functions:</strong></p>
+            <ul>
+                <li>getUrlParams() - Parse URL parameters for mode and id</li>
+                <li>loadRequestData(id) - Fetch data from API if id exists</li>
+                <li>setFormMode(mode) - Apply readonly/editable states</li>
+                <li>updatePageTitle(mode, requestNo) - Set dynamic page title</li>
+                <li>calculateGrandTotal() - Auto-calculate total from items</li>
+                <li>validateForm() - Check required fields before submit</li>
+            </ul>
+        </div>
+
+        <div class="dev-note">
+            <h4>Öncelik Seviyeleri</h4>
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Seviye</th>
+                        <th>Açıklama</th>
+                        <th>Beklenen İşlem Süresi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1 - Düşük</td>
+                        <td>Stok yeterli, ileride kullanılacak</td>
+                        <td>30 gün</td>
+                    </tr>
+                    <tr>
+                        <td>2 - Normal</td>
+                        <td>Standart tedarik süresi</td>
+                        <td>14 gün</td>
+                    </tr>
+                    <tr>
+                        <td>3 - Yüksek</td>
+                        <td>Stok kritik seviyeye yaklaşıyor</td>
+                        <td>7 gün</td>
+                    </tr>
+                    <tr>
+                        <td>4 - Acil</td>
+                        <td>Üretim durma riski var</td>
+                        <td>3 gün</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="dev-note">
+            <h4>Onay Akışı</h4>
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Adım</th>
+                        <th>Onaylayan</th>
+                        <th>Koşul</th>
+                        <th>SLA</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>Section Leader (SL)</td>
+                        <td>Tüm talepler</td>
+                        <td>24 saat</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>Manager</td>
+                        <td>Tutar > 100.000 TL VEYA Bütçe Aşımı</td>
+                        <td>48 saat</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>Satınalma Departmanı</td>
+                        <td>Onaylanan tüm talepler</td>
+                        <td>Önceliğe göre</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="dev-note success">
+            <h4>✅ Veritabanı İşlemleri (Data Structure IMMA.xlsx)</h4>
+            <p><strong>API Endpoints:</strong></p>
+            <ul>
+                <li>GET /api/srm-requests/{id} - Talep detay görüntüle</li>
+                <li>POST /api/srm-requests - Yeni talep oluştur</li>
+                <li>PUT /api/srm-requests/{id} - Talep güncelle</li>
+            </ul>
+            <p><strong>SRM Request Header Tablosu (Data Structure IMMA.xlsx - "SRM Request Header"):</strong></p>
+            <ul>
+                <li>SRM Request number (int, 12) - Talep numarası</li>
+                <li>Supplier id (int, 8) - Tedarikçi ID</li>
+                <li>Created by user info (int, 8) - Oluşturan kullanıcı</li>
+                <li>Creation date time (datetime) - Oluşturma zamanı</li>
+                <li>Order date (date) - Sipariş tarihi</li>
+                <li>Expected delivery date (date) - Beklenen teslim tarihi</li>
+                <li>Currency Code (text, 3) - Para birimi kodu</li>
+                <li>Contract number (int, 10) - Kontrat numarası</li>
+                <li>SRM Number (int, 10) - SAP SRM numarası</li>
+            </ul>
+            <p><strong>SRM Request Item Tablosu (Data Structure IMMA.xlsx - "SRM Request item"):</strong></p>
+            <ul>
+                <li>SRM Request item id (int, 16) - Kalem ID</li>
+                <li>SRM Request number (int, 12) - Talep numarası (FK)</li>
+                <li>Material Number (text, 13) - Malzeme numarası</li>
+                <li>unit of measure code (text, 3) - Birim kodu</li>
+                <li>Order Quantity (Float, 15) - Sipariş miktarı</li>
+                <li>Item Prize (Float, 14) - Kalem fiyatı</li>
+                <li>Supplier Material info record Id (int, 8) - Tedarikçi bilgi kaydı ID</li>
+                <li>SRM ItemNumber (int, 4) - SAP kalem numarası</li>
+                <li>Ordered quantity (Float, 14) - Sipariş edilen miktar</li>
+                <li>Request closed check box (bool) - Talep kapatma</li>
+            </ul>
+            <p><strong>Ek Alanlar (Screen Designs 10 SRM RC):</strong></p>
+            <ul>
+                <li>Last month's/2nd/3rd month's total issued quantity - Tarihsel çıkış verileri</li>
+                <li>Last year/2nd/3rd year total issued quantity - Yıllık çıkış verileri</li>
+                <li>Open purchasing order quantity - Açık PO miktarı</li>
+                <li>Open SRM Request quantity - Açık SRM miktarı</li>
+                <li>Euro Currency / Euro Unit Price - Euro dönüşüm bilgileri</li>
+                <li>Contract Limit / Open limit / End of contract date - Kontrat bilgileri</li>
+            </ul>
+        </div>
+
+        <div class="dev-note warning">
+            <h4>İş Kuralları ve Validasyonlar</h4>
+            <ul>
+                <li>En az 1 kalem olmalı</li>
+                <li>Tüm kalemler için miktar > 0 olmalı</li>
+                <li>Malzeme numarası zorunlu (searchable)</li>
+                <li>Birim fiyat sistem tarafından getirilir (son satınalma fiyatı)</li>
+                <li>Toplam değer otomatik hesaplanır: Miktar × Birim Fiyat</li>
+                <li>Tedarikçi seçimi opsiyonel</li>
+                <li>Her kalem için teslimat tarihi farklı olabilir</li>
+                <li>Budget check: Maliyet merkezi bütçesi kontrol edilir</li>
+                <li>Bütçe aşımında Manager onayı zorunlu</li>
+            </ul>
+        </div>
+    </main>
+
+    <!-- Material Search Modal -->
+    <div class="modal" id="materialSearchModal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3>Malzeme Ara</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group col-6">
+                        <input type="text" class="form-control" id="materialSearchInput" placeholder="Malzeme no veya açıklama yazın...">
+                    </div>
+                    <div class="form-group col-3">
+                        <select class="form-control" id="materialGroupFilter">
+                            <option value="">Tüm Gruplar</option>
+                            <option value="01">01 - Elektrik</option>
+                            <option value="02">02 - Pnömatik</option>
+                            <option value="03">03 - Mekanik</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-3">
+                        <button class="btn btn-primary" id="materialSearchBtn">Ara</button>
+                    </div>
+                </div>
+                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-hover" id="materialSearchTable">
+                        <thead style="position: sticky; top: 0; background: white;">
+                            <tr>
+                                <th>Malzeme No</th>
+                                <th>Açıklama</th>
+                                <th>Birim</th>
+                                <th>Stok</th>
+                                <th>Fiyat (TL)</th>
+                                <th style="width: 80px;">Seç</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>01.00001-0001</td>
+                                <td>Elektrik Motoru 5.5kW</td>
+                                <td>AD</td>
+                                <td>2</td>
+                                <td>16.583,00</td>
+                                <td><button class="btn btn-sm btn-primary select-material-btn">Seç</button></td>
+                            </tr>
+                            <tr>
+                                <td>01.00002-0001</td>
+                                <td>Rulman 6205-2RS</td>
+                                <td>AD</td>
+                                <td>45</td>
+                                <td>460,63</td>
+                                <td><button class="btn btn-sm btn-primary select-material-btn">Seç</button></td>
+                            </tr>
+                            <tr>
+                                <td>01.00003-0001</td>
+                                <td>Hidrolik Yag ISO 46</td>
+                                <td>LT</td>
+                                <td>320</td>
+                                <td>850,00</td>
+                                <td><button class="btn btn-sm btn-primary select-material-btn">Seç</button></td>
+                            </tr>
+                            <tr>
+                                <td>02.00003-0001</td>
+                                <td>Pnomatik Silindir 100x200</td>
+                                <td>AD</td>
+                                <td>8</td>
+                                <td>8.750,00</td>
+                                <td><button class="btn btn-sm btn-primary select-material-btn">Seç</button></td>
+                            </tr>
+                            <tr>
+                                <td>02.00004-0001</td>
+                                <td>Sensor Enduktif M12</td>
+                                <td>AD</td>
+                                <td>25</td>
+                                <td>1.250,00</td>
+                                <td><button class="btn btn-sm btn-primary select-material-btn">Seç</button></td>
+                            </tr>
+                            <tr>
+                                <td>03.00001-0001</td>
+                                <td>Kayis V-Belt A52</td>
+                                <td>AD</td>
+                                <td>15</td>
+                                <td>320,00</td>
+                                <td><button class="btn btn-sm btn-primary select-material-btn">Seç</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // URL PARAMETER PARSING AND MODE SETUP
+        // ============================================
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                mode: params.get('mode') || 'create',
+                id: params.get('id') || null,
+                material: params.get('material') || null,      // Tekli malzeme (MRP'den)
+                materials: params.get('materials') || null     // Çoklu malzeme (MRP'den toplu seçim)
+            };
+        }
+
+        // ============================================
+        // SUPPLIER DATA (Mock - Gerçek uygulamada API'den gelecek)
+        // ============================================
+        const supplierData = [
+            { sapNo: '10001234', title1: 'ABC Endüstriyel San. Tic. Ltd. Şti.', title2: 'ABC Industrial Co.', contractNo: 'CNT-2025-00123', contractCurrency: 'EUR', contractLimit: 500000, contractOpenLimit: 125000, contractEndDate: '2025-12-31' },
+            { sapNo: '10001235', title1: 'XYZ Teknik Makine A.Ş.', title2: 'XYZ Technical Machinery', contractNo: 'CNT-2025-00124', contractCurrency: 'TRY', contractLimit: 2000000, contractOpenLimit: 850000, contractEndDate: '2026-06-30' },
+            { sapNo: '10001236', title1: 'Shell Türkiye Petrol A.Ş.', title2: 'Shell Turkey', contractNo: 'CNT-2024-00089', contractCurrency: 'USD', contractLimit: 150000, contractOpenLimit: 45000, contractEndDate: '2025-09-15' },
+            { sapNo: '10001237', title1: 'Siemens Sanayi ve Ticaret A.Ş.', title2: 'Siemens Turkey', contractNo: 'CNT-2025-00156', contractCurrency: 'EUR', contractLimit: 750000, contractOpenLimit: 320000, contractEndDate: '2026-12-31' },
+            { sapNo: '10001238', title1: 'Bosch Rexroth Otomasyon San.', title2: 'Bosch Rexroth Automation', contractNo: 'CNT-2025-00178', contractCurrency: 'EUR', contractLimit: 400000, contractOpenLimit: 180000, contractEndDate: '2026-03-31' },
+            { sapNo: '10001239', title1: 'SKF Türkiye San. ve Tic. Ltd. Şti.', title2: 'SKF Turkey', contractNo: 'CNT-2025-00145', contractCurrency: 'EUR', contractLimit: 200000, contractOpenLimit: 85000, contractEndDate: '2025-11-30' },
+            { sapNo: '10001240', title1: 'Castrol Madeni Yağlar A.Ş.', title2: 'Castrol Lubricants', contractNo: 'CNT-2024-00201', contractCurrency: 'TRY', contractLimit: 1500000, contractOpenLimit: 620000, contractEndDate: '2025-08-31' }
+        ];
+
+        // MRP'den gelen malzeme verileri (mock - gerçek uygulamada API'den gelecek)
+        const mrpMaterialData = {
+            '01.00001-0001': { title: 'Elektrik Motoru 5.5kW', unit: 'AD', price: 16583.00, suggestedQty: 30, last3Months: [5, 8, 12], last3Years: [95, 112, 88], openPo: 0, openSrm: 0 },
+            '02.00003-0001': { title: 'Pnomatik Silindir 100x200', unit: 'AD', price: 8750.00, suggestedQty: 15, last3Months: [3, 5, 4], last3Years: [45, 52, 38], openPo: 10, openSrm: 0 },
+            '01.00002-0001': { title: 'Rulman 6205-2RS', unit: 'AD', price: 460.63, suggestedQty: 200, last3Months: [45, 52, 38], last3Years: [520, 485, 510], openPo: 50, openSrm: 0 },
+            '01.00003-0001': { title: 'Hidrolik Yag ISO 46', unit: 'LT', price: 850.00, suggestedQty: 600, last3Months: [150, 180, 165], last3Years: [1800, 2100, 1950], openPo: 200, openSrm: 100 },
+            '02.00004-0001': { title: 'Sensor Enduktif M12', unit: 'AD', price: 1250.00, suggestedQty: 60, last3Months: [12, 15, 18], last3Years: [180, 165, 195], openPo: 0, openSrm: 20 },
+            '03.00001-0001': { title: 'Kayis V-Belt A52', unit: 'AD', price: 320.00, suggestedQty: 30, last3Months: [8, 10, 7], last3Years: [95, 110, 105], openPo: 0, openSrm: 0 },
+            '01.00015-0003': { title: 'Hidrolik Yağ ISO 46 - 20LT', unit: 'LT', price: 850.00, suggestedQty: 100, last3Months: [20, 25, 18], last3Years: [250, 280, 265], openPo: 0, openSrm: 20 }
+        };
+
+        // ============================================
+        // SRM REQUEST MOCK DATA (srm-list.html'deki kayıtlarla eşleşen)
+        // ============================================
+        const srmRequestData = {
+            '124': {
+                requestNo: 'SRM-2025-000124',
+                requestDate: '2025-12-15',
+                requestor: 'Ahmet Yılmaz',
+                status: 'Taslak',
+                department: 'Bakım - Elektrik',
+                priority: '3',
+                costCenter: 'CC002',
+                deliveryDate: '2025-12-30',
+                currencyCode: 'TRY',
+                srmNumber: '',
+                orderDate: '',
+                expectedDeliveryDate: '2025-12-30',
+                supplier: {
+                    sapNo: '10001234',
+                    title1: 'ABC Endüstriyel San. Tic. Ltd. Şti.',
+                    title2: 'ABC Industrial Co.',
+                    contractNo: 'CNT-2025-00123',
+                    contractCurrency: 'EUR',
+                    contractLimit: 500000,
+                    contractOpenLimit: 125000,
+                    contractEndDate: '2025-12-31'
+                },
+                items: [
+                    { materialNo: '01.00001-0001', description: 'Elektrik Motoru 5.5kW', unit: 'AD', quantity: 1, price: 5250.00, supplier: 'SUP001', deliveryDate: '2025-12-30', notes: '' },
+                    { materialNo: '01.00002-0001', description: 'Rulman 6205-2RS SKF', unit: 'AD', quantity: 20, price: 450.00, supplier: 'SUP001', deliveryDate: '2025-12-28', notes: 'Acil' },
+                    { materialNo: '02.00004-0001', description: 'Sensör Endüktif M12', unit: 'AD', quantity: 2, price: 1500.00, supplier: 'SUP002', deliveryDate: '2025-12-30', notes: '' }
+                ],
+                justification: 'Elektrik bakım ekibi için gerekli yedek parçalar. Periyodik bakım planına göre stok yenileme.',
+                additionalNotes: 'Acil teslimat gerekiyor.'
+            },
+            '123': {
+                requestNo: 'SRM-2025-000123',
+                requestDate: '2025-12-14',
+                requestor: 'Mehmet Demir',
+                status: 'Taslak',
+                department: 'Üretim - Boyahane',
+                priority: '2',
+                costCenter: 'CC001',
+                deliveryDate: '2025-12-28',
+                currencyCode: 'TRY',
+                srmNumber: '',
+                orderDate: '',
+                expectedDeliveryDate: '2025-12-28',
+                supplier: {
+                    sapNo: '10001235',
+                    title1: 'XYZ Teknik Makine A.Ş.',
+                    title2: 'XYZ Technical Machinery',
+                    contractNo: 'CNT-2025-00124',
+                    contractCurrency: 'TRY',
+                    contractLimit: 2000000,
+                    contractOpenLimit: 850000,
+                    contractEndDate: '2026-06-30'
+                },
+                items: [
+                    { materialNo: '02.00003-0001', description: 'Pnömatik Silindir 100x200', unit: 'AD', quantity: 1, price: 8450.00, supplier: 'SUP002', deliveryDate: '2025-12-28', notes: 'Boya hattı' }
+                ],
+                justification: 'Boya hattı için pnömatik silindir değişimi gerekiyor.',
+                additionalNotes: ''
+            },
+            '122': {
+                requestNo: 'SRM-2025-000122',
+                requestDate: '2025-12-13',
+                requestor: 'Fatma Şahin',
+                status: 'Onay Bekliyor',
+                department: 'Kalite - Laboratuvar',
+                priority: '2',
+                costCenter: 'CC003',
+                deliveryDate: '2025-12-25',
+                currencyCode: 'EUR',
+                srmNumber: '',
+                orderDate: '2025-12-13',
+                expectedDeliveryDate: '2025-12-25',
+                supplier: {
+                    sapNo: '10001237',
+                    title1: 'Siemens Sanayi ve Ticaret A.Ş.',
+                    title2: 'Siemens Turkey',
+                    contractNo: 'CNT-2025-00156',
+                    contractCurrency: 'EUR',
+                    contractLimit: 750000,
+                    contractOpenLimit: 320000,
+                    contractEndDate: '2026-12-31'
+                },
+                items: [
+                    { materialNo: '01.00001-0001', description: 'Elektrik Motoru 5.5kW', unit: 'AD', quantity: 1, price: 5500.00, supplier: 'SUP001', deliveryDate: '2025-12-25', notes: 'Kalite lab' },
+                    { materialNo: '02.00004-0001', description: 'Sensör Endüktif M12', unit: 'AD', quantity: 5, price: 1280.00, supplier: 'SUP001', deliveryDate: '2025-12-25', notes: '' },
+                    { materialNo: '01.00002-0001', description: 'Rulman 6205-2RS', unit: 'AD', quantity: 10, price: 468.00, supplier: 'SUP001', deliveryDate: '2025-12-25', notes: '' },
+                    { materialNo: '03.00001-0001', description: 'Kayış V-Belt A52', unit: 'AD', quantity: 5, price: 320.00, supplier: 'SUP002', deliveryDate: '2025-12-25', notes: '' },
+                    { materialNo: '01.00015-0003', description: 'Hidrolik Yağ ISO 46 - 20LT', unit: 'LT', quantity: 40, price: 85.00, supplier: 'SUP003', deliveryDate: '2025-12-25', notes: '' }
+                ],
+                justification: 'Kalite laboratuvarı ekipman bakımı için gerekli malzemeler.',
+                additionalNotes: 'SL onayı bekleniyor.'
+            },
+            '121': {
+                requestNo: 'SRM-2025-000121',
+                requestDate: '2025-12-13',
+                requestor: 'Ahmet Yılmaz',
+                status: 'Onay Bekliyor',
+                department: 'Bakım - Mekanik',
+                priority: '3',
+                costCenter: 'CC002',
+                deliveryDate: '2025-12-22',
+                currencyCode: 'TRY',
+                srmNumber: '',
+                orderDate: '2025-12-13',
+                expectedDeliveryDate: '2025-12-22',
+                supplier: {
+                    sapNo: '10001238',
+                    title1: 'Bosch Rexroth Otomasyon San.',
+                    title2: 'Bosch Rexroth Automation',
+                    contractNo: 'CNT-2025-00178',
+                    contractCurrency: 'EUR',
+                    contractLimit: 400000,
+                    contractOpenLimit: 180000,
+                    contractEndDate: '2026-03-31'
+                },
+                items: [
+                    { materialNo: '02.00003-0001', description: 'Pnömatik Silindir 100x200', unit: 'AD', quantity: 2, price: 8750.00, supplier: 'SUP002', deliveryDate: '2025-12-22', notes: '' },
+                    { materialNo: '01.00002-0001', description: 'Rulman 6205-2RS', unit: 'AD', quantity: 30, price: 460.00, supplier: 'SUP001', deliveryDate: '2025-12-22', notes: '' },
+                    { materialNo: '03.00001-0001', description: 'Kayış V-Belt A52', unit: 'AD', quantity: 4, price: 320.00, supplier: 'SUP002', deliveryDate: '2025-12-22', notes: '' },
+                    { materialNo: '02.00004-0001', description: 'Sensör Endüktif M12', unit: 'AD', quantity: 1, price: 1250.00, supplier: 'SUP002', deliveryDate: '2025-12-22', notes: '' }
+                ],
+                justification: 'Mekanik bakım ekibi için acil yedek parça talebi.',
+                additionalNotes: 'Yüksek öncelikli - üretim durma riski.'
+            },
+            '120': {
+                requestNo: 'SRM-2025-000120',
+                requestDate: '2025-12-12',
+                requestor: 'Mehmet Demir',
+                status: 'Onay Bekliyor',
+                department: 'Üretim - Montaj',
+                priority: '2',
+                costCenter: 'CC001',
+                deliveryDate: '2025-12-26',
+                currencyCode: 'TRY',
+                srmNumber: '',
+                orderDate: '2025-12-12',
+                expectedDeliveryDate: '2025-12-26',
+                supplier: {
+                    sapNo: '10001239',
+                    title1: 'SKF Türkiye San. ve Tic. Ltd. Şti.',
+                    title2: 'SKF Turkey',
+                    contractNo: 'CNT-2025-00145',
+                    contractCurrency: 'EUR',
+                    contractLimit: 200000,
+                    contractOpenLimit: 85000,
+                    contractEndDate: '2025-11-30'
+                },
+                items: [
+                    { materialNo: '01.00002-0001', description: 'Rulman 6205-2RS', unit: 'AD', quantity: 25, price: 455.00, supplier: 'SUP001', deliveryDate: '2025-12-26', notes: '' },
+                    { materialNo: '01.00002-0001', description: 'Rulman 6206-2RS', unit: 'AD', quantity: 15, price: 520.00, supplier: 'SUP001', deliveryDate: '2025-12-26', notes: '' },
+                    { materialNo: '03.00001-0001', description: 'Kayış V-Belt A52', unit: 'AD', quantity: 3, price: 320.00, supplier: 'SUP002', deliveryDate: '2025-12-26', notes: '' },
+                    { materialNo: '02.00004-0001', description: 'Sensör Endüktif M12', unit: 'AD', quantity: 2, price: 1250.00, supplier: 'SUP002', deliveryDate: '2025-12-26', notes: '' },
+                    { materialNo: '01.00015-0003', description: 'Hidrolik Yağ ISO 46', unit: 'LT', quantity: 20, price: 85.00, supplier: 'SUP003', deliveryDate: '2025-12-26', notes: '' },
+                    { materialNo: '01.00001-0001', description: 'Elektrik Motoru 3kW', unit: 'AD', quantity: 1, price: 3850.00, supplier: 'SUP001', deliveryDate: '2025-12-26', notes: 'Yedek' }
+                ],
+                justification: 'Montaj hattı periyodik bakım malzemeleri.',
+                additionalNotes: ''
+            },
+            '119': {
+                requestNo: 'SRM-2025-000119',
+                requestDate: '2025-12-11',
+                requestor: 'Fatma Şahin',
+                status: 'Onaylandı',
+                department: 'Kalite - Test',
+                priority: '2',
+                costCenter: 'CC003',
+                deliveryDate: '2025-12-20',
+                currencyCode: 'TRY',
+                srmNumber: 'SAP-45678',
+                orderDate: '2025-12-11',
+                expectedDeliveryDate: '2025-12-20',
+                supplier: {
+                    sapNo: '10001234',
+                    title1: 'ABC Endüstriyel San. Tic. Ltd. Şti.',
+                    title2: 'ABC Industrial Co.',
+                    contractNo: 'CNT-2025-00123',
+                    contractCurrency: 'EUR',
+                    contractLimit: 500000,
+                    contractOpenLimit: 125000,
+                    contractEndDate: '2025-12-31'
+                },
+                items: [
+                    { materialNo: '02.00004-0001', description: 'Sensör Endüktif M12', unit: 'AD', quantity: 6, price: 1260.00, supplier: 'SUP001', deliveryDate: '2025-12-20', notes: '' },
+                    { materialNo: '01.00002-0001', description: 'Rulman 6205-2RS', unit: 'AD', quantity: 10, price: 460.00, supplier: 'SUP001', deliveryDate: '2025-12-20', notes: '' },
+                    { materialNo: '03.00001-0001', description: 'Kayış V-Belt A52', unit: 'AD', quantity: 4, price: 320.00, supplier: 'SUP002', deliveryDate: '2025-12-20', notes: '' }
+                ],
+                justification: 'Test ekipmanları için yedek parça.',
+                additionalNotes: 'Onaylandı - PO oluşturuldu.'
+            },
+            '118': {
+                requestNo: 'SRM-2025-000118',
+                requestDate: '2025-12-11',
+                requestor: 'Ahmet Yılmaz',
+                status: 'Onaylandı',
+                department: 'Bakım - Genel',
+                priority: '2',
+                costCenter: 'CC002',
+                deliveryDate: '2025-12-18',
+                currencyCode: 'EUR',
+                srmNumber: 'SAP-45677',
+                orderDate: '2025-12-11',
+                expectedDeliveryDate: '2025-12-18',
+                supplier: {
+                    sapNo: '10001237',
+                    title1: 'Siemens Sanayi ve Ticaret A.Ş.',
+                    title2: 'Siemens Turkey',
+                    contractNo: 'CNT-2025-00156',
+                    contractCurrency: 'EUR',
+                    contractLimit: 750000,
+                    contractOpenLimit: 320000,
+                    contractEndDate: '2026-12-31'
+                },
+                items: [
+                    { materialNo: '01.00001-0001', description: 'Elektrik Motoru 5.5kW', unit: 'AD', quantity: 2, price: 5500.00, supplier: 'SUP001', deliveryDate: '2025-12-18', notes: '' },
+                    { materialNo: '01.00001-0001', description: 'Elektrik Motoru 7.5kW', unit: 'AD', quantity: 1, price: 7200.00, supplier: 'SUP001', deliveryDate: '2025-12-18', notes: '' },
+                    { materialNo: '02.00003-0001', description: 'Pnömatik Silindir 100x200', unit: 'AD', quantity: 2, price: 8750.00, supplier: 'SUP002', deliveryDate: '2025-12-18', notes: '' },
+                    { materialNo: '01.00002-0001', description: 'Rulman 6205-2RS', unit: 'AD', quantity: 20, price: 460.00, supplier: 'SUP001', deliveryDate: '2025-12-18', notes: '' },
+                    { materialNo: '02.00004-0001', description: 'Sensör Endüktif M12', unit: 'AD', quantity: 3, price: 1280.00, supplier: 'SUP002', deliveryDate: '2025-12-18', notes: '' },
+                    { materialNo: '03.00001-0001', description: 'Kayış V-Belt A52', unit: 'AD', quantity: 6, price: 320.00, supplier: 'SUP002', deliveryDate: '2025-12-18', notes: '' },
+                    { materialNo: '01.00015-0003', description: 'Hidrolik Yağ ISO 46', unit: 'LT', quantity: 60, price: 85.00, supplier: 'SUP003', deliveryDate: '2025-12-18', notes: '' }
+                ],
+                justification: 'Genel bakım deposu stok yenileme.',
+                additionalNotes: 'Onaylandı - Tedarikçiye sipariş verildi.'
+            },
+            '117': {
+                requestNo: 'SRM-2025-000117',
+                requestDate: '2025-12-10',
+                requestor: 'Mehmet Demir',
+                status: 'Onaylandı',
+                department: 'Üretim - Kaynak',
+                priority: '2',
+                costCenter: 'CC001',
+                deliveryDate: '2025-12-17',
+                currencyCode: 'TRY',
+                srmNumber: 'SAP-45676',
+                orderDate: '2025-12-10',
+                expectedDeliveryDate: '2025-12-17',
+                supplier: {
+                    sapNo: '10001235',
+                    title1: 'XYZ Teknik Makine A.Ş.',
+                    title2: 'XYZ Technical Machinery',
+                    contractNo: 'CNT-2025-00124',
+                    contractCurrency: 'TRY',
+                    contractLimit: 2000000,
+                    contractOpenLimit: 850000,
+                    contractEndDate: '2026-06-30'
+                },
+                items: [
+                    { materialNo: '01.00002-0001', description: 'Rulman 6205-2RS', unit: 'AD', quantity: 15, price: 460.00, supplier: 'SUP001', deliveryDate: '2025-12-17', notes: '' },
+                    { materialNo: '03.00001-0001', description: 'Kayış V-Belt A52', unit: 'AD', quantity: 2, price: 320.00, supplier: 'SUP002', deliveryDate: '2025-12-17', notes: '' }
+                ],
+                justification: 'Kaynak hattı bakımı.',
+                additionalNotes: 'Teslim edildi.'
+            },
+            '116': {
+                requestNo: 'SRM-2025-000116',
+                requestDate: '2025-12-10',
+                requestor: 'Fatma Şahin',
+                status: 'Onaylandı',
+                department: 'Kalite - Ölçüm',
+                priority: '2',
+                costCenter: 'CC003',
+                deliveryDate: '2025-12-18',
+                currencyCode: 'TRY',
+                srmNumber: 'SAP-45675',
+                orderDate: '2025-12-10',
+                expectedDeliveryDate: '2025-12-18',
+                supplier: {
+                    sapNo: '10001237',
+                    title1: 'Siemens Sanayi ve Ticaret A.Ş.',
+                    title2: 'Siemens Turkey',
+                    contractNo: 'CNT-2025-00156',
+                    contractCurrency: 'EUR',
+                    contractLimit: 750000,
+                    contractOpenLimit: 320000,
+                    contractEndDate: '2026-12-31'
+                },
+                items: [
+                    { materialNo: '02.00004-0001', description: 'Sensör Endüktif M12', unit: 'AD', quantity: 8, price: 1280.00, supplier: 'SUP002', deliveryDate: '2025-12-18', notes: '' },
+                    { materialNo: '01.00002-0001', description: 'Rulman 6205-2RS', unit: 'AD', quantity: 15, price: 460.00, supplier: 'SUP001', deliveryDate: '2025-12-18', notes: '' },
+                    { materialNo: '03.00001-0001', description: 'Kayış V-Belt A52', unit: 'AD', quantity: 5, price: 320.00, supplier: 'SUP002', deliveryDate: '2025-12-18', notes: '' },
+                    { materialNo: '01.00015-0003', description: 'Hidrolik Yağ ISO 46', unit: 'LT', quantity: 30, price: 85.00, supplier: 'SUP003', deliveryDate: '2025-12-18', notes: '' }
+                ],
+                justification: 'Ölçüm cihazları bakımı için malzeme.',
+                additionalNotes: 'Teslim edildi.'
+            },
+            '115': {
+                requestNo: 'SRM-2025-000115',
+                requestDate: '2025-12-09',
+                requestor: 'Ahmet Yılmaz',
+                status: 'Onaylandı',
+                department: 'Bakım - Otomasyon',
+                priority: '3',
+                costCenter: 'CC002',
+                deliveryDate: '2025-12-16',
+                currencyCode: 'EUR',
+                srmNumber: 'SAP-45674',
+                orderDate: '2025-12-09',
+                expectedDeliveryDate: '2025-12-16',
+                supplier: {
+                    sapNo: '10001238',
+                    title1: 'Bosch Rexroth Otomasyon San.',
+                    title2: 'Bosch Rexroth Automation',
+                    contractNo: 'CNT-2025-00178',
+                    contractCurrency: 'EUR',
+                    contractLimit: 400000,
+                    contractOpenLimit: 180000,
+                    contractEndDate: '2026-03-31'
+                },
+                items: [
+                    { materialNo: '01.00001-0001', description: 'Elektrik Motoru 5.5kW', unit: 'AD', quantity: 2, price: 5500.00, supplier: 'SUP001', deliveryDate: '2025-12-16', notes: '' },
+                    { materialNo: '02.00003-0001', description: 'Pnömatik Silindir 100x200', unit: 'AD', quantity: 2, price: 8750.00, supplier: 'SUP002', deliveryDate: '2025-12-16', notes: '' },
+                    { materialNo: '02.00004-0001', description: 'Sensör Endüktif M12', unit: 'AD', quantity: 4, price: 1280.00, supplier: 'SUP002', deliveryDate: '2025-12-16', notes: '' },
+                    { materialNo: '01.00002-0001', description: 'Rulman 6205-2RS', unit: 'AD', quantity: 10, price: 460.00, supplier: 'SUP001', deliveryDate: '2025-12-16', notes: '' },
+                    { materialNo: '03.00001-0001', description: 'Kayış V-Belt A52', unit: 'AD', quantity: 3, price: 320.00, supplier: 'SUP002', deliveryDate: '2025-12-16', notes: '' }
+                ],
+                justification: 'Otomasyon sistemleri için acil yedek parça.',
+                additionalNotes: 'Teslim tamamlandı.'
+            },
+            '114': {
+                requestNo: 'SRM-2025-000114',
+                requestDate: '2025-12-08',
+                requestor: 'Mehmet Demir',
+                status: 'Onaylandı',
+                department: 'Üretim - Pres',
+                priority: '2',
+                costCenter: 'CC001',
+                deliveryDate: '2025-12-15',
+                currencyCode: 'TRY',
+                srmNumber: 'SAP-45673',
+                orderDate: '2025-12-08',
+                expectedDeliveryDate: '2025-12-15',
+                supplier: {
+                    sapNo: '10001235',
+                    title1: 'XYZ Teknik Makine A.Ş.',
+                    title2: 'XYZ Technical Machinery',
+                    contractNo: 'CNT-2025-00124',
+                    contractCurrency: 'TRY',
+                    contractLimit: 2000000,
+                    contractOpenLimit: 850000,
+                    contractEndDate: '2026-06-30'
+                },
+                items: [
+                    { materialNo: '01.00002-0001', description: 'Rulman 6205-2RS', unit: 'AD', quantity: 20, price: 460.00, supplier: 'SUP001', deliveryDate: '2025-12-15', notes: '' },
+                    { materialNo: '03.00001-0001', description: 'Kayış V-Belt A52', unit: 'AD', quantity: 6, price: 320.00, supplier: 'SUP002', deliveryDate: '2025-12-15', notes: '' },
+                    { materialNo: '01.00015-0003', description: 'Hidrolik Yağ ISO 46', unit: 'LT', quantity: 50, price: 85.00, supplier: 'SUP003', deliveryDate: '2025-12-15', notes: '' }
+                ],
+                justification: 'Pres hattı periyodik bakım.',
+                additionalNotes: 'Teslim edildi.'
+            },
+            '113': {
+                requestNo: 'SRM-2025-000113',
+                requestDate: '2025-12-07',
+                requestor: 'Fatma Şahin',
+                status: 'Onaylandı',
+                department: 'Kalite - Kontrol',
+                priority: '2',
+                costCenter: 'CC003',
+                deliveryDate: '2025-12-14',
+                currencyCode: 'TRY',
+                srmNumber: 'SAP-45672',
+                orderDate: '2025-12-07',
+                expectedDeliveryDate: '2025-12-14',
+                supplier: {
+                    sapNo: '10001240',
+                    title1: 'Castrol Madeni Yağlar A.Ş.',
+                    title2: 'Castrol Lubricants',
+                    contractNo: 'CNT-2024-00201',
+                    contractCurrency: 'TRY',
+                    contractLimit: 1500000,
+                    contractOpenLimit: 620000,
+                    contractEndDate: '2025-08-31'
+                },
+                items: [
+                    { materialNo: '01.00015-0003', description: 'Hidrolik Yağ ISO 46', unit: 'LT', quantity: 100, price: 85.00, supplier: 'SUP003', deliveryDate: '2025-12-14', notes: '' },
+                    { materialNo: '01.00002-0001', description: 'Rulman 6205-2RS', unit: 'AD', quantity: 25, price: 460.00, supplier: 'SUP001', deliveryDate: '2025-12-14', notes: '' },
+                    { materialNo: '02.00004-0001', description: 'Sensör Endüktif M12', unit: 'AD', quantity: 4, price: 1250.00, supplier: 'SUP002', deliveryDate: '2025-12-14', notes: '' },
+                    { materialNo: '03.00001-0001', description: 'Kayış V-Belt A52', unit: 'AD', quantity: 8, price: 320.00, supplier: 'SUP002', deliveryDate: '2025-12-14', notes: '' },
+                    { materialNo: '01.00001-0001', description: 'Elektrik Motoru 5.5kW', unit: 'AD', quantity: 1, price: 5250.00, supplier: 'SUP001', deliveryDate: '2025-12-14', notes: '' },
+                    { materialNo: '02.00003-0001', description: 'Pnömatik Silindir 80x150', unit: 'AD', quantity: 1, price: 6500.00, supplier: 'SUP002', deliveryDate: '2025-12-14', notes: '' }
+                ],
+                justification: 'Kalite kontrol bölümü yıllık bakım malzemeleri.',
+                additionalNotes: 'Teslim tamamlandı.'
+            }
+        };
+
+        function updatePageTitle(mode, requestNo) {
+            const titleElement = document.getElementById('pageTitle');
+            const docTitle = document.querySelector('title');
+
+            switch(mode) {
+                case 'create':
+                    titleElement.textContent = 'Yeni SRM Talebi';
+                    docTitle.textContent = 'Yeni SRM Talebi - IMMA';
+                    break;
+                case 'edit':
+                    titleElement.textContent = `SRM Talebi Düzenle: ${requestNo}`;
+                    docTitle.textContent = `SRM Talebi Düzenle: ${requestNo} - IMMA`;
+                    break;
+                case 'view':
+                    titleElement.textContent = `SRM Talebi Detay: ${requestNo}`;
+                    docTitle.textContent = `SRM Talebi Detay: ${requestNo} - IMMA`;
+                    break;
+            }
+        }
+
+        function setFormMode(mode) {
+            const isViewMode = mode === 'view';
+
+            // Header fields - Row 1 & 2
+            document.getElementById('requestDate').disabled = isViewMode;
+            document.getElementById('prioritySelect').disabled = isViewMode;
+            document.getElementById('costCenterSelect').disabled = isViewMode;
+            document.getElementById('deliveryDate').disabled = isViewMode;
+
+            // Header fields - Row 3 (Currency, SRM, Dates)
+            document.getElementById('currencyCode').disabled = isViewMode;
+            document.getElementById('orderDate').disabled = isViewMode;
+            document.getElementById('expectedDeliveryDate').disabled = isViewMode;
+
+            // Supplier fields - disable in view mode
+            document.getElementById('supplierSapNo').disabled = isViewMode;
+            if (isViewMode) {
+                // Hide supplier dropdown in view mode
+                document.getElementById('supplierDropdown').classList.remove('show');
+            }
+
+            // Item table controls
+            document.querySelectorAll('.item-quantity, .item-supplier, .item-delivery, .item-notes').forEach(el => {
+                el.disabled = isViewMode;
+            });
+
+            // Material search buttons
+            document.querySelectorAll('.material-search-btn').forEach(btn => {
+                btn.style.display = isViewMode ? 'none' : 'inline-block';
+            });
+
+            // Delete item buttons
+            document.querySelectorAll('.delete-item-btn').forEach(btn => {
+                btn.style.display = isViewMode ? 'none' : 'inline-block';
+            });
+
+            // Add item button
+            document.getElementById('addItemBtn').style.display = isViewMode ? 'none' : 'inline-block';
+
+            // Notes and justification
+            document.getElementById('justification').disabled = isViewMode;
+            document.getElementById('additionalNotes').disabled = isViewMode;
+
+            // Action buttons
+            if (isViewMode) {
+                document.getElementById('submitBtn').style.display = 'none';
+                document.getElementById('saveDraftBtn').style.display = 'none';
+                document.getElementById('cancelBtn').textContent = 'Geri';
+            } else {
+                document.getElementById('submitBtn').style.display = 'inline-block';
+                document.getElementById('saveDraftBtn').style.display = 'inline-block';
+                document.getElementById('cancelBtn').textContent = 'İptal';
+            }
+        }
+
+        async function loadRequestData(id) {
+            // Check if data exists for this ID
+            const data = srmRequestData[id];
+            if (!data) {
+                console.warn(`No data found for request ID: ${id}`);
+                return;
+            }
+
+            console.log(`Loading request data for ID: ${id}`, data);
+
+            // ============================================
+            // HEADER FIELDS
+            // ============================================
+            document.getElementById('requestNo').value = data.requestNo;
+            document.getElementById('requestDate').value = data.requestDate;
+            document.getElementById('requestor').value = data.requestor;
+            document.getElementById('status').value = data.status;
+            document.getElementById('department').value = data.department;
+            document.getElementById('prioritySelect').value = data.priority;
+            document.getElementById('costCenterSelect').value = data.costCenter;
+            document.getElementById('deliveryDate').value = data.deliveryDate;
+            document.getElementById('currencyCode').value = data.currencyCode;
+            document.getElementById('srmNumber').value = data.srmNumber || '';
+            document.getElementById('orderDate').value = data.orderDate || '';
+            document.getElementById('expectedDeliveryDate').value = data.expectedDeliveryDate || '';
+
+            // ============================================
+            // SUPPLIER FIELDS
+            // ============================================
+            if (data.supplier) {
+                document.getElementById('supplierSapNo').value = data.supplier.sapNo;
+                document.getElementById('supplierTitle1').value = data.supplier.title1;
+                document.getElementById('supplierTitle2').value = data.supplier.title2;
+                document.getElementById('contractNumber').value = data.supplier.contractNo;
+                document.getElementById('contractCurrency').value = data.supplier.contractCurrency;
+                document.getElementById('contractLimit').value = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2 }).format(data.supplier.contractLimit) + ' ' + data.supplier.contractCurrency;
+                document.getElementById('contractOpenLimit').value = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2 }).format(data.supplier.contractOpenLimit) + ' ' + data.supplier.contractCurrency;
+                document.getElementById('contractEndDate').value = data.supplier.contractEndDate;
+            }
+
+            // ============================================
+            // ITEMS TABLE
+            // ============================================
+            if (data.items && data.items.length > 0) {
+                const tableBody = document.querySelector('#itemsTable tbody');
+                tableBody.innerHTML = ''; // Clear existing rows
+
+                data.items.forEach((item, index) => {
+                    const totalValue = item.quantity * item.price;
+                    const formattedPrice = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(item.price);
+                    const formattedTotal = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(totalValue);
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>
+                            <div class="input-group">
+                                <input type="text" class="form-control form-control-sm material-no" value="${item.materialNo}" readonly>
+                                <button class="btn btn-sm btn-outline material-search-btn" title="Malzeme Ara">🔍</button>
+                            </div>
+                        </td>
+                        <td class="material-desc">${item.description}</td>
+                        <td class="material-unit">${item.unit}</td>
+                        <td><input type="number" class="form-control form-control-sm item-quantity" value="${item.quantity}" min="1"></td>
+                        <td class="item-price">${formattedPrice}</td>
+                        <td class="item-total"><strong>${formattedTotal}</strong></td>
+                        <td>
+                            <select class="form-control form-control-sm item-supplier">
+                                <option value="">Seçiniz...</option>
+                                <option value="SUP001" ${item.supplier === 'SUP001' ? 'selected' : ''}>ABC Endustriyel</option>
+                                <option value="SUP002" ${item.supplier === 'SUP002' ? 'selected' : ''}>XYZ Teknik</option>
+                                <option value="SUP003" ${item.supplier === 'SUP003' ? 'selected' : ''}>Shell Türkiye</option>
+                            </select>
+                        </td>
+                        <td><input type="date" class="form-control form-control-sm item-delivery" value="${item.deliveryDate || ''}"></td>
+                        <td><input type="text" class="form-control form-control-sm item-notes" placeholder="Not..." value="${item.notes || ''}"></td>
+                        <td><button class="btn btn-sm btn-danger delete-item-btn">🗑️</button></td>
+                    `;
+
+                    // Add event listener for quantity change
+                    const qtyInput = row.querySelector('.item-quantity');
+                    const price = item.price;
+                    qtyInput.addEventListener('input', function() {
+                        const qty = parseFloat(this.value) || 0;
+                        const total = qty * price;
+                        const formattedTotal = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(total);
+                        row.querySelector('.item-total').innerHTML = `<strong>${formattedTotal}</strong>`;
+                        calculateGrandTotal();
+                    });
+
+                    tableBody.appendChild(row);
+                });
+
+                // Calculate grand total
+                calculateGrandTotal();
+            }
+
+            // ============================================
+            // NOTES FIELDS
+            // ============================================
+            document.getElementById('justification').value = data.justification || '';
+            document.getElementById('additionalNotes').value = data.additionalNotes || '';
+
+            // ============================================
+            // UPDATE HISTORICAL DATA
+            // ============================================
+            updateHistoricalData();
+
+            // ============================================
+            // UPDATE BUDGET DISPLAY
+            // ============================================
+            const costCenterSelect = document.getElementById('costCenterSelect');
+            const selectedOption = costCenterSelect.options[costCenterSelect.selectedIndex];
+            if (selectedOption) {
+                document.getElementById('budgetCostCenter').textContent = selectedOption.text;
+            }
+        }
+
+        async function initializePage() {
+            const { mode, id, material, materials } = getUrlParams();
+
+            // Load data if id exists
+            if (id) {
+                await loadRequestData(id);
+                const requestNo = document.getElementById('requestNo').value;
+                updatePageTitle(mode, requestNo);
+            } else {
+                updatePageTitle(mode, 'SRM-2025-000456');
+                // MRP'den gelen malzemeleri yükle (sadece yeni talep oluşturulurken)
+                if (material || materials) {
+                    loadMaterialsFromMrp(material, materials);
+                }
+            }
+
+            // Set form mode (after data is loaded)
+            setFormMode(mode);
+
+            // Initialize historical data based on existing items
+            updateHistoricalData();
+        }
+
+        // MRP'den gelen malzemeleri forma yükle
+        function loadMaterialsFromMrp(singleMaterial, multipleMaterials) {
+            const tableBody = document.querySelector('#itemsTable tbody');
+
+            // Mevcut demo satırları temizle
+            tableBody.innerHTML = '';
+
+            let materialList = [];
+
+            // Tekli malzeme
+            if (singleMaterial) {
+                materialList.push(singleMaterial);
+            }
+
+            // Çoklu malzeme (virgülle ayrılmış)
+            if (multipleMaterials) {
+                const parsed = multipleMaterials.split(',').map(m => m.trim());
+                materialList = [...materialList, ...parsed];
+            }
+
+            // Her malzeme için satır oluştur
+            materialList.forEach((materialNo, index) => {
+                const data = mrpMaterialData[materialNo];
+                if (data) {
+                    const totalValue = data.suggestedQty * data.price;
+                    const formattedPrice = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(data.price);
+                    const formattedTotal = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(totalValue);
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>
+                            <div class="input-group">
+                                <input type="text" class="form-control form-control-sm material-no" value="${materialNo}" readonly>
+                                <button class="btn btn-sm btn-outline material-search-btn" title="Malzeme Ara">🔍</button>
+                            </div>
+                        </td>
+                        <td class="material-desc">${data.title}</td>
+                        <td class="material-unit">${data.unit}</td>
+                        <td><input type="number" class="form-control form-control-sm item-quantity" value="${data.suggestedQty}" min="1"></td>
+                        <td class="item-price">${formattedPrice}</td>
+                        <td class="item-total"><strong>${formattedTotal}</strong></td>
+                        <td>
+                            <select class="form-control form-control-sm item-supplier">
+                                <option value="">Seçiniz...</option>
+                                <option value="SUP001">ABC Endustriyel</option>
+                                <option value="SUP002">XYZ Teknik</option>
+                                <option value="SUP003">Shell Türkiye</option>
+                            </select>
+                        </td>
+                        <td><input type="date" class="form-control form-control-sm item-delivery" value=""></td>
+                        <td><input type="text" class="form-control form-control-sm item-notes" placeholder="Not..."></td>
+                        <td><button class="btn btn-sm btn-danger delete-item-btn">🗑️</button></td>
+                    `;
+                    tableBody.appendChild(row);
+
+                    // Miktar değişikliğinde toplam güncelle
+                    const qtyInput = row.querySelector('.item-quantity');
+                    qtyInput.addEventListener('input', function() {
+                        const qty = parseFloat(this.value) || 0;
+                        const price = data.price;
+                        const total = qty * price;
+                        const formattedTotal = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(total);
+                        row.querySelector('.item-total').innerHTML = `<strong>${formattedTotal}</strong>`;
+                        calculateGrandTotal();
+                    });
+                } else {
+                    // Malzeme bulunamadı - boş satır ekle
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>
+                            <div class="input-group">
+                                <input type="text" class="form-control form-control-sm material-no" value="${materialNo}" readonly>
+                                <button class="btn btn-sm btn-outline material-search-btn" title="Malzeme Ara">🔍</button>
+                            </div>
+                        </td>
+                        <td class="material-desc" style="color: #dc3545;">Malzeme bulunamadı</td>
+                        <td class="material-unit">-</td>
+                        <td><input type="number" class="form-control form-control-sm item-quantity" value="1" min="1"></td>
+                        <td class="item-price">0,00</td>
+                        <td class="item-total"><strong>0,00</strong></td>
+                        <td>
+                            <select class="form-control form-control-sm item-supplier">
+                                <option value="">Seçiniz...</option>
+                            </select>
+                        </td>
+                        <td><input type="date" class="form-control form-control-sm item-delivery" value=""></td>
+                        <td><input type="text" class="form-control form-control-sm item-notes" placeholder="Not..."></td>
+                        <td><button class="btn btn-sm btn-danger delete-item-btn">🗑️</button></td>
+                    `;
+                    tableBody.appendChild(row);
+                }
+            });
+
+            // Genel toplamı hesapla
+            calculateGrandTotal();
+
+            // Bilgi mesajı göster
+            const count = materialList.length;
+            console.log(`MRP'den ${count} malzeme yüklendi:`, materialList);
+        }
+
+        // Initialize page on load
+        document.addEventListener('DOMContentLoaded', initializePage);
+
+        // ============================================
+        // ITEM TABLE FUNCTIONALITY
+        // ============================================
+
+        // Add new item row
+        document.getElementById('addItemBtn').addEventListener('click', function() {
+            openModal();
+        });
+
+        // Delete row buttons
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('delete-item-btn')) {
+                const row = e.target.closest('tr');
+                const materialNo = row.querySelector('.material-no').value;
+                const materialDesc = row.querySelector('.material-desc').textContent;
+
+                if (confirm(`Kalem silinecek:\n\n${materialNo} - ${materialDesc}\n\nDevam etmek istiyor musunuz?`)) {
+                    row.style.transition = 'opacity 0.3s';
+                    row.style.opacity = '0';
+                    setTimeout(function() {
+                        row.remove();
+                        updateRowNumbers();
+                        calculateGrandTotal();
+                        updateHistoricalData(); // Update historical data after deletion
+                    }, 300);
+                }
+            }
+        });
+
+        function updateRowNumbers() {
+            const rows = document.querySelectorAll('#itemsTable tbody tr');
+            rows.forEach((row, index) => {
+                row.cells[0].textContent = index + 1;
+            });
+        }
+
+        function calculateGrandTotal() {
+            let total = 0;
+            document.querySelectorAll('.item-total').forEach(cell => {
+                const value = parseFloat(cell.textContent.replace(/\./g, '').replace(',', '.'));
+                if (!isNaN(value)) {
+                    total += value;
+                }
+            });
+
+            const formattedTotal = new Intl.NumberFormat('tr-TR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(total);
+
+            document.getElementById('grandTotal').textContent = `${formattedTotal} TL`;
+            document.getElementById('budgetRequestAmount').textContent = `${formattedTotal} TL`;
+        }
+
+        // ============================================
+        // SUPPLIER AUTOCOMPLETE SEARCH
+        // ============================================
+        const supplierInput = document.getElementById('supplierSapNo');
+        const supplierDropdown = document.getElementById('supplierDropdown');
+        let selectedSupplier = null;
+
+        // Filter suppliers based on search query
+        function filterSuppliers(query) {
+            if (!query || query.length < 2) return [];
+            const q = query.toLowerCase();
+            return supplierData.filter(s =>
+                s.sapNo.includes(q) ||
+                s.title1.toLowerCase().includes(q) ||
+                s.title2.toLowerCase().includes(q)
+            );
+        }
+
+        // Render dropdown items
+        function renderSupplierDropdown(suppliers) {
+            supplierDropdown.innerHTML = '';
+            if (suppliers.length === 0) {
+                supplierDropdown.innerHTML = '<div class="supplier-dropdown-item" style="color: #999; cursor: default;">Sonuç bulunamadı</div>';
+            } else {
+                suppliers.forEach(supplier => {
+                    const item = document.createElement('div');
+                    item.className = 'supplier-dropdown-item';
+                    item.innerHTML = `
+                        <div class="supplier-sap">${supplier.sapNo}</div>
+                        <div class="supplier-name">${supplier.title1}</div>
+                        <div class="supplier-name2">${supplier.title2}</div>
+                    `;
+                    item.addEventListener('click', () => selectSupplier(supplier));
+                    supplierDropdown.appendChild(item);
+                });
+            }
+            supplierDropdown.classList.add('show');
+        }
+
+        // Select supplier and fill fields
+        function selectSupplier(supplier) {
+            selectedSupplier = supplier;
+            supplierInput.value = supplier.sapNo;
+            document.getElementById('supplierTitle1').value = supplier.title1;
+            document.getElementById('supplierTitle2').value = supplier.title2;
+
+            // Fill contract info
+            document.getElementById('contractNumber').value = supplier.contractNo;
+            document.getElementById('contractCurrency').value = supplier.contractCurrency;
+            document.getElementById('contractLimit').value = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2 }).format(supplier.contractLimit) + ' ' + supplier.contractCurrency;
+            document.getElementById('contractOpenLimit').value = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2 }).format(supplier.contractOpenLimit) + ' ' + supplier.contractCurrency;
+            document.getElementById('contractEndDate').value = supplier.contractEndDate;
+
+            supplierDropdown.classList.remove('show');
+        }
+
+        // Input event listener for search
+        supplierInput.addEventListener('input', function() {
+            const query = this.value.trim();
+            const filtered = filterSuppliers(query);
+            if (query.length >= 2) {
+                renderSupplierDropdown(filtered);
+            } else {
+                supplierDropdown.classList.remove('show');
+            }
+        });
+
+        // Focus event - show dropdown if has value
+        supplierInput.addEventListener('focus', function() {
+            const query = this.value.trim();
+            if (query.length >= 2) {
+                const filtered = filterSuppliers(query);
+                renderSupplierDropdown(filtered);
+            }
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.supplier-autocomplete')) {
+                supplierDropdown.classList.remove('show');
+            }
+        });
+
+        // ============================================
+        // MATERIAL SEARCH MODAL
+        // ============================================
+        const modal = document.getElementById('materialSearchModal');
+
+        function openModal() {
+            modal.classList.add('show');
+        }
+
+        function closeModal() {
+            modal.classList.remove('show');
+        }
+
+        // Material search buttons in rows
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('material-search-btn')) {
+                openModal();
+            }
+        });
+
+        // Modal close button
+        document.querySelector('.modal-close').addEventListener('click', closeModal);
+
+        // Close modal on backdrop click
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        // Add new item to table when material is selected from modal
+        function addItemToTable(materialNo, materialDesc, unit, price) {
+            const tableBody = document.querySelector('#itemsTable tbody');
+            const rowCount = tableBody.querySelectorAll('tr').length + 1;
+            const formattedPrice = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2 }).format(price);
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${rowCount}</td>
+                <td>
+                    <div class="input-group">
+                        <input type="text" class="form-control form-control-sm material-no" value="${materialNo}" readonly>
+                        <button class="btn btn-sm btn-outline material-search-btn" title="Malzeme Ara">🔍</button>
+                    </div>
+                </td>
+                <td class="material-desc">${materialDesc}</td>
+                <td class="material-unit">${unit}</td>
+                <td><input type="number" class="form-control form-control-sm item-quantity" value="1" min="1"></td>
+                <td class="item-price">${formattedPrice}</td>
+                <td class="item-total"><strong>${formattedPrice}</strong></td>
+                <td>
+                    <select class="form-control form-control-sm item-supplier">
+                        <option value="">Seçiniz...</option>
+                        <option value="SUP001">ABC Endustriyel</option>
+                        <option value="SUP002">XYZ Teknik</option>
+                        <option value="SUP003">Shell Türkiye</option>
+                    </select>
+                </td>
+                <td><input type="date" class="form-control form-control-sm item-delivery"></td>
+                <td><input type="text" class="form-control form-control-sm item-notes" placeholder="Not..."></td>
+                <td><button class="btn btn-sm btn-danger delete-item-btn">🗑️</button></td>
+            `;
+
+            // Add event listener for quantity change
+            const qtyInput = row.querySelector('.item-quantity');
+            qtyInput.addEventListener('input', function() {
+                const qty = parseFloat(this.value) || 0;
+                const total = qty * price;
+                const formattedTotal = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2 }).format(total);
+                row.querySelector('.item-total').innerHTML = `<strong>${formattedTotal}</strong>`;
+                calculateGrandTotal();
+            });
+
+            tableBody.appendChild(row);
+            calculateGrandTotal();
+            updateHistoricalData();
+            closeModal();
+        }
+
+        // Modal select buttons - updated to actually add items
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('select-material-btn')) {
+                const row = e.target.closest('tr');
+                const materialNo = row.cells[0].textContent.trim();
+                const materialDesc = row.cells[1].textContent.trim();
+                const unit = row.cells[2].textContent.trim();
+                const priceText = row.cells[4].textContent.trim();
+
+                // Parse price from formatted string (e.g., "16.583,00")
+                const price = parseFloat(priceText.replace(/\./g, '').replace(',', '.')) || 0;
+
+                addItemToTable(materialNo, materialDesc, unit, price);
+            }
+        });
+
+        // ============================================
+        // HISTORICAL DATA UPDATE
+        // ============================================
+        function updateHistoricalData() {
+            const tableBody = document.querySelector('#historicalDataTable tbody');
+            tableBody.innerHTML = '';
+
+            // Get all materials from items table
+            const materials = [];
+            document.querySelectorAll('#itemsTable tbody tr').forEach(row => {
+                const materialNo = row.querySelector('.material-no').value;
+                if (materialNo && !materials.includes(materialNo)) {
+                    materials.push(materialNo);
+                }
+            });
+
+            // Generate historical data rows
+            materials.forEach(materialNo => {
+                const data = mrpMaterialData[materialNo];
+                if (data) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><strong>${materialNo}</strong></td>
+                        <td style="text-align: center;">${data.last3Months[0]}</td>
+                        <td style="text-align: center;">${data.last3Months[1]}</td>
+                        <td style="text-align: center;">${data.last3Months[2]}</td>
+                        <td style="text-align: center;">${data.last3Years[0]}</td>
+                        <td style="text-align: center;">${data.last3Years[1]}</td>
+                        <td style="text-align: center;">${data.last3Years[2]}</td>
+                        <td style="text-align: center; color: #1976d2;"><strong>${data.openPo}</strong></td>
+                        <td style="text-align: center; color: #f57c00;"><strong>${data.openSrm}</strong></td>
+                    `;
+                    tableBody.appendChild(row);
+                } else {
+                    // Unknown material - show empty row
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><strong>${materialNo}</strong></td>
+                        <td style="text-align: center;">-</td>
+                        <td style="text-align: center;">-</td>
+                        <td style="text-align: center;">-</td>
+                        <td style="text-align: center;">-</td>
+                        <td style="text-align: center;">-</td>
+                        <td style="text-align: center;">-</td>
+                        <td style="text-align: center; color: #1976d2;"><strong>-</strong></td>
+                        <td style="text-align: center; color: #f57c00;"><strong>-</strong></td>
+                    `;
+                    tableBody.appendChild(row);
+                }
+            });
+
+            // If no materials, show empty message
+            if (materials.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="9" style="text-align: center; color: #999; padding: 20px;">Henüz malzeme eklenmedi</td>`;
+                tableBody.appendChild(row);
+            }
+        }
+
+        // ============================================
+        // FORM ACTIONS
+        // ============================================
+
+        // Submit button
+        document.getElementById('submitBtn').addEventListener('click', function() {
+            const { mode } = getUrlParams();
+            const requestNo = document.getElementById('requestNo').value;
+            const costCenter = document.getElementById('costCenterSelect').value;
+            const total = document.getElementById('grandTotal').textContent;
+
+            if (!costCenter) {
+                alert('Lütfen maliyet merkezini seçiniz.');
+                return;
+            }
+
+            if (confirm(`SRM Talep ${mode === 'edit' ? 'güncellenecek' : 'gönderilecek'}!\n\nTalep No: ${requestNo}\nToplam Tutar: ${total}\n\nOnay akışı başlatılacak. Devam etmek istiyor musunuz?`)) {
+                alert(`Talep başarıyla ${mode === 'edit' ? 'güncellendi' : 'gönderildi'}!\n\nTalep No: ${requestNo}\nDurum: Onay Bekliyor\n\nSL onayı bekleniyor.`);
+                window.location.href = 'srm-list.html';
+            }
+        });
+
+        // Save draft button
+        document.getElementById('saveDraftBtn').addEventListener('click', function() {
+            const requestNo = document.getElementById('requestNo').value;
+            alert(`Taslak kaydedildi!\n\nTalep No: ${requestNo}\nDurum: Taslak\n\nDaha sonra düzenlemeye devam edebilirsiniz.`);
+        });
+
+        // Cancel button
+        document.getElementById('cancelBtn').addEventListener('click', function() {
+            const { mode } = getUrlParams();
+
+            if (mode === 'view') {
+                window.location.href = 'srm-list.html';
+                return;
+            }
+
+            if (confirm('Yapılan değişiklikler kaydedilmeyecek. İptal etmek istediğinizden emin misiniz?')) {
+                window.location.href = 'srm-list.html';
+            }
+        });
+    </script>
+
+    <style>
+        .budget-summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .budget-item {
+            display: flex;
+            flex-direction: column;
+        }
+        .budget-item label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+        .budget-item span {
+            font-size: 16px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-height: 80vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-lg {
+            width: 900px;
+            max-width: 90%;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            background: #f8f9fa;
+        }
+        .modal-header h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            padding: 0;
+            line-height: 1;
+        }
+        .modal-close:hover {
+            color: #dc3545;
+        }
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        /* Supplier Autocomplete Dropdown */
+        .supplier-autocomplete {
+            position: relative;
+        }
+        .supplier-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+        }
+        .supplier-dropdown.show {
+            display: block;
+        }
+        .supplier-dropdown-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.2s;
+        }
+        .supplier-dropdown-item:last-child {
+            border-bottom: none;
+        }
+        .supplier-dropdown-item:hover {
+            background: #e3f2fd;
+        }
+        .supplier-dropdown-item .supplier-sap {
+            font-weight: bold;
+            color: #1976d2;
+            font-size: 13px;
+        }
+        .supplier-dropdown-item .supplier-name {
+            color: #333;
+            font-size: 14px;
+            margin-top: 2px;
+        }
+        .supplier-dropdown-item .supplier-name2 {
+            color: #666;
+            font-size: 12px;
+        }
+    </style>
+</body>
+</html>

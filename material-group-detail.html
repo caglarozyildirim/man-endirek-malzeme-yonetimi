@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Malzeme Grubu Detay - IMMA</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">M</div>
+                <div class="brand-text">
+                    <span class="brand-name">IMMA</span>
+                    <span class="brand-subtitle">Endirek Malzeme Yönetimi</span>
+                </div>
+            </a>
+            <ul class="navbar-menu">
+                <li class="nav-item"><a href="index.html" class="nav-link"><span class="nav-icon">📊</span>Dashboard</a></li>
+                <li class="nav-item">
+                    <a href="material-list.html" class="nav-link active"><span class="nav-icon">📦</span>Ana Veriler</a>
+                    <div class="dropdown-menu">
+                        <a href="material-list.html" class="dropdown-item">Malzeme Listesi</a>
+                        <a href="supplier-list.html" class="dropdown-item">Tedarikçi Listesi</a>
+                        <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
+                        <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
+                        <a href="material-group.html" class="dropdown-item active">Malzeme Grupları</a>
+                    </div>
+                </li>
+            </ul>
+            <div class="navbar-user">
+                <span class="user-name">Ahmet Yılmaz</span>
+                <div class="user-avatar">AY</div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="modern-container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title" id="pageTitle">Malzeme Grubu Detay</h1>
+                <p class="page-subtitle">Ana Veriler > Malzeme Grupları > <span id="breadcrumbAction">Görüntüle</span></p>
+            </div>
+            <div class="page-actions">
+                <a href="material-group.html" class="btn btn-outline">← Listeye Dön</a>
+                <button class="btn btn-primary" id="editModeBtn" style="display: none;">Düzenle</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 id="formTitle">Malzeme Grubu Bilgileri</h3>
+            </div>
+            <div class="card-body">
+                <form id="materialGroupForm">
+                    <!-- Row 1: ID, Kod, Adı -->
+                    <div class="form-row">
+                        <div class="form-group col-4">
+                            <label>Malzeme Grubu ID</label>
+                            <input type="text" id="materialGroupId" class="form-control" readonly>
+                            <small class="form-text">Sistem otomatik oluşturur</small>
+                        </div>
+                        <div class="form-group col-4">
+                            <label>Malzeme Grubu Kodu <span class="required">*</span></label>
+                            <input type="text" id="materialGroupCode" class="form-control" maxlength="6" required>
+                            <small class="form-text">int(6) - Benzersiz olmalı</small>
+                        </div>
+                        <div class="form-group col-4">
+                            <label>Malzeme Grubu Adı <span class="required">*</span></label>
+                            <input type="text" id="materialGroupTitle" class="form-control" maxlength="64" required>
+                            <small class="form-text">text(64)</small>
+                        </div>
+                    </div>
+
+                    <hr style="margin: 20px 0;">
+
+                    <!-- Row 2: Oluşturan Kullanıcı, Oluşturma Tarihi -->
+                    <div class="form-row">
+                        <div class="form-group col-6">
+                            <label>Oluşturan Kullanıcı</label>
+                            <input type="text" id="createdBy" class="form-control" readonly value="-">
+                        </div>
+                        <div class="form-group col-6">
+                            <label>Oluşturma Tarihi</label>
+                            <input type="text" id="createdDate" class="form-control" readonly value="-">
+                        </div>
+                    </div>
+
+                    <hr style="margin: 20px 0;">
+
+                    <!-- Row 3: Pasif Checkbox -->
+                    <div class="form-row">
+                        <div class="form-group col-12">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="inactivationCheck">
+                                <span>Pasif Et</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Row 4: Pasif Yapan, Pasif Tarihi -->
+                    <div id="inactivationDetails" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group col-6">
+                                <label>Pasif Yapan Kullanıcı</label>
+                                <input type="text" id="inactivatedBy" class="form-control" readonly>
+                            </div>
+                            <div class="form-group col-6">
+                                <label>Pasif Yapma Tarihi</label>
+                                <input type="text" id="inactivationDate" class="form-control" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 5: Reaktivasyon (Yeniden Aktifleştirme) -->
+                    <div id="reactivationDetails" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group col-6">
+                                <label>Reaktive Eden Kullanıcı</label>
+                                <input type="text" id="reactivatedBy" class="form-control" readonly>
+                            </div>
+                            <div class="form-group col-6">
+                                <label>Reaktivasyon Tarihi</label>
+                                <input type="text" id="reactivationDate" class="form-control" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions" style="margin-top: 30px;" id="formActions">
+                        <a href="material-group.html" class="btn btn-outline">İptal</a>
+                        <button type="submit" class="btn btn-primary">Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Veritabanı İşlemleri - Data Structure IMMA.xlsx + Screen Designs 6 MMG -->
+        <div class="dev-note success">
+            <h4>✅ Veritabanı İşlemleri (Data Structure IMMA.xlsx - "Material Group" sheet)</h4>
+            <p><strong>API Endpoints:</strong></p>
+            <ul>
+                <li>POST /api/material-groups - Yeni malzeme grubu oluştur</li>
+                <li>PUT /api/material-groups/{id} - Malzeme grubu güncelle</li>
+                <li>GET /api/material-groups/{id} - Malzeme grubu detay görüntüle</li>
+            </ul>
+            <p><strong>Kayıt Tablosu:</strong> Material Group</p>
+            <p><strong>Material Group Tablo Alanları (Data Structure IMMA.xlsx):</strong></p>
+            <ul>
+                <li>Id (int) - Sistem otomatik oluşturur</li>
+                <li>Code (int, 6) - Malzeme grubu kodu (benzersiz olmalı)</li>
+                <li>Title (text, 64) - Malzeme grubu adı</li>
+            </ul>
+            <p><strong>Ek Alanlar (Screen Designs 6 MMG):</strong></p>
+            <ul>
+                <li>Created By user info - Oluşturan kullanıcı</li>
+                <li>Creation datetime - Oluşturma tarihi</li>
+                <li>Inactivation check - Pasif checkbox</li>
+                <li>Inactivation datetime - Pasif yapma tarihi</li>
+                <li>Inactivated by user Id - Pasif yapan kullanıcı</li>
+                <li>Reactivation date time - Reaktivasyon tarihi</li>
+                <li>Reactivated by user info - Reaktive eden kullanıcı</li>
+            </ul>
+        </div>
+
+        <div class="dev-note info">
+            <h4>Ekran Bilgisi: 6 MMG - Maintain Material Group</h4>
+            <p><strong>Amaç:</strong> CVCD pattern ile malzeme grubu verilerinin oluşturma, görüntüleme ve düzenleme işlemleri.</p>
+            <p><strong>Fonksiyonlar:</strong></p>
+            <ul>
+                <li>Malzeme Grubu Oluştur (Create) - URL: ?mode=create</li>
+                <li>Malzeme Grubu Görüntüle (View) - URL: ?id=xxx&mode=view</li>
+                <li>Malzeme Grubu Düzenle (Change/Edit) - URL: ?id=xxx&mode=edit</li>
+            </ul>
+            <p><strong>Excel Spec:</strong> Screen Designs IMMA.xlsx - "6 MMG"</p>
+            <p><strong>Not:</strong> Liste görünümü material-group.html sayfasındadır.</p>
+        </div>
+    </main>
+
+    <style>
+        .required { color: #dc3545; font-weight: bold; }
+        .checkbox-label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .form-control[readonly] { background-color: #f5f5f5; }
+        .form-control:disabled { background-color: #f5f5f5; cursor: not-allowed; }
+    </style>
+
+    <script>
+        // Demo data - Material Group table per Data Structure IMMA.xlsx
+        // Fields: Id, Code (int,6), Title (text,64)
+        // Additional fields from Screen Designs 6 MMG:
+        // Created By, Inactivation check, Inactivation datetime, Inactivated by user Id,
+        // Reactivation date time, Reactivated by user info
+        const materialGroups = {
+            'GRP-00001': {
+                id: 'GRP-00001',
+                code: '200123',
+                title: 'Rulmanlar ve Yataklar',
+                createdBy: 'Fatma Şahin - Depo Sorumlusu',
+                createdDate: '05.01.2025 09:15',
+                isInactive: false,
+                inactivatedBy: '',
+                inactivationDate: '',
+                reactivatedBy: '',
+                reactivationDate: ''
+            },
+            'GRP-00002': {
+                id: 'GRP-00002',
+                code: '200234',
+                title: 'Elektrik Motorları',
+                createdBy: 'Ali Yıldız - Bakım Mühendisi',
+                createdDate: '08.01.2025 14:30',
+                isInactive: false,
+                inactivatedBy: '',
+                inactivationDate: '',
+                reactivatedBy: '',
+                reactivationDate: ''
+            },
+            'GRP-00003': {
+                id: 'GRP-00003',
+                code: '200345',
+                title: 'Kayış ve Kasnak Grupları',
+                createdBy: 'Mehmet Demir - Planlama',
+                createdDate: '10.01.2025 11:20',
+                isInactive: false,
+                inactivatedBy: '',
+                inactivationDate: '',
+                reactivatedBy: '',
+                reactivationDate: ''
+            },
+            'GRP-00004': {
+                id: 'GRP-00004',
+                code: '200456',
+                title: 'Hidrolik Parçalar',
+                createdBy: 'Fatma Şahin - Depo Sorumlusu',
+                createdDate: '12.01.2025 16:45',
+                isInactive: false,
+                inactivatedBy: '',
+                inactivationDate: '',
+                reactivatedBy: '',
+                reactivationDate: ''
+            },
+            'GRP-00005': {
+                id: 'GRP-00005',
+                code: '200567',
+                title: 'Pnömatik Parçalar (Eski)',
+                createdBy: 'Ali Yıldız - Bakım Mühendisi',
+                createdDate: '02.01.2025 08:30',
+                isInactive: true,
+                inactivatedBy: 'Fatma Şahin - Depo Sorumlusu',
+                inactivationDate: '14.01.2025 15:20',
+                reactivatedBy: '',
+                reactivationDate: ''
+            }
+        };
+
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return { mode: params.get('mode') || 'view', id: params.get('id') || null };
+        }
+
+        function initializePage() {
+            const { mode, id } = getUrlParams();
+            const formElements = document.querySelectorAll('#materialGroupForm input:not([type="checkbox"]):not([readonly])');
+
+            switch(mode) {
+                case 'view':
+                    document.getElementById('pageTitle').textContent = 'Malzeme Grubu Görüntüle';
+                    document.getElementById('breadcrumbAction').textContent = 'Görüntüle';
+                    document.getElementById('editModeBtn').style.display = 'inline-block';
+                    document.getElementById('formActions').style.display = 'none';
+                    // Disable all editable fields
+                    document.querySelectorAll('#materialGroupForm input').forEach(el => el.disabled = true);
+                    document.getElementById('inactivationCheck').disabled = true;
+                    document.getElementById('editModeBtn').addEventListener('click', function() {
+                        window.location.href = `material-group-detail.html?mode=edit&id=${id}`;
+                    });
+                    if (id && materialGroups[id]) loadData(materialGroups[id]);
+                    break;
+                case 'edit':
+                    document.getElementById('pageTitle').textContent = 'Malzeme Grubu Düzenle';
+                    document.getElementById('breadcrumbAction').textContent = 'Düzenle';
+                    document.getElementById('editModeBtn').style.display = 'none';
+                    document.getElementById('formActions').style.display = 'flex';
+                    // Enable editable fields (not readonly ones)
+                    document.getElementById('materialGroupCode').disabled = false;
+                    document.getElementById('materialGroupTitle').disabled = false;
+                    document.getElementById('inactivationCheck').disabled = false;
+                    if (id && materialGroups[id]) loadData(materialGroups[id]);
+                    break;
+                case 'create':
+                    document.getElementById('pageTitle').textContent = 'Yeni Malzeme Grubu';
+                    document.getElementById('breadcrumbAction').textContent = 'Yeni';
+                    document.getElementById('editModeBtn').style.display = 'none';
+                    document.getElementById('formActions').style.display = 'flex';
+                    // Set auto-generated ID
+                    document.getElementById('materialGroupId').value = 'GRP-' + String(Math.floor(Math.random() * 90000) + 10000);
+                    // Set created by info
+                    document.getElementById('createdBy').value = 'Ahmet Yılmaz - Sistem Admin';
+                    document.getElementById('createdDate').value = new Date().toLocaleString('tr-TR');
+                    // Enable editable fields
+                    document.getElementById('materialGroupCode').disabled = false;
+                    document.getElementById('materialGroupTitle').disabled = false;
+                    document.getElementById('inactivationCheck').disabled = false;
+                    break;
+            }
+        }
+
+        function loadData(group) {
+            document.getElementById('materialGroupId').value = group.id;
+            document.getElementById('materialGroupCode').value = group.code;
+            document.getElementById('materialGroupTitle').value = group.title;
+            document.getElementById('createdBy').value = group.createdBy || '-';
+            document.getElementById('createdDate').value = group.createdDate || '-';
+            document.getElementById('inactivationCheck').checked = group.isInactive;
+
+            // Show inactivation details if inactive
+            if (group.isInactive && group.inactivatedBy) {
+                document.getElementById('inactivationDetails').style.display = 'block';
+                document.getElementById('inactivatedBy').value = group.inactivatedBy;
+                document.getElementById('inactivationDate').value = group.inactivationDate;
+            }
+
+            // Show reactivation details if exists
+            if (group.reactivatedBy) {
+                document.getElementById('reactivationDetails').style.display = 'block';
+                document.getElementById('reactivatedBy').value = group.reactivatedBy;
+                document.getElementById('reactivationDate').value = group.reactivationDate;
+            }
+        }
+
+        // Inactivation checkbox handler
+        document.getElementById('inactivationCheck').addEventListener('change', function() {
+            if (this.checked) {
+                document.getElementById('inactivationDetails').style.display = 'block';
+                document.getElementById('inactivatedBy').value = 'Ahmet Yılmaz - Sistem Admin';
+                document.getElementById('inactivationDate').value = new Date().toLocaleString('tr-TR');
+            } else {
+                // If unchecking (reactivating)
+                const { mode, id } = getUrlParams();
+                if (mode === 'edit' && id && materialGroups[id] && materialGroups[id].isInactive) {
+                    // This is a reactivation
+                    document.getElementById('reactivationDetails').style.display = 'block';
+                    document.getElementById('reactivatedBy').value = 'Ahmet Yılmaz - Sistem Admin';
+                    document.getElementById('reactivationDate').value = new Date().toLocaleString('tr-TR');
+                }
+                document.getElementById('inactivationDetails').style.display = 'none';
+                document.getElementById('inactivatedBy').value = '';
+                document.getElementById('inactivationDate').value = '';
+            }
+        });
+
+        document.getElementById('materialGroupForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const { mode } = getUrlParams();
+            const code = document.getElementById('materialGroupCode').value;
+            const title = document.getElementById('materialGroupTitle').value;
+
+            if (!code || !title) {
+                alert('Malzeme Grubu Kodu ve Adı zorunlu alanlardır.');
+                return;
+            }
+
+            const action = mode === 'create' ? 'oluşturuldu' : 'güncellendi';
+            alert(`Malzeme grubu ${action}!\n\nKod: ${code}\nAdı: ${title}\n\n(Backend entegrasyonu ile çalışacak)`);
+            window.location.href = 'material-group.html';
+        });
+
+        document.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+</body>
+</html>

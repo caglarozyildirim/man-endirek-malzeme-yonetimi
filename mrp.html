@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MRP - IMMA</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">M</div>
+                <div class="brand-text">
+                    <span class="brand-name">IMMA</span>
+                    <span class="brand-subtitle">Endirek Malzeme Yonetimi</span>
+                </div>
+            </a>
+            <ul class="navbar-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="material-list.html" class="nav-link">
+                        <span class="nav-icon">📦</span>
+                        Ana Veriler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-list.html" class="dropdown-item">Malzeme Listesi</a>
+                        <a href="supplier-list.html" class="dropdown-item">Tedarikci Listesi</a>
+                        <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
+                        <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
+                        <a href="material-group.html" class="dropdown-item">Malzeme Gruplari</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="mrp.html" class="nav-link active">
+                        <span class="nav-icon">📈</span>
+                        MRP
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="srm-list.html" class="nav-link">
+                        <span class="nav-icon">🛒</span>
+                        Satinalma
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="srm-list.html" class="dropdown-item">Talep Listesi</a>
+                        <a href="goods-receipt.html" class="dropdown-item">Mal Kabul</a>
+                        <a href="po-list.html" class="dropdown-item">Satinalma Siparisleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="budget-management.html" class="nav-link">
+                        <span class="nav-icon">💰</span>
+                        Butce
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="budget-management.html" class="dropdown-item">Butce Yonetimi</a>
+                        <a href="budget-preference.html" class="dropdown-item">Butce Tercihleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="material-request-list.html" class="nav-link">
+                        <span class="nav-icon">📋</span>
+                        Talepler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-request-list.html" class="dropdown-item">Talep Listesi</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="transfer-list.html" class="nav-link">
+                        <span class="nav-icon">🏭</span>
+                        Stok
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="direct-issue.html" class="dropdown-item">Dogrudan Cikis</a>
+                        <a href="warehouse-transfer.html" class="dropdown-item">Depo Transferi</a>
+                        <a href="transfer-list.html" class="dropdown-item">Transfer Listesi</a>
+                        <a href="inventory-counting.html" class="dropdown-item">Sayim Islemleri</a>
+                        <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayimi</a>
+                        <a href="scrapping.html" class="dropdown-item">Hurda Islemleri</a>
+                    </div>
+                </li>
+            </ul>
+            <div class="navbar-user">
+                <span class="user-name">Ahmet Yilmaz</span>
+                <div class="user-avatar">AY</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="modern-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">MRP - Maintain MRP</h1>
+                <p class="page-subtitle">MRP > Malzeme Ihtiyac Planlamasi</p>
+            </div>
+            <div class="page-actions">
+                <button class="btn btn-primary" id="runMrpBtn">🔄 MRP Hesapla</button>
+                <button class="btn btn-secondary" id="downloadBtn">📥 Sonuclari Indir</button>
+            </div>
+        </div>
+
+        <!-- MRP Last Run Info - Screen Designs 9 MMRP -->
+        <div class="card mrp-run-info">
+            <div class="card-body" style="padding: 12px 20px;">
+                <div class="mrp-run-details">
+                    <span class="mrp-run-label">Son MRP Hesaplama:</span>
+                    <span class="mrp-run-user" id="mrpLastRunBy">Yasin Taşdelen - FIPC</span>
+                    <span class="mrp-run-separator">|</span>
+                    <span class="mrp-run-date" id="mrpLastRunDate">17.09.2025 17:18</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Developer Notes -->
+        <div class="dev-note info">
+            <h4>📋 Ekran Bilgisi: 9 MMRP - Maintain MRP</h4>
+            <p><strong>Pattern:</strong> List with inline editing via modal</p>
+            <p><strong>Amac:</strong> Malzeme bazli MRP parametrelerini yonetmek ve stok seviyelerine gore siparis onerileri olusturmak.</p>
+            <p><strong>Temel Islevler:</strong></p>
+            <ul>
+                <li><strong>View:</strong> Tum malzemelerin MRP parametrelerini ve hesaplanan siparis onerilerini listele</li>
+                <li><strong>Change:</strong> Siparis noktasi, maksimum stok, siparis parti miktari, guvenlik stogu parametrelerini guncelle (modal)</li>
+                <li><strong>Create SRM:</strong> MRP onerisine gore direkt SRM talebi olustur</li>
+            </ul>
+            <p><strong>MRP Hesaplama Formulu:</strong></p>
+            <p><code>Suggested Qty = ROUNDUP((Max Stock - Current Stock - Open PO - Open SRM + Safety Stock) / Order Batch) * Order Batch</code></p>
+            <p><strong>Highlighting Rule:</strong> Current Stock ≤ Reordering Point ise satir vurgulanir (kirmizi/sari)</p>
+        </div>
+
+        <!-- FILTER SECTION -->
+        <div class="card">
+            <div class="card-header">
+                <h3>🔍 Malzeme Arama ve Filtreleme</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-row">
+                    <div class="form-group col-3">
+                        <label>Malzeme No</label>
+                        <input type="text" class="form-control" id="filterMaterialNo" placeholder="Malzeme numarasi">
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Malzeme Adi</label>
+                        <input type="text" class="form-control" id="filterMaterialName" placeholder="Malzeme aciklamasi">
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Malzeme Grubu</label>
+                        <select class="form-control" id="filterGroup">
+                            <option value="">Tumu</option>
+                            <option value="electrical">Elektrik Malzemeleri</option>
+                            <option value="mechanical">Mekanik Parcalar</option>
+                            <option value="consumable">Sarf Malzemeleri</option>
+                            <option value="hydraulic">Hidrolik/Pnomatik</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Stok Durumu</label>
+                        <select class="form-control" id="filterStockStatus">
+                            <option value="">Tumu</option>
+                            <option value="below_reorder" selected>Siparis Noktasi Alti</option>
+                            <option value="below_safety">Guvenlik Stogu Alti</option>
+                            <option value="normal">Normal</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-primary" id="searchBtn">🔍 Ara</button>
+                    <button class="btn btn-outline" id="clearFilterBtn">🔄 Temizle</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MRP RESULTS LIST -->
+        <div class="card">
+            <div class="card-header">
+                <h3>📊 MRP Hesaplama Sonuclari</h3>
+                <div class="card-header-actions">
+                    <button class="btn btn-success btn-sm" id="bulkCreateSrmBtn">✅ Secilenleri SRM Olustur</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <table class="table table-hover table-compact">
+                    <thead>
+                        <tr>
+                            <th style="width: 30px;"><input type="checkbox" id="selectAll"></th>
+                            <th style="width: 100px;">Malzeme No</th>
+                            <th>Malzeme Adi</th>
+                            <th style="width: 40px;">Brm</th>
+                            <th style="width: 50px; text-align: center;" title="Siparis Noktasi">SN</th>
+                            <th style="width: 50px; text-align: center;" title="Maksimum Stok">Maks</th>
+                            <th style="width: 50px; text-align: center;" title="Parti Miktari">Parti</th>
+                            <th style="width: 50px; text-align: center;" title="Guvenlik Stok">Guv.</th>
+                            <th style="width: 55px; text-align: center;" title="Mevcut Stok">Stok</th>
+                            <th style="width: 45px; text-align: center;" title="Acik PO">PO</th>
+                            <th style="width: 45px; text-align: center;" title="Acik SRM">SRM</th>
+                            <th style="width: 55px; text-align: center;" title="Oneri Miktari">Oneri</th>
+                            <th style="width: 110px; text-align: center;">Islemler</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mrpResultsTable">
+                        <!-- Critical - Below reorder point -->
+                        <tr class="row-danger" data-material-id="1">
+                            <td><input type="checkbox" class="item-select"></td>
+                            <td><strong>01.00001-0001</strong></td>
+                            <td>Elektrik Motoru 5.5kW</td>
+                            <td>AD</td>
+                            <td style="text-align: center;">5</td>
+                            <td style="text-align: center;">20</td>
+                            <td style="text-align: center;">10</td>
+                            <td style="text-align: center;">3</td>
+                            <td style="text-align: center;" class="text-danger"><strong>2</strong></td>
+                            <td style="text-align: center;">0</td>
+                            <td style="text-align: center;">0</td>
+                            <td style="text-align: center;" class="text-success"><strong>30</strong></td>
+                            <td>
+                                <div class="table-actions">
+                                    <a href="mrp-detail.html?mode=view&id=1" class="btn-icon btn-info" title="Malzeme Detayi">👁</a>
+                                    <a href="mrp-detail.html?mode=edit&id=1" class="btn-icon btn-primary" title="MRP Guncelle">✏️</a>
+                                    <button class="btn-icon btn-success create-srm-btn" title="SRM Olustur">🛒</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- Warning - At reorder point -->
+                        <tr class="row-warning" data-material-id="2">
+                            <td><input type="checkbox" class="item-select"></td>
+                            <td><strong>02.00003-0001</strong></td>
+                            <td>Pnomatik Silindir 100x200</td>
+                            <td>AD</td>
+                            <td style="text-align: center;">3</td>
+                            <td style="text-align: center;">15</td>
+                            <td style="text-align: center;">5</td>
+                            <td style="text-align: center;">2</td>
+                            <td style="text-align: center;" class="text-warning"><strong>3</strong></td>
+                            <td style="text-align: center;">0</td>
+                            <td style="text-align: center;">0</td>
+                            <td style="text-align: center;" class="text-success"><strong>15</strong></td>
+                            <td>
+                                <div class="table-actions">
+                                    <a href="mrp-detail.html?mode=view&id=2" class="btn-icon btn-info" title="Malzeme Detayi">👁</a>
+                                    <a href="mrp-detail.html?mode=edit&id=2" class="btn-icon btn-primary" title="MRP Guncelle">✏️</a>
+                                    <button class="btn-icon btn-success create-srm-btn" title="SRM Olustur">🛒</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- Warning - Below reorder with open PO -->
+                        <tr class="row-warning" data-material-id="3">
+                            <td><input type="checkbox" class="item-select"></td>
+                            <td><strong>01.00002-0001</strong></td>
+                            <td>Rulman 6205-2RS</td>
+                            <td>AD</td>
+                            <td style="text-align: center;">50</td>
+                            <td style="text-align: center;">200</td>
+                            <td style="text-align: center;">100</td>
+                            <td style="text-align: center;">20</td>
+                            <td style="text-align: center;" class="text-warning"><strong>45</strong></td>
+                            <td style="text-align: center;">50</td>
+                            <td style="text-align: center;">0</td>
+                            <td style="text-align: center;" class="text-success"><strong>200</strong></td>
+                            <td>
+                                <div class="table-actions">
+                                    <a href="mrp-detail.html?mode=view&id=3" class="btn-icon btn-info" title="Malzeme Detayi">👁</a>
+                                    <a href="mrp-detail.html?mode=edit&id=3" class="btn-icon btn-primary" title="MRP Guncelle">✏️</a>
+                                    <button class="btn-icon btn-success create-srm-btn" title="SRM Olustur">🛒</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- Normal - Above reorder point -->
+                        <tr data-material-id="4">
+                            <td><input type="checkbox" class="item-select"></td>
+                            <td><strong>01.00003-0001</strong></td>
+                            <td>Hidrolik Yag ISO 46</td>
+                            <td>LT</td>
+                            <td style="text-align: center;">200</td>
+                            <td style="text-align: center;">1000</td>
+                            <td style="text-align: center;">200</td>
+                            <td style="text-align: center;">100</td>
+                            <td style="text-align: center;">550</td>
+                            <td style="text-align: center;">100</td>
+                            <td style="text-align: center;">0</td>
+                            <td style="text-align: center;" class="text-success"><strong>600</strong></td>
+                            <td>
+                                <div class="table-actions">
+                                    <a href="mrp-detail.html?mode=view&id=4" class="btn-icon btn-info" title="Malzeme Detayi">👁</a>
+                                    <a href="mrp-detail.html?mode=edit&id=4" class="btn-icon btn-primary" title="MRP Guncelle">✏️</a>
+                                    <button class="btn-icon btn-success create-srm-btn" title="SRM Olustur">🛒</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- Warning - Below reorder with open SRM -->
+                        <tr class="row-warning" data-material-id="5">
+                            <td><input type="checkbox" class="item-select"></td>
+                            <td><strong>02.00004-0001</strong></td>
+                            <td>Sensor Enduktif M12</td>
+                            <td>AD</td>
+                            <td style="text-align: center;">10</td>
+                            <td style="text-align: center;">50</td>
+                            <td style="text-align: center;">20</td>
+                            <td style="text-align: center;">5</td>
+                            <td style="text-align: center;" class="text-warning"><strong>8</strong></td>
+                            <td style="text-align: center;">0</td>
+                            <td style="text-align: center;">20</td>
+                            <td style="text-align: center;" class="text-success"><strong>60</strong></td>
+                            <td>
+                                <div class="table-actions">
+                                    <a href="mrp-detail.html?mode=view&id=5" class="btn-icon btn-info" title="Malzeme Detayi">👁</a>
+                                    <a href="mrp-detail.html?mode=edit&id=5" class="btn-icon btn-primary" title="MRP Guncelle">✏️</a>
+                                    <button class="btn-icon btn-success create-srm-btn" title="SRM Olustur">🛒</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- Normal - Good stock level -->
+                        <tr data-material-id="6">
+                            <td><input type="checkbox" class="item-select"></td>
+                            <td><strong>03.00001-0001</strong></td>
+                            <td>Kayis V-Belt A52</td>
+                            <td>AD</td>
+                            <td style="text-align: center;">15</td>
+                            <td style="text-align: center;">60</td>
+                            <td style="text-align: center;">10</td>
+                            <td style="text-align: center;">10</td>
+                            <td style="text-align: center;">42</td>
+                            <td style="text-align: center;">0</td>
+                            <td style="text-align: center;">0</td>
+                            <td style="text-align: center;" class="text-success"><strong>30</strong></td>
+                            <td>
+                                <div class="table-actions">
+                                    <a href="mrp-detail.html?mode=view&id=6" class="btn-icon btn-info" title="Malzeme Detayi">👁</a>
+                                    <a href="mrp-detail.html?mode=edit&id=6" class="btn-icon btn-primary" title="MRP Guncelle">✏️</a>
+                                    <button class="btn-icon btn-success create-srm-btn" title="SRM Olustur">🛒</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer">
+                <div class="pagination">
+                    <span class="result-count">Toplam: <strong>6</strong> malzeme | <strong>5</strong> siparis noktasi alti</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Database Schema Info -->
+        <div class="dev-note success">
+            <h4>✅ Veritabani Yapisi</h4>
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Tablo</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>MRP_Run</strong></td>
+                        <td>MRP calistirma loglari (RunDate, Duration, MaterialCount, Status)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>MRP_Suggestion</strong></td>
+                        <td>Olusturulan oneriler (MaterialID, SuggestedQty, Priority, Status)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>MRP_SuggestionHistory</strong></td>
+                        <td>Oneri durum degisiklikleri (SuggestionID, Action, User, Timestamp)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <style>
+        /* MRP Run Info - Screen Designs 9 MMRP */
+        .mrp-run-info {
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #e3f2fd 0%, #f5f5f5 100%);
+        }
+        .mrp-run-details {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .mrp-run-label {
+            font-weight: 600;
+            color: #1565c0;
+        }
+        .mrp-run-user {
+            color: #333;
+            font-weight: 500;
+        }
+        .mrp-run-separator {
+            color: #999;
+        }
+        .mrp-run-date {
+            color: #666;
+        }
+
+        /* Row highlighting */
+        .row-danger {
+            background-color: #ffebee !important;
+        }
+        .row-warning {
+            background-color: #fff8e1 !important;
+        }
+
+        /* Compact table */
+        .table-compact {
+            font-size: 13px;
+        }
+        .table-compact th,
+        .table-compact td {
+            padding: 8px 6px;
+        }
+
+        /* Table action buttons */
+        .table-actions {
+            display: flex;
+            gap: 4px;
+            justify-content: center;
+        }
+
+        /* Icon buttons */
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .btn-icon:hover {
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .btn-icon.btn-info {
+            background-color: #17a2b8;
+            color: white;
+        }
+        .btn-icon.btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-icon.btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+
+        /* Button colors */
+        .btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
+            color: white;
+        }
+        .btn-success:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+        }
+        .btn-info {
+            background-color: #17a2b8;
+            border-color: #17a2b8;
+            color: white;
+        }
+        .btn-info:hover {
+            background-color: #138496;
+            border-color: #117a8b;
+        }
+
+        /* Text colors */
+        .text-warning {
+            color: #ff9800 !important;
+        }
+        .text-danger {
+            color: #f44336 !important;
+        }
+        .text-success {
+            color: #4caf50 !important;
+        }
+
+    </style>
+
+    <script>
+        // Mock data for materials
+        const materialData = {
+            '1': {
+                materialNo: '01.00001-0001',
+                materialTitle: 'Elektrik Motoru 5.5kW',
+                unit: 'AD',
+                group: 'electrical',
+                reorderPoint: 5,
+                maxStock: 20,
+                orderBatch: 10,
+                safetyStock: 3,
+                currentStock: 2,
+                openPO: 0,
+                openSRM: 0
+            },
+            '2': {
+                materialNo: '02.00003-0001',
+                materialTitle: 'Pnomatik Silindir 100x200',
+                unit: 'AD',
+                group: 'hydraulic',
+                reorderPoint: 3,
+                maxStock: 15,
+                orderBatch: 5,
+                safetyStock: 2,
+                currentStock: 3,
+                openPO: 0,
+                openSRM: 0
+            },
+            '3': {
+                materialNo: '01.00002-0001',
+                materialTitle: 'Rulman 6205-2RS',
+                unit: 'AD',
+                group: 'mechanical',
+                reorderPoint: 50,
+                maxStock: 200,
+                orderBatch: 100,
+                safetyStock: 20,
+                currentStock: 45,
+                openPO: 50,
+                openSRM: 0
+            },
+            '4': {
+                materialNo: '01.00003-0001',
+                materialTitle: 'Hidrolik Yag ISO 46',
+                unit: 'LT',
+                group: 'hydraulic',
+                reorderPoint: 200,
+                maxStock: 1000,
+                orderBatch: 200,
+                safetyStock: 100,
+                currentStock: 550,
+                openPO: 100,
+                openSRM: 0
+            },
+            '5': {
+                materialNo: '02.00004-0001',
+                materialTitle: 'Sensor Enduktif M12',
+                unit: 'AD',
+                group: 'electrical',
+                reorderPoint: 10,
+                maxStock: 50,
+                orderBatch: 20,
+                safetyStock: 5,
+                currentStock: 8,
+                openPO: 0,
+                openSRM: 20
+            },
+            '6': {
+                materialNo: '03.00001-0001',
+                materialTitle: 'Kayis V-Belt A52',
+                unit: 'AD',
+                group: 'consumable',
+                reorderPoint: 15,
+                maxStock: 60,
+                orderBatch: 10,
+                safetyStock: 10,
+                currentStock: 42,
+                openPO: 0,
+                openSRM: 0
+            }
+        };
+
+        // Select all checkbox
+        document.getElementById('selectAll').addEventListener('change', function() {
+            document.querySelectorAll('.item-select').forEach(cb => {
+                cb.checked = this.checked;
+            });
+        });
+
+        // Create SRM buttons - redirect to SRM request page
+        document.querySelectorAll('.create-srm-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const row = this.closest('tr');
+                const materialNo = row.cells[1].textContent.trim();
+                window.location.href = 'srm-request.html?mode=create&material=' + encodeURIComponent(materialNo);
+            });
+        });
+
+        // Bulk create SRM button
+        document.getElementById('bulkCreateSrmBtn').addEventListener('click', function() {
+            const selected = document.querySelectorAll('.item-select:checked');
+            if (selected.length === 0) {
+                alert('Lutfen en az bir malzeme secin.');
+                return;
+            }
+
+            let materialList = [];
+            selected.forEach(cb => {
+                const row = cb.closest('tr');
+                const materialNo = row.cells[1].textContent.trim();
+                materialList.push(materialNo);
+            });
+
+            const materialParam = materialList.join(',');
+            window.location.href = 'srm-request.html?mode=create&materials=' + encodeURIComponent(materialParam);
+        });
+
+        // Run MRP button
+        document.getElementById('runMrpBtn').addEventListener('click', function() {
+            if (confirm('MRP hesaplamasi baslatilsin mi?\n\nBu islem birkac dakika surebilir ve tum malzemeler icin yeniden hesaplama yapilacaktir.')) {
+                alert('MRP hesaplamasi baslatildi...\n\n(Gercek uygulamada backend servisine istek gonderilecek ve hesaplama yapilacak)');
+            }
+        });
+
+        // Download results button
+        document.getElementById('downloadBtn').addEventListener('click', function() {
+            alert('MRP sonuclari Excel dosyasi olarak indiriliyor...\n\nIcerik:\n- Tum malzemeler\n- MRP parametreleri\n- Hesaplanan oneriler\n- Stok durumlari\n\n(Backend entegrasyonu ile calisacak)');
+        });
+
+        // Filtreleme fonksiyonu
+        function filterMrpResults() {
+            const filterMaterialNo = document.getElementById('filterMaterialNo').value.toLowerCase().trim();
+            const filterMaterialName = document.getElementById('filterMaterialName').value.toLowerCase().trim();
+            const filterGroup = document.getElementById('filterGroup').value;
+            const filterStockStatus = document.getElementById('filterStockStatus').value;
+
+            const rows = document.querySelectorAll('#mrpResultsTable tr');
+            let visibleCount = 0;
+            let belowReorderCount = 0;
+
+            rows.forEach(row => {
+                const materialId = row.getAttribute('data-material-id');
+                if (!materialId) return;
+
+                const data = materialData[materialId];
+                if (!data) return;
+
+                let visible = true;
+
+                // Malzeme No filtresi
+                if (filterMaterialNo && !data.materialNo.toLowerCase().includes(filterMaterialNo)) {
+                    visible = false;
+                }
+
+                // Malzeme Adı filtresi
+                if (filterMaterialName && !data.materialTitle.toLowerCase().includes(filterMaterialName)) {
+                    visible = false;
+                }
+
+                // Malzeme Grubu filtresi
+                if (filterGroup && data.group !== filterGroup) {
+                    visible = false;
+                }
+
+                // Stok Durumu filtresi
+                if (filterStockStatus) {
+                    const isBelowReorder = data.currentStock <= data.reorderPoint;
+                    const isBelowSafety = data.currentStock <= data.safetyStock;
+
+                    if (filterStockStatus === 'below_reorder' && !isBelowReorder) {
+                        visible = false;
+                    } else if (filterStockStatus === 'below_safety' && !isBelowSafety) {
+                        visible = false;
+                    } else if (filterStockStatus === 'normal' && (isBelowReorder || isBelowSafety)) {
+                        visible = false;
+                    }
+                }
+
+                // Satırı göster/gizle
+                row.style.display = visible ? '' : 'none';
+
+                if (visible) {
+                    visibleCount++;
+                    if (data.currentStock <= data.reorderPoint) {
+                        belowReorderCount++;
+                    }
+                }
+            });
+
+            // Sonuç sayısını güncelle
+            document.querySelector('.result-count').innerHTML =
+                `Toplam: <strong>${visibleCount}</strong> malzeme | <strong>${belowReorderCount}</strong> siparis noktasi alti`;
+        }
+
+        // Search button
+        document.getElementById('searchBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            filterMrpResults();
+        });
+
+        // Clear filter button
+        document.getElementById('clearFilterBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('filterMaterialNo').value = '';
+            document.getElementById('filterMaterialName').value = '';
+            document.getElementById('filterGroup').selectedIndex = 0;
+            document.getElementById('filterStockStatus').selectedIndex = 0;
+            filterMrpResults();
+        });
+
+        // Sayfa yüklendiğinde varsayılan filtreyi uygula
+        document.addEventListener('DOMContentLoaded', function() {
+            filterMrpResults();
+        });
+
+        // Enter tuşu ile arama
+        ['filterMaterialNo', 'filterMaterialName'].forEach(id => {
+            document.getElementById(id).addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    filterMrpResults();
+                }
+            });
+        });
+
+        // Dropdown değişikliklerinde otomatik filtrele
+        ['filterGroup', 'filterStockStatus'].forEach(id => {
+            document.getElementById(id).addEventListener('change', function() {
+                filterMrpResults();
+            });
+        });
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('mrpModal');
+            if (event.target == modal) {
+                closeMrpModal();
+            }
+        });
+    </script>
+</body>
+</html>

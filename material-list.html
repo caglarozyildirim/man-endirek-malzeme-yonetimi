@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Malzeme Listesi - IMMA</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- ============================================
+         NAVBAR - Top Navigation (Maximo Style)
+         ============================================ -->
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">M</div>
+                <div class="brand-text">
+                    <span class="brand-name">IMMA</span>
+                    <span class="brand-subtitle">Endirek Malzeme Yönetimi</span>
+                </div>
+            </a>
+                        <ul class="navbar-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="material-list.html" class="nav-link active">
+                        <span class="nav-icon">📦</span>
+                        Ana Veriler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-list.html" class="dropdown-item active">Malzeme Listesi</a>
+                        <a href="supplier-list.html" class="dropdown-item">Tedarikçi Listesi</a>
+                        <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
+                        <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
+                        <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="mrp.html" class="nav-link">
+                        <span class="nav-icon">📈</span>
+                        MRP
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="srm-list.html" class="nav-link">
+                        <span class="nav-icon">🛒</span>
+                        Satınalma
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="srm-list.html" class="dropdown-item">Talep Listesi</a>
+                        <a href="goods-receipt.html" class="dropdown-item">Mal Kabul</a>
+                        <a href="po-list.html" class="dropdown-item">Satınalma Siparişleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="budget-management.html" class="nav-link">
+                        <span class="nav-icon">💰</span>
+                        Bütçe
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="budget-management.html" class="dropdown-item">Bütçe Yönetimi</a>
+                        <a href="budget-preference.html" class="dropdown-item">Bütçe Tercihleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="material-request-list.html" class="nav-link">
+                        <span class="nav-icon">📋</span>
+                        Talepler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-request-list.html" class="dropdown-item">Talep Listesi</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="transfer-list.html" class="nav-link">
+                        <span class="nav-icon">🏭</span>
+                        Stok
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
+                        <a href="warehouse-transfer.html" class="dropdown-item">Depo Transferi</a>
+                        <a href="transfer-list.html" class="dropdown-item">Transfer Listesi</a>
+                        <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
+                        <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
+                        <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+            </ul>
+            <div class="navbar-user">
+                <span class="user-name">Ahmet Yılmaz</span>
+                <div class="user-avatar">AY</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ============================================
+         MAIN CONTENT
+         ============================================ -->
+    <main class="modern-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Malzeme Listesi</h1>
+                <p class="page-subtitle">Ana Veriler > Malzeme Listesi</p>
+            </div>
+            <div class="page-actions">
+                <button class="btn btn-primary" onclick="window.location.href='material-data.html'">+ Yeni Malzeme</button>
+                <button class="btn btn-secondary">Excel'e Aktar</button>
+            </div>
+        </div>
+
+            <!-- Developer Notes Section -->
+            <div class="dev-note info">
+                <h4>📋 Ekran Bilgisi: Malzeme Listesi (Screen 2 - MDM)</h4>
+                <p><strong>Amaç:</strong> Sistemdeki tüm malzemelerin listelenmesi, filtrelenmesi ve yönetilmesi.</p>
+                <p><strong>Tablo:</strong> MDM_Material (Ana malzeme tablosu)</p>
+            </div>
+
+            <div class="dev-note">
+                <h4>🔧 Geliştirici Notları - Filtreleme</h4>
+                <ul>
+                    <li><strong>Varsayılan Filtre:</strong> Sayfa açıldığında aktif malzemeler gösterilir (StatusID = 1)</li>
+                    <li><strong>Arama:</strong> Malzeme No, Başlık, Açıklama alanlarında arama yapılabilir</li>
+                    <li><strong>Performans:</strong> Sayfalama kullanılmalı, sayfa başına max 50 kayıt</li>
+                    <li><strong>Sıralama:</strong> Varsayılan olarak güncelleme tarihine göre azalan sırada</li>
+                </ul>
+            </div>
+
+            <!-- Filter Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Filtreler</h3>
+                    <button class="btn btn-sm btn-outline" id="toggleFilters">Filtreleri Gizle/Göster</button>
+                </div>
+                <div class="card-body" id="filterSection">
+                    <div class="form-row">
+                        <div class="form-group col-3">
+                            <label>Malzeme No</label>
+                            <input type="text" class="form-control" placeholder="##.#####-####">
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Malzeme Başlığı</label>
+                            <input type="text" class="form-control" placeholder="Başlık ara...">
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Malzeme Grubu</label>
+                            <select class="form-control">
+                                <option value="">Tümü</option>
+                                <option value="electrical">Elektrik Malzemeleri</option>
+                                <option value="mechanical">Mekanik Parçalar</option>
+                                <option value="consumable">Sarf Malzemeleri</option>
+                                <option value="spare">Yedek Parçalar</option>
+                                <option value="safety">Güvenlik Ekipmanları</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Durum</label>
+                            <select class="form-control">
+                                <option value="">Tümü</option>
+                                <option value="1" selected>Aktif</option>
+                                <option value="2">Blokeli</option>
+                                <option value="3">İnaktif</option>
+                                <option value="4">Kullanıma Hazırlanıyor</option>
+                                <option value="5">Kullanımdan Kaldırılıyor</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-3">
+                            <label>Depolama Tipi</label>
+                            <select class="form-control">
+                                <option value="">Tümü</option>
+                                <option value="central">Merkez Depo</option>
+                                <option value="line">Hat Kenarı Depo</option>
+                                <option value="consignment">Konsinye Depo</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Birim</label>
+                            <select class="form-control">
+                                <option value="">Tümü</option>
+                                <option value="AD">Adet (AD)</option>
+                                <option value="KG">Kilogram (KG)</option>
+                                <option value="MT">Metre (MT)</option>
+                                <option value="LT">Litre (LT)</option>
+                                <option value="M2">Metrekare (M2)</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-3">
+                            <label>MRP Aktif</label>
+                            <select class="form-control">
+                                <option value="">Tümü</option>
+                                <option value="1">Evet</option>
+                                <option value="0">Hayır</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Stok Durumu</label>
+                            <select class="form-control">
+                                <option value="">Tümü</option>
+                                <option value="instock">Stokta Var</option>
+                                <option value="lowstock">Düşük Stok</option>
+                                <option value="outofstock">Stokta Yok</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn btn-primary">Filtrele</button>
+                        <button class="btn btn-outline">Temizle</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Developer Note for Table -->
+            <div class="dev-note warning">
+                <h4>⚠️ Tablo Özellikleri</h4>
+                <ul>
+                    <li><strong>Sıralama:</strong> Tüm sütunlar sıralanabilir olmalı (tıklanınca ASC/DESC)</li>
+                    <li><strong>Satır Tıklama:</strong> Satıra tıklandığında material-data.html?id={MaterialID} sayfasına yönlendir</li>
+                    <li><strong>Durum Renkleri:</strong> Aktif=Yeşil, Blokeli=Kırmızı, İnaktif=Gri, Hazırlanıyor=Sarı</li>
+                    <li><strong>Stok Uyarısı:</strong> Mevcut stok &lt; Min stok ise satır sarı arkaplan</li>
+                </ul>
+            </div>
+
+            <!-- Results Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Malzeme Listesi</h3>
+                    <div class="card-header-actions">
+                        <span class="result-count">1.247 kayıt bulundu</span>
+                        <select class="form-control form-control-sm" style="width: auto;">
+                            <option>10 kayıt/sayfa</option>
+                            <option selected>25 kayıt/sayfa</option>
+                            <option>50 kayıt/sayfa</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-body" style="padding: 0;">
+                    <div class="table-container">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="sortable" data-sort="materialNo">Malzeme No</th>
+                                    <th class="sortable" data-sort="title">Baslik</th>
+                                    <th class="sortable" data-sort="group">Grup</th>
+                                    <th class="sortable" data-sort="unit">Birim</th>
+                                    <th class="sortable" data-sort="stock">Stok</th>
+                                    <th>Min</th>
+                                    <th>Max</th>
+                                    <th class="sortable" data-sort="storage">Depolama</th>
+                                    <th class="sortable" data-sort="status">Durum</th>
+                                    <th>Islem</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="row-warning">
+                                    <td><a href="material-data.html?id=1" class="table-cell-primary">01.00001-0001</a></td>
+                                    <td>Elektrik Motoru 5.5kW</td>
+                                    <td>Elektrik Malzemeleri</td>
+                                    <td>AD</td>
+                                    <td class="text-danger"><strong>2</strong></td>
+                                    <td>5</td>
+                                    <td>20</td>
+                                    <td>Merkez Depo</td>
+                                    <td><span class="status-badge onaylandi">Aktif</span></td>
+                                    <td>
+                                        <div class="table-actions">
+                                            <button class="btn btn-sm btn-outline edit">Duzenle</button>
+                                            <button class="btn btn-sm btn-primary view">Stok</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><a href="material-data.html?id=2" class="table-cell-primary">01.00002-0001</a></td>
+                                    <td>Rulman 6205-2RS</td>
+                                    <td>Mekanik Parcalar</td>
+                                    <td>AD</td>
+                                    <td>150</td>
+                                    <td>50</td>
+                                    <td>300</td>
+                                    <td>Merkez Depo</td>
+                                    <td><span class="status-badge onaylandi">Aktif</span></td>
+                                    <td>
+                                        <div class="table-actions">
+                                            <button class="btn btn-sm btn-outline edit">Duzenle</button>
+                                            <button class="btn btn-sm btn-primary view">Stok</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><a href="material-data.html?id=3" class="table-cell-primary">01.00003-0001</a></td>
+                                    <td>Hidrolik Yag ISO 46</td>
+                                    <td>Sarf Malzemeleri</td>
+                                    <td>LT</td>
+                                    <td>500</td>
+                                    <td>200</td>
+                                    <td>1000</td>
+                                    <td>Merkez Depo</td>
+                                    <td><span class="status-badge onaylandi">Aktif</span></td>
+                                    <td>
+                                        <div class="table-actions">
+                                            <button class="btn btn-sm btn-outline edit">Duzenle</button>
+                                            <button class="btn btn-sm btn-primary view">Stok</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><a href="material-data.html?id=4" class="table-cell-primary">01.00004-0001</a></td>
+                                    <td>PLC Modulu S7-1500</td>
+                                    <td>Elektrik Malzemeleri</td>
+                                    <td>AD</td>
+                                    <td>8</td>
+                                    <td>3</td>
+                                    <td>15</td>
+                                    <td>Konsinye Depo</td>
+                                    <td><span class="status-badge onaylandi">Aktif</span></td>
+                                    <td>
+                                        <div class="table-actions">
+                                            <button class="btn btn-sm btn-outline edit">Duzenle</button>
+                                            <button class="btn btn-sm btn-primary view">Stok</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><a href="material-data.html?id=5" class="table-cell-primary">01.00005-0001</a></td>
+                                    <td>Guvenlik Eldiveni (Cift)</td>
+                                    <td>Guvenlik Ekipmanlari</td>
+                                    <td>AD</td>
+                                    <td>250</td>
+                                    <td>100</td>
+                                    <td>500</td>
+                                    <td>Hat Kenari</td>
+                                    <td><span class="status-badge onaylandi">Aktif</span></td>
+                                    <td>
+                                        <div class="table-actions">
+                                            <button class="btn btn-sm btn-outline edit">Duzenle</button>
+                                            <button class="btn btn-sm btn-primary view">Stok</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><a href="material-data.html?id=6" class="table-cell-primary">02.00001-0001</a></td>
+                                    <td>Konveyor Kayisi 500mm</td>
+                                    <td>Mekanik Parcalar</td>
+                                    <td>MT</td>
+                                    <td>45</td>
+                                    <td>20</td>
+                                    <td>100</td>
+                                    <td>Merkez Depo</td>
+                                    <td><span class="status-badge reddedildi">Blokeli</span></td>
+                                    <td>
+                                        <div class="table-actions">
+                                            <button class="btn btn-sm btn-outline edit">Duzenle</button>
+                                            <button class="btn btn-sm btn-primary view">Stok</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><a href="material-data.html?id=7" class="table-cell-primary">02.00002-0001</a></td>
+                                    <td>Frekans Konvertoru 7.5kW</td>
+                                    <td>Elektrik Malzemeleri</td>
+                                    <td>AD</td>
+                                    <td>4</td>
+                                    <td>2</td>
+                                    <td>10</td>
+                                    <td>Merkez Depo</td>
+                                    <td><span class="status-badge beklemede">Hazirlaniyor</span></td>
+                                    <td>
+                                        <div class="table-actions">
+                                            <button class="btn btn-sm btn-outline edit">Duzenle</button>
+                                            <button class="btn btn-sm btn-primary view">Stok</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr class="row-warning">
+                                    <td><a href="material-data.html?id=8" class="table-cell-primary">02.00003-0001</a></td>
+                                    <td>Pnomatik Silindir 100x200</td>
+                                    <td>Mekanik Parcalar</td>
+                                    <td>AD</td>
+                                    <td class="text-danger"><strong>1</strong></td>
+                                    <td>3</td>
+                                    <td>15</td>
+                                    <td>Merkez Depo</td>
+                                    <td><span class="status-badge onaylandi">Aktif</span></td>
+                                    <td>
+                                        <div class="table-actions">
+                                            <button class="btn btn-sm btn-outline edit">Duzenle</button>
+                                            <button class="btn btn-sm btn-primary view">Stok</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><a href="material-data.html?id=9" class="table-cell-primary">02.00004-0001</a></td>
+                                    <td>Sensor Enduktif M12</td>
+                                    <td>Elektrik Malzemeleri</td>
+                                    <td>AD</td>
+                                    <td>35</td>
+                                    <td>10</td>
+                                    <td>50</td>
+                                    <td>Hat Kenari</td>
+                                    <td><span class="status-badge onaylandi">Aktif</span></td>
+                                    <td>
+                                        <div class="table-actions">
+                                            <button class="btn btn-sm btn-outline edit">Duzenle</button>
+                                            <button class="btn btn-sm btn-primary view">Stok</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><a href="material-data.html?id=10" class="table-cell-primary">02.00005-0001</a></td>
+                                    <td>Baret (Sari)</td>
+                                    <td>Guvenlik Ekipmanlari</td>
+                                    <td>AD</td>
+                                    <td>75</td>
+                                    <td>30</td>
+                                    <td>150</td>
+                                    <td>Hat Kenari</td>
+                                    <td><span class="status-badge taslak">Inaktif</span></td>
+                                    <td>
+                                        <div class="table-actions">
+                                            <button class="btn btn-sm btn-outline edit">Duzenle</button>
+                                            <button class="btn btn-sm btn-primary view">Stok</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="pagination">
+                        <button class="btn btn-sm btn-outline" disabled>« İlk</button>
+                        <button class="btn btn-sm btn-outline" disabled>‹ Önceki</button>
+                        <span class="page-info">Sayfa <strong>1</strong> / 50</span>
+                        <button class="btn btn-sm btn-outline">Sonraki ›</button>
+                        <button class="btn btn-sm btn-outline">Son »</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Developer Note for Data -->
+            <div class="dev-note success">
+                <h4>✅ Veri Kaynağı ve API</h4>
+                <p><strong>API Endpoint:</strong> GET /api/materials</p>
+                <p><strong>Query Parameters:</strong></p>
+                <ul>
+                    <li><code>page</code> - Sayfa numarası (varsayılan: 1)</li>
+                    <li><code>pageSize</code> - Sayfa başına kayıt (varsayılan: 25, max: 50)</li>
+                    <li><code>materialNo</code> - Malzeme no filtresi (LIKE araması)</li>
+                    <li><code>title</code> - Başlık filtresi (LIKE araması)</li>
+                    <li><code>groupId</code> - Malzeme grubu ID</li>
+                    <li><code>statusId</code> - Durum ID (1=Aktif, 2=Blokeli, 3=İnaktif, 4=Hazırlanıyor, 5=Kaldırılıyor)</li>
+                    <li><code>storageTypeId</code> - Depolama tipi ID</li>
+                    <li><code>unitId</code> - Birim ID</li>
+                    <li><code>mrpActive</code> - MRP durumu (true/false)</li>
+                    <li><code>stockStatus</code> - Stok durumu (instock/lowstock/outofstock)</li>
+                    <li><code>sortBy</code> - Sıralama alanı</li>
+                    <li><code>sortOrder</code> - Sıralama yönü (asc/desc)</li>
+                </ul>
+            </div>
+
+            <div class="dev-note">
+                <h4>📊 İlişkili Tablolar</h4>
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Tablo</th>
+                            <th>İlişki</th>
+                            <th>Açıklama</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>MDM_Material</td>
+                            <td>Ana Tablo</td>
+                            <td>Malzeme ana verileri</td>
+                        </tr>
+                        <tr>
+                            <td>MDM_MaterialGroup</td>
+                            <td>FK: GroupID</td>
+                            <td>Malzeme grup bilgileri</td>
+                        </tr>
+                        <tr>
+                            <td>MDM_Unit</td>
+                            <td>FK: UnitID</td>
+                            <td>Birim tanımları</td>
+                        </tr>
+                        <tr>
+                            <td>MDM_MaterialStatus</td>
+                            <td>FK: StatusID</td>
+                            <td>Durum tanımları</td>
+                        </tr>
+                        <tr>
+                            <td>MDM_StorageType</td>
+                            <td>FK: StorageTypeID</td>
+                            <td>Depolama tipi tanımları</td>
+                        </tr>
+                        <tr>
+                            <td>INV_Stock</td>
+                            <td>JOIN: MaterialID</td>
+                            <td>Mevcut stok bilgisi (SUM)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="dev-note warning">
+                <h4>⚠️ Yetki Kontrolleri</h4>
+                <ul>
+                    <li><strong>Görüntüleme:</strong> Tüm kullanıcılar listeyi görebilir</li>
+                    <li><strong>Yeni Malzeme:</strong> Sadece "MDM_CREATE" yetkisi olanlar</li>
+                    <li><strong>Excel Export:</strong> "MDM_EXPORT" yetkisi gerekli</li>
+                    <li><strong>Düzenleme:</strong> "MDM_EDIT" yetkisi + malzeme kendi departmanına ait olmalı</li>
+                </ul>
+            </div>
+    </main>
+
+    <style>
+        /* Table action buttons */
+        .table-actions {
+            display: flex;
+            gap: 4px;
+            flex-wrap: nowrap;
+        }
+        .table-actions .btn-sm {
+            padding: 4px 8px;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+    </style>
+
+    <script>
+        // Toggle Filters
+        document.getElementById('toggleFilters').addEventListener('click', function() {
+            const filterSection = document.getElementById('filterSection');
+            filterSection.style.display = filterSection.style.display === 'none' ? 'block' : 'none';
+        });
+
+        // Sortable columns
+        document.querySelectorAll('.sortable').forEach(th => {
+            th.style.cursor = 'pointer';
+            th.addEventListener('click', function() {
+                alert('Sıralama: ' + this.dataset.sort);
+            });
+        });
+
+        // Edit buttons - Direct navigation without confirmation
+        document.querySelectorAll('.table-actions .edit').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const row = this.closest('tr');
+                const materialId = row.querySelector('a').href.split('id=')[1];
+                window.location.href = 'material-data.html?id=' + materialId;
+            });
+        });
+
+        // Stock history buttons
+        document.querySelectorAll('.table-actions .view').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const row = this.closest('tr');
+                const materialCode = row.cells[0].textContent;
+                alert('Stok hareketleri görüntüleniyor: ' + materialCode + '\n\n(Bu özellik backend entegrasyonu ile çalışacak)');
+            });
+        });
+
+        // Pagination buttons
+        document.querySelectorAll('.pagination .btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (!this.disabled) {
+                    alert('Sayfa değiştiriliyor: ' + this.textContent.trim());
+                }
+            });
+        });
+
+        // New Material button
+        document.querySelector('.page-actions .btn-primary')?.addEventListener('click', function() {
+            window.location.href = 'material-data.html';
+        });
+
+        // Excel Export button
+        document.querySelector('.page-actions .btn-secondary')?.addEventListener('click', function() {
+            alert('Excel dosyası hazırlanıyor...\n\n(Bu özellik backend entegrasyonu ile çalışacak)');
+        });
+
+        // Filter button
+        document.querySelector('.form-actions .btn-primary')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            const filters = [];
+            const filterInputs = document.querySelectorAll('#filterSection .form-control');
+            filterInputs.forEach(input => {
+                if (input.value && input.value.trim() !== '' && input.selectedIndex !== 0) {
+                    const label = input.closest('.form-group')?.querySelector('label')?.textContent || 'Filtre';
+                    filters.push(label + ': ' + (input.options ? input.options[input.selectedIndex].text : input.value));
+                }
+            });
+            if (filters.length > 0) {
+                alert('Filtreler uygulandı!\n\n' + filters.join('\n') + '\n\n(Backend entegrasyonu ile çalışacak)');
+            } else {
+                alert('Filtreler uygulandı! (Varsayılan liste gösteriliyor)\n\n(Backend entegrasyonu ile çalışacak)');
+            }
+        });
+
+        // Clear filter button
+        document.querySelector('.form-actions .btn-outline')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            const filterInputs = document.querySelectorAll('#filterSection .form-control');
+            filterInputs.forEach(input => {
+                if (input.tagName === 'SELECT') {
+                    input.selectedIndex = 0;
+                } else {
+                    input.value = '';
+                }
+            });
+            alert('Filtreler temizlendi!');
+        });
+    </script>
+</body>
+</html>

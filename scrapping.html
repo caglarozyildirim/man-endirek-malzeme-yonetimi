@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hurda İşlemleri - IMMA</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- NAVBAR - Top Navigation (Maximo Style) -->
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">M</div>
+                <div class="brand-text">
+                    <span class="brand-name">IMMA</span>
+                    <span class="brand-subtitle">Endirek Malzeme Yonetimi</span>
+                </div>
+            </a>
+            <ul class="navbar-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="material-list.html" class="nav-link">
+                        <span class="nav-icon">📦</span>
+                        Ana Veriler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-list.html" class="dropdown-item">Malzeme Listesi</a>
+                        <a href="supplier-list.html" class="dropdown-item">Tedarikci Listesi</a>
+                        <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
+                        <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
+                        <a href="material-group.html" class="dropdown-item">Malzeme Gruplari</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="mrp.html" class="nav-link">
+                        <span class="nav-icon">📈</span>
+                        MRP
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="srm-list.html" class="nav-link">
+                        <span class="nav-icon">🛒</span>
+                        Satinalma
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="srm-list.html" class="dropdown-item">Talep Listesi</a>
+                        <a href="goods-receipt.html" class="dropdown-item">Mal Kabul</a>
+                        <a href="po-list.html" class="dropdown-item">Satinalma Siparisleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="budget-management.html" class="nav-link">
+                        <span class="nav-icon">💰</span>
+                        Butce
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="budget-management.html" class="dropdown-item">Butce Yonetimi</a>
+                        <a href="budget-preference.html" class="dropdown-item">Butce Tercihleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="material-request-list.html" class="nav-link">
+                        <span class="nav-icon">📋</span>
+                        Talepler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-request-list.html" class="dropdown-item">Talep Listesi</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="transfer-list.html" class="nav-link active">
+                        <span class="nav-icon">🏭</span>
+                        Stok
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="direct-issue.html" class="dropdown-item">Dogrudan Cikis</a>
+                        <a href="warehouse-transfer.html" class="dropdown-item">Depo Transferi</a>
+                        <a href="transfer-list.html" class="dropdown-item">Transfer Listesi</a>
+                        <a href="inventory-counting.html" class="dropdown-item">Sayim Islemleri</a>
+                        <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayimi</a>
+                        <a href="scrapping.html" class="dropdown-item active">Hurda Islemleri</a>
+                    </div>
+                </li>
+            </ul>
+            <div class="navbar-user">
+                <span class="user-name">Ahmet Yilmaz</span>
+                <div class="user-avatar">AY</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="modern-container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Hurda Islemleri</h1>
+                <p class="page-subtitle">Stok > Hurda Islemleri</p>
+            </div>
+            <div class="page-actions">
+                <a href="scrapping-detail.html?mode=create" class="btn btn-primary">+ Yeni Hurda Belgesi</a>
+            </div>
+        </div>
+
+        <!-- Developer Notes - Main -->
+        <div class="dev-note info">
+            <h4>📋 Ekran Bilgisi: Stok Duzeltme - Hurda ve Diger Islemler</h4>
+            <p><strong>Excel Spec:</strong> 24 IC - SO - Scrapping or Other</p>
+            <p><strong>Amac:</strong> Kullanilamaz hale gelen malzemelerin stoktan dusurulmesi ve diger stok duzeltme islemleri.</p>
+            <p><strong>Pattern:</strong> Document-based - Modal ile belge olusturma, liste gorunumu, genisletilebilir satirlar</p>
+            <p><strong>Data Structure Alanlari (Stock Correction Header):</strong></p>
+            <ul>
+                <li><strong>Belge:</strong> stock_correction_document_id, document_title, document_description, correction_type</li>
+                <li><strong>Kullanici:</strong> created_by_user_info, created_for_user_info, creation_datetime</li>
+                <li><strong>Deger:</strong> euro_total_value, try_total_value</li>
+                <li><strong>Onay 1:</strong> approver_1_user_id, 1_approved_by_user_id, 1_approved_datetime, 1_approval (bool)</li>
+                <li><strong>Onay 2:</strong> approver_2_requirement_check (bool), 2_approved_by_user_id, 2_approved_datetime, 2_approval (bool)</li>
+                <li><strong>Onay 3:</strong> approver_3_requirement_check (bool), 3_approved_by_user_id, 3_approved_datetime, 3_approval (bool)</li>
+                <li><strong>Gruplar:</strong> comment_group_id, document_group_id</li>
+            </ul>
+            <p><strong>Data Structure Alanlari (Stock Correction Item):</strong></p>
+            <ul>
+                <li><strong>Kalem:</strong> stock_correction_document_id, item_number, stock_record_id, selected_quantity</li>
+            </ul>
+            <p><strong>Screen Designs Ek Alanlari (Goruntulenecek):</strong></p>
+            <ul>
+                <li><strong>Malzeme:</strong> material_number, material_title, unit_of_measure, currency, unit_value, total_stock_value</li>
+                <li><strong>Lokasyon:</strong> cost_id, storage, location, bin</li>
+                <li><strong>Acik Islemler:</strong> open_material_requests, open_srm_requests, open_purchasing_orders</li>
+                <li><strong>Ek Bilgi:</strong> attachment_group_id, attachment_id, attachment_type, attachment_link</li>
+                <li><strong>Goods Movement:</strong> goods_movement_id, stock_quantity, material_group, accounting_related</li>
+            </ul>
+            <p><strong>Duzeltme Tipleri:</strong></p>
+            <ul>
+                <li><strong>Hurda:</strong> Kullanilamaz hale gelen malzemeler</li>
+                <li><strong>Hasar:</strong> Fiziksel hasar gormus malzemeler</li>
+                <li><strong>Kalite Hatasi:</strong> Kalite kontrolunden gecemeyen malzemeler</li>
+                <li><strong>Son Kullanma:</strong> Raf omru dolmus malzemeler</li>
+                <li><strong>Diger:</strong> Obsolete, kayip vb. durumlar</li>
+            </ul>
+            <p><strong>Duzeltme Yontemleri (Correction Method):</strong></p>
+            <ul>
+                <li><strong>Stoktan Dusme:</strong> Malzeme stoktan tamamen dusurulur</li>
+                <li><strong>Deger Duzeltme:</strong> Malzeme degeri guncellenir (amortisman)</li>
+                <li><strong>Transfer:</strong> Hurda deposuna transfer edilir</li>
+            </ul>
+        </div>
+
+        <!-- Document List -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Hurda Belgeleri</h3>
+                <div class="card-header-actions">
+                    <input type="text" class="form-control form-control-sm" placeholder="Belge ara..."
+                           style="width: 200px; display: inline-block; margin-right: 10px;" id="searchInput">
+                    <select class="form-control form-control-sm" style="width: 150px; display: inline-block;" id="filterStatus">
+                        <option value="">Tum Durumlar</option>
+                        <option value="draft">Taslak</option>
+                        <option value="pending">Onay Bekliyor</option>
+                        <option value="approved">Onaylandi</option>
+                        <option value="rejected">Reddedildi</option>
+                        <option value="completed">Tamamlandi</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card-body" style="overflow-x: auto;">
+                <table class="table" style="min-width: 1800px; white-space: nowrap;">
+                    <thead>
+                        <tr>
+                            <th style="width: 30px;"></th>
+                            <th style="min-width: 120px;">Belge No</th>
+                            <th style="min-width: 180px;">Belge Basligi</th>
+                            <th style="min-width: 200px;">Aciklama</th>
+                            <th style="min-width: 100px;">Duzeltme Tipi</th>
+                            <th style="min-width: 140px;">Olusturma Tarihi</th>
+                            <th style="min-width: 100px;">Olusturan</th>
+                            <th style="min-width: 100px;">Olusturulan Icin</th>
+                            <th style="min-width: 100px;">EUR Toplam</th>
+                            <th style="min-width: 100px;">TRY Toplam</th>
+                            <th style="min-width: 40px;" title="Onay 1">O1</th>
+                            <th style="min-width: 40px;" title="Onay 2">O2</th>
+                            <th style="min-width: 40px;" title="Onay 3">O3</th>
+                            <th style="min-width: 40px;" title="Ek Dosya (Document Group)">📎</th>
+                            <th style="min-width: 40px;" title="Yorum (Comment Group)">💬</th>
+                            <th style="min-width: 220px;">Islemler</th>
+                        </tr>
+                    </thead>
+                    <tbody id="documentTableBody">
+                        <!-- Document Row 1 - Pending Approval 1 -->
+                        <tr class="document-row" data-doc-id="SC-2025-000089" data-status="pending"
+                            data-approver1-id="USR-101" data-approver1-required="true"
+                            data-approver2-required="false" data-approver3-required="false"
+                            data-comment-group-id="CMG-089" data-document-group-id="DOC-089">
+                            <td>
+                                <button class="btn btn-sm btn-icon toggle-items">▶</button>
+                            </td>
+                            <td><strong>SC-2025-000089</strong></td>
+                            <td>Hasarli Malzemeler - Hat 1</td>
+                            <td><span class="text-muted" style="font-size:11px;">Uretim hattinda hasar goren malzemeler</span></td>
+                            <td><span class="badge badge-warning">Hasar</span></td>
+                            <td>15.12.2025 14:30</td>
+                            <td>Ahmet Yilmaz</td>
+                            <td>Mehmet Demir</td>
+                            <td class="text-info"><strong>75,00 €</strong></td>
+                            <td class="text-danger"><strong>2.725,00 ₺</strong></td>
+                            <td><span class="badge badge-warning" title="Onay 1: Bekliyor - Depo Sorumlusu">⏳</span></td>
+                            <td><span class="badge badge-secondary" title="Onay 2: Gerekli Degil">-</span></td>
+                            <td><span class="badge badge-secondary" title="Onay 3: Gerekli Degil">-</span></td>
+                            <td><button class="btn btn-sm btn-icon attachment-btn" title="Document Group: DOC-089 (1 dosya)">📎<sup>1</sup></button></td>
+                            <td><button class="btn btn-sm btn-icon comment-btn" title="Comment Group: CMG-089 (2 yorum)">💬<sup>2</sup></button></td>
+                            <td>
+                                <a href="scrapping-detail.html?mode=view&id=SC-2025-000089" class="btn btn-sm btn-primary">Goruntule</a>
+                                <button class="btn btn-sm btn-success approve-btn">Onayla</button>
+                                <button class="btn btn-sm btn-danger reject-btn">Reddet</button>
+                            </td>
+                        </tr>
+                        <tr class="items-row" data-doc-id="SC-2025-000089" style="display: none;">
+                            <td colspan="16">
+                                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                                    <h5 style="margin-bottom: 10px;">Belge Kalemleri (Stock Correction Items)</h5>
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Sira No</th>
+                                                <th>Stok Kayit ID</th>
+                                                <th>Malzeme No</th>
+                                                <th>Malzeme Adi</th>
+                                                <th>Malzeme Grubu</th>
+                                                <th>Maliyet ID</th>
+                                                <th>Depo/Lok/Raf</th>
+                                                <th>Stok Mik.</th>
+                                                <th>Secilen Mik.</th>
+                                                <th>Birim</th>
+                                                <th>Birim Deger</th>
+                                                <th>EUR Deger</th>
+                                                <th>TRY Deger</th>
+                                                <th title="Acik Talep">MR</th>
+                                                <th title="Acik SRM">SRM</th>
+                                                <th title="Acik PO">PO</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>1</td>
+                                                <td><span class="text-muted">STK-2025-8901</span></td>
+                                                <td>02.00001-0001</td>
+                                                <td>Konveyor Kayisi 500mm</td>
+                                                <td><span class="badge badge-secondary">Mekanik</span></td>
+                                                <td><span class="text-muted">COST-156</span></td>
+                                                <td><span style="font-size:11px;">MRK-01/A-12/R05</span></td>
+                                                <td>50</td>
+                                                <td><strong>15</strong></td>
+                                                <td>MT</td>
+                                                <td>125,00 ₺</td>
+                                                <td>51,65 €</td>
+                                                <td>1.875,00 ₺</td>
+                                                <td><span class="badge badge-warning">1</span></td>
+                                                <td>-</td>
+                                                <td>-</td>
+                                            </tr>
+                                            <tr>
+                                                <td>2</td>
+                                                <td><span class="text-muted">STK-2025-8902</span></td>
+                                                <td>02.00005-0001</td>
+                                                <td>Baret (Sari)</td>
+                                                <td><span class="badge badge-secondary">ISG</span></td>
+                                                <td><span class="text-muted">COST-157</span></td>
+                                                <td><span style="font-size:11px;">MRK-01/A-12/R06</span></td>
+                                                <td>25</td>
+                                                <td><strong>10</strong></td>
+                                                <td>AD</td>
+                                                <td>85,00 ₺</td>
+                                                <td>23,41 €</td>
+                                                <td>850,00 ₺</td>
+                                                <td>-</td>
+                                                <td>-</td>
+                                                <td>-</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <!-- Attachments Section -->
+                                    <div style="margin-top: 15px; padding: 10px; background: white; border-radius: 4px;">
+                                        <strong>📎 Ek Dosyalar:</strong>
+                                        <ul style="margin: 5px 0; padding-left: 20px;">
+                                            <li><a href="#" class="text-primary">hasar_foto_1.jpg</a> (254 KB) - 15.12.2025 14:35</li>
+                                        </ul>
+                                    </div>
+                                    <!-- Comments Section -->
+                                    <div style="margin-top: 10px; padding: 10px; background: white; border-radius: 4px;">
+                                        <strong>💬 Yorumlar:</strong>
+                                        <div style="margin-top: 5px; padding: 8px; background: #f1f3f5; border-radius: 4px;">
+                                            <small class="text-muted">Ahmet Yilmaz - 15.12.2025 14:32</small><br>
+                                            Uretim muduru ile gorusuldu, malzeme tamir edilemez durumda.
+                                        </div>
+                                        <div style="margin-top: 5px; padding: 8px; background: #f1f3f5; border-radius: 4px;">
+                                            <small class="text-muted">Mehmet Demir - 15.12.2025 15:10</small><br>
+                                            Onaya sunulmasi uygundur.
+                                        </div>
+                                    </div>
+                                    <!-- Onay Sureci Detay -->
+                                    <div style="margin-top: 15px; padding: 10px; background: #fff3cd; border-radius: 4px; color: #856404;">
+                                        <strong>Onay Sureci (Data Structure: Approver 1/2/3):</strong>
+                                        <table class="table table-sm" style="margin-top: 10px; margin-bottom: 0; background: white;">
+                                            <thead>
+                                                <tr>
+                                                    <th>Seviye</th>
+                                                    <th>Onaylayici ID</th>
+                                                    <th>Onaylayan</th>
+                                                    <th>Onay Tarihi</th>
+                                                    <th>Durum</th>
+                                                    <th>Gerekli mi?</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><strong>Onay 1</strong></td>
+                                                    <td>USR-101</td>
+                                                    <td>-</td>
+                                                    <td>-</td>
+                                                    <td><span class="badge badge-warning">Bekliyor</span></td>
+                                                    <td><span class="badge badge-info">Evet</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Onay 2</strong></td>
+                                                    <td>-</td>
+                                                    <td>-</td>
+                                                    <td>-</td>
+                                                    <td><span class="badge badge-secondary">-</span></td>
+                                                    <td><span class="badge badge-secondary">Hayir (0-5000₺)</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Onay 3</strong></td>
+                                                    <td>-</td>
+                                                    <td>-</td>
+                                                    <td>-</td>
+                                                    <td><span class="badge badge-secondary">-</span></td>
+                                                    <td><span class="badge badge-secondary">Hayir (0-5000₺)</span></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Document Row 2 - Approved (2 Level - 5000-25000₺) -->
+                        <tr class="document-row" data-doc-id="SC-2025-000088" data-status="approved"
+                            data-approver1-id="USR-101" data-approver1-required="true"
+                            data-approver2-required="true" data-approver3-required="false"
+                            data-comment-group-id="CMG-088" data-document-group-id="DOC-088">
+                            <td>
+                                <button class="btn btn-sm btn-icon toggle-items">▶</button>
+                            </td>
+                            <td><strong>SC-2025-000088</strong></td>
+                            <td>Kalite Kontrolu Red - Boya Defekti</td>
+                            <td><span class="text-muted" style="font-size:11px;">Kalite kontrolden gecemeyen malzemeler</span></td>
+                            <td><span class="badge badge-danger">Kalite Hatasi</span></td>
+                            <td>14.12.2025 10:15</td>
+                            <td>Mehmet Demir</td>
+                            <td>Fatma Yildiz</td>
+                            <td class="text-info"><strong>232,88 €</strong></td>
+                            <td class="text-danger"><strong>8.450,00 ₺</strong></td>
+                            <td><span class="badge badge-success" title="Onay 1: Onaylandi - 14.12.2025 11:00">✓</span></td>
+                            <td><span class="badge badge-success" title="Onay 2: Onaylandi - 14.12.2025 11:45">✓</span></td>
+                            <td><span class="badge badge-secondary" title="Onay 3: Gerekli Degil">-</span></td>
+                            <td><button class="btn btn-sm btn-icon attachment-btn" title="Document Group: DOC-088 (3 dosya)">📎<sup>3</sup></button></td>
+                            <td><button class="btn btn-sm btn-icon comment-btn" title="Comment Group: CMG-088 (1 yorum)">💬<sup>1</sup></button></td>
+                            <td>
+                                <a href="scrapping-detail.html?mode=view&id=SC-2025-000088" class="btn btn-sm btn-primary">Goruntule</a>
+                            </td>
+                        </tr>
+                        <tr class="items-row" data-doc-id="SC-2025-000088" style="display: none;">
+                            <td colspan="16">
+                                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                                    <h5 style="margin-bottom: 10px;">Belge Kalemleri (Stock Correction Items)</h5>
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Sira No</th>
+                                                <th>Stok Kayit ID</th>
+                                                <th>Malzeme No</th>
+                                                <th>Malzeme Adi</th>
+                                                <th>Malzeme Grubu</th>
+                                                <th>Maliyet ID</th>
+                                                <th>Depo/Lok/Raf</th>
+                                                <th>Stok Mik.</th>
+                                                <th>Secilen Mik.</th>
+                                                <th>Birim</th>
+                                                <th>Birim Deger</th>
+                                                <th>EUR Deger</th>
+                                                <th>TRY Deger</th>
+                                                <th title="Acik Talep">MR</th>
+                                                <th title="Acik SRM">SRM</th>
+                                                <th title="Acik PO">PO</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>1</td>
+                                                <td><span class="text-muted">STK-2025-7756</span></td>
+                                                <td>03.00123-0002</td>
+                                                <td>Metal Panel - Boyali (Mavi)</td>
+                                                <td><span class="badge badge-secondary">Yapisal</span></td>
+                                                <td><span class="text-muted">COST-089</span></td>
+                                                <td><span style="font-size:11px;">MRK-02/B-05/R12</span></td>
+                                                <td>100</td>
+                                                <td><strong>50</strong></td>
+                                                <td>AD</td>
+                                                <td>169,00 ₺</td>
+                                                <td>232,88 €</td>
+                                                <td>8.450,00 ₺</td>
+                                                <td>-</td>
+                                                <td><span class="badge badge-info">1</span></td>
+                                                <td>-</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <!-- Attachments Section (Document Group) -->
+                                    <div style="margin-top: 15px; padding: 10px; background: white; border-radius: 4px;">
+                                        <strong>📎 Ek Dosyalar (Document Group ID: DOC-088):</strong>
+                                        <ul style="margin: 5px 0; padding-left: 20px;">
+                                            <li><a href="#" class="text-primary">kalite_raporu.pdf</a> (1.2 MB) - 14.12.2025 10:20</li>
+                                            <li><a href="#" class="text-primary">boya_defekt_1.jpg</a> (380 KB) - 14.12.2025 10:22</li>
+                                            <li><a href="#" class="text-primary">boya_defekt_2.jpg</a> (425 KB) - 14.12.2025 10:22</li>
+                                        </ul>
+                                    </div>
+                                    <!-- Comments Section (Comment Group) -->
+                                    <div style="margin-top: 10px; padding: 10px; background: white; border-radius: 4px;">
+                                        <strong>💬 Yorumlar (Comment Group ID: CMG-088):</strong>
+                                        <div style="margin-top: 5px; padding: 8px; background: #f1f3f5; border-radius: 4px;">
+                                            <small class="text-muted">Mehmet Demir - 14.12.2025 10:18</small><br>
+                                            Kalite kontrol tarafindan reddedilen parti. Tedarikci ile gorusulecek.
+                                        </div>
+                                    </div>
+                                    <!-- Onay Sureci Detay -->
+                                    <div style="margin-top: 15px; padding: 10px; background: #d4edda; border-radius: 4px; color: #155724;">
+                                        <strong>Onay Sureci (Data Structure: Approver 1/2/3):</strong>
+                                        <table class="table table-sm" style="margin-top: 10px; margin-bottom: 0; background: white;">
+                                            <thead>
+                                                <tr>
+                                                    <th>Seviye</th>
+                                                    <th>Onaylayici ID</th>
+                                                    <th>Onaylayan</th>
+                                                    <th>Onay Tarihi</th>
+                                                    <th>Durum</th>
+                                                    <th>Gerekli mi?</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><strong>Onay 1</strong></td>
+                                                    <td>USR-101</td>
+                                                    <td>USR-101 (Depo Sorumlusu)</td>
+                                                    <td>14.12.2025 11:00</td>
+                                                    <td><span class="badge badge-success">Onaylandi</span></td>
+                                                    <td><span class="badge badge-info">Evet</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Onay 2</strong></td>
+                                                    <td>USR-102</td>
+                                                    <td>USR-102 (Depo Muduru)</td>
+                                                    <td>14.12.2025 11:45</td>
+                                                    <td><span class="badge badge-success">Onaylandi</span></td>
+                                                    <td><span class="badge badge-info">Evet (5000-25000₺)</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Onay 3</strong></td>
+                                                    <td>-</td>
+                                                    <td>-</td>
+                                                    <td>-</td>
+                                                    <td><span class="badge badge-secondary">-</span></td>
+                                                    <td><span class="badge badge-secondary">Hayir</span></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Document Row 3 - Completed (High Value - 5000-25000₺ - 2 Level) -->
+                        <tr class="document-row" data-doc-id="SC-2025-000087" data-status="completed"
+                            data-approver1-id="USR-103" data-approver1-required="true"
+                            data-approver2-required="true" data-approver3-required="false"
+                            data-comment-group-id="CMG-087" data-document-group-id="DOC-087">
+                            <td>
+                                <button class="btn btn-sm btn-icon toggle-items">▶</button>
+                            </td>
+                            <td><strong>SC-2025-000087</strong></td>
+                            <td>Son Kullanma Tarihi Gecmis - Kimyasallar</td>
+                            <td><span class="text-muted" style="font-size:11px;">Raf omru dolmus kimyasal malzemeler</span></td>
+                            <td><span class="badge badge-danger">Son Kullanma</span></td>
+                            <td>13.12.2025 16:45</td>
+                            <td>Ayse Kara</td>
+                            <td>Ali Veli</td>
+                            <td class="text-info"><strong>437,53 €</strong></td>
+                            <td class="text-danger"><strong>15.890,00 ₺</strong></td>
+                            <td><span class="badge badge-success" title="Onay 1: Onaylandi - 13.12.2025 17:00">✓</span></td>
+                            <td><span class="badge badge-success" title="Onay 2: Onaylandi - 13.12.2025 17:30">✓</span></td>
+                            <td><span class="badge badge-secondary" title="Onay 3: Gerekli Degil">-</span></td>
+                            <td><button class="btn btn-sm btn-icon attachment-btn" title="Document Group: DOC-087 (2 dosya)">📎<sup>2</sup></button></td>
+                            <td><button class="btn btn-sm btn-icon comment-btn" title="Comment Group: CMG-087 (3 yorum)">💬<sup>3</sup></button></td>
+                            <td>
+                                <a href="scrapping-detail.html?mode=view&id=SC-2025-000087" class="btn btn-sm btn-primary">Goruntule</a>
+                            </td>
+                        </tr>
+                        <tr class="items-row" data-doc-id="SC-2025-000087" style="display: none;">
+                            <td colspan="16">
+                                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                                    <h5 style="margin-bottom: 10px;">Belge Kalemleri (Stock Correction Items)</h5>
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Sira No</th>
+                                                <th>Stok Kayit ID</th>
+                                                <th>Malzeme No</th>
+                                                <th>Malzeme Adi</th>
+                                                <th>Malzeme Grubu</th>
+                                                <th>Maliyet ID</th>
+                                                <th>Depo/Lok/Raf</th>
+                                                <th>Stok Mik.</th>
+                                                <th>Secilen Mik.</th>
+                                                <th>Birim</th>
+                                                <th>Birim Deger</th>
+                                                <th>EUR Deger</th>
+                                                <th>TRY Deger</th>
+                                                <th title="Acik Talep">MR</th>
+                                                <th title="Acik SRM">SRM</th>
+                                                <th title="Acik PO">PO</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>1</td>
+                                                <td><span class="text-muted">STK-2025-6543</span></td>
+                                                <td>05.00234-0001</td>
+                                                <td>Temizlik Kimyasali - Yuzey Temizleyici</td>
+                                                <td><span class="badge badge-secondary">Kimyasal</span></td>
+                                                <td><span class="text-muted">COST-234</span></td>
+                                                <td><span style="font-size:11px;">KIM-01/C-03/R01</span></td>
+                                                <td>200</td>
+                                                <td><strong>120</strong></td>
+                                                <td>LT</td>
+                                                <td>45,50 ₺</td>
+                                                <td>150,41 €</td>
+                                                <td>5.460,00 ₺</td>
+                                                <td>-</td>
+                                                <td>-</td>
+                                                <td>-</td>
+                                            </tr>
+                                            <tr>
+                                                <td>2</td>
+                                                <td><span class="text-muted">STK-2025-6544</span></td>
+                                                <td>05.00567-0003</td>
+                                                <td>Boya - Koruyucu Kaplama</td>
+                                                <td><span class="badge badge-secondary">Kimyasal</span></td>
+                                                <td><span class="text-muted">COST-235</span></td>
+                                                <td><span style="font-size:11px;">KIM-01/C-03/R02</span></td>
+                                                <td>150</td>
+                                                <td><strong>85</strong></td>
+                                                <td>LT</td>
+                                                <td>122,70 ₺</td>
+                                                <td>287,12 €</td>
+                                                <td>10.430,00 ₺</td>
+                                                <td>-</td>
+                                                <td>-</td>
+                                                <td><span class="badge badge-success">1</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <!-- Attachments Section (Document Group) -->
+                                    <div style="margin-top: 15px; padding: 10px; background: white; border-radius: 4px;">
+                                        <strong>📎 Ek Dosyalar (Document Group ID: DOC-087):</strong>
+                                        <ul style="margin: 5px 0; padding-left: 20px;">
+                                            <li><a href="#" class="text-primary">skt_kontrol_raporu.pdf</a> (890 KB) - 13.12.2025 16:50</li>
+                                            <li><a href="#" class="text-primary">imha_formu.pdf</a> (156 KB) - 13.12.2025 18:10</li>
+                                        </ul>
+                                    </div>
+                                    <!-- Comments Section (Comment Group) -->
+                                    <div style="margin-top: 10px; padding: 10px; background: white; border-radius: 4px;">
+                                        <strong>💬 Yorumlar (Comment Group ID: CMG-087):</strong>
+                                        <div style="margin-top: 5px; padding: 8px; background: #f1f3f5; border-radius: 4px;">
+                                            <small class="text-muted">Ayse Kara - 13.12.2025 16:48</small><br>
+                                            Periyodik kontrol sirasinda tespit edildi. Guvenli imha gerekli.
+                                        </div>
+                                        <div style="margin-top: 5px; padding: 8px; background: #f1f3f5; border-radius: 4px;">
+                                            <small class="text-muted">Ali Veli - 13.12.2025 17:15</small><br>
+                                            Cevre biriminden onay alindi.
+                                        </div>
+                                        <div style="margin-top: 5px; padding: 8px; background: #f1f3f5; border-radius: 4px;">
+                                            <small class="text-muted">Ayse Kara - 13.12.2025 18:05</small><br>
+                                            Hurda deposuna transfer tamamlandi. Imha firmasi bilgilendirildi.
+                                        </div>
+                                    </div>
+                                    <!-- Onay Sureci Detay -->
+                                    <div style="margin-top: 15px; padding: 10px; background: #d4edda; border-radius: 4px; color: #155724;">
+                                        <strong>Onay Sureci (Data Structure: Approver 1/2/3):</strong>
+                                        <table class="table table-sm" style="margin-top: 10px; margin-bottom: 0; background: white;">
+                                            <thead>
+                                                <tr>
+                                                    <th>Seviye</th>
+                                                    <th>Onaylayici ID</th>
+                                                    <th>Onaylayan</th>
+                                                    <th>Onay Tarihi</th>
+                                                    <th>Durum</th>
+                                                    <th>Gerekli mi?</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><strong>Onay 1</strong></td>
+                                                    <td>USR-103</td>
+                                                    <td>USR-103 (Depo Sorumlusu)</td>
+                                                    <td>13.12.2025 17:00</td>
+                                                    <td><span class="badge badge-success">Onaylandi</span></td>
+                                                    <td><span class="badge badge-info">Evet</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Onay 2</strong></td>
+                                                    <td>USR-104</td>
+                                                    <td>USR-104 (Depo Muduru)</td>
+                                                    <td>13.12.2025 17:30</td>
+                                                    <td><span class="badge badge-success">Onaylandi</span></td>
+                                                    <td><span class="badge badge-info">Evet (5000-25000₺)</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Onay 3</strong></td>
+                                                    <td>-</td>
+                                                    <td>-</td>
+                                                    <td>-</td>
+                                                    <td><span class="badge badge-secondary">-</span></td>
+                                                    <td><span class="badge badge-secondary">Hayir</span></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <div style="margin-top: 10px;"><strong>Stok Islemleri:</strong> Tamamlandi (13.12.2025 18:00)</div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Document Row 4 - Completed (Very High Value - 25000₺+ - 3 Level) -->
+                        <tr class="document-row" data-doc-id="SC-2025-000086" data-status="completed"
+                            data-approver1-id="USR-105" data-approver1-required="true"
+                            data-approver2-required="true" data-approver3-required="true"
+                            data-comment-group-id="CMG-086" data-document-group-id="DOC-086">
+                            <td>
+                                <button class="btn btn-sm btn-icon toggle-items">▶</button>
+                            </td>
+                            <td><strong>SC-2025-000086</strong></td>
+                            <td>Obsolete Yedek Parcalar - Model Degisikligi</td>
+                            <td><span class="text-muted" style="font-size:11px;">Uretimden kalkan model parcalari</span></td>
+                            <td><span class="badge badge-info">Diger</span></td>
+                            <td>12.12.2025 09:00</td>
+                            <td>Fatma Yildiz</td>
+                            <td>Hasan Ozturk</td>
+                            <td class="text-info"><strong>895,33 €</strong></td>
+                            <td class="text-danger"><strong>32.500,00 ₺</strong></td>
+                            <td><span class="badge badge-success" title="Onay 1: Onaylandi - 12.12.2025 10:00">✓</span></td>
+                            <td><span class="badge badge-success" title="Onay 2: Onaylandi - 12.12.2025 11:30">✓</span></td>
+                            <td><span class="badge badge-success" title="Onay 3: Onaylandi - 12.12.2025 14:15">✓</span></td>
+                            <td><button class="btn btn-sm btn-icon attachment-btn" title="Document Group: DOC-086 (4 dosya)">📎<sup>4</sup></button></td>
+                            <td><button class="btn btn-sm btn-icon comment-btn" title="Comment Group: CMG-086 (5 yorum)">💬<sup>5</sup></button></td>
+                            <td>
+                                <a href="scrapping-detail.html?mode=view&id=SC-2025-000086" class="btn btn-sm btn-primary">Goruntule</a>
+                            </td>
+                        </tr>
+                        <tr class="items-row" data-doc-id="SC-2025-000086" style="display: none;">
+                            <td colspan="16">
+                                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                                    <h5 style="margin-bottom: 10px;">Belge Kalemleri (Stock Correction Items)</h5>
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Sira No</th>
+                                                <th>Stok Kayit ID</th>
+                                                <th>Malzeme No</th>
+                                                <th>Malzeme Adi</th>
+                                                <th>Malzeme Grubu</th>
+                                                <th>Maliyet ID</th>
+                                                <th>Depo/Lok/Raf</th>
+                                                <th>Stok Mik.</th>
+                                                <th>Secilen Mik.</th>
+                                                <th>Birim</th>
+                                                <th>Birim Deger</th>
+                                                <th>EUR Deger</th>
+                                                <th>TRY Deger</th>
+                                                <th title="Acik Talep">MR</th>
+                                                <th title="Acik SRM">SRM</th>
+                                                <th title="Acik PO">PO</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>1</td>
+                                                <td><span class="text-muted">STK-2025-5678</span></td>
+                                                <td>02.00891-0002</td>
+                                                <td>Motor Kontrol Unitesi - Model X200</td>
+                                                <td><span class="badge badge-secondary">Elektrik</span></td>
+                                                <td><span class="text-muted">COST-456</span></td>
+                                                <td><span style="font-size:11px;">YDP-01/D-08/R15</span></td>
+                                                <td>20</td>
+                                                <td><strong>15</strong></td>
+                                                <td>AD</td>
+                                                <td>1.450,00 ₺</td>
+                                                <td>599,17 €</td>
+                                                <td>21.750,00 ₺</td>
+                                                <td>-</td>
+                                                <td>-</td>
+                                                <td>-</td>
+                                            </tr>
+                                            <tr>
+                                                <td>2</td>
+                                                <td><span class="text-muted">STK-2025-5679</span></td>
+                                                <td>02.00892-0001</td>
+                                                <td>Sensor Modulu - Tip A-45</td>
+                                                <td><span class="badge badge-secondary">Elektronik</span></td>
+                                                <td><span class="text-muted">COST-457</span></td>
+                                                <td><span style="font-size:11px;">YDP-01/D-08/R16</span></td>
+                                                <td>30</td>
+                                                <td><strong>25</strong></td>
+                                                <td>AD</td>
+                                                <td>430,00 ₺</td>
+                                                <td>296,16 €</td>
+                                                <td>10.750,00 ₺</td>
+                                                <td>-</td>
+                                                <td>-</td>
+                                                <td>-</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <!-- Attachments Section (Document Group) -->
+                                    <div style="margin-top: 15px; padding: 10px; background: white; border-radius: 4px;">
+                                        <strong>📎 Ek Dosyalar (Document Group ID: DOC-086):</strong>
+                                        <ul style="margin: 5px 0; padding-left: 20px;">
+                                            <li><a href="#" class="text-primary">model_degisikligi_bildirimi.pdf</a> (1.5 MB) - 12.12.2025 09:10</li>
+                                            <li><a href="#" class="text-primary">teknik_analiz_raporu.pdf</a> (2.3 MB) - 12.12.2025 09:15</li>
+                                            <li><a href="#" class="text-primary">muhasebe_onay.pdf</a> (450 KB) - 12.12.2025 14:20</li>
+                                            <li><a href="#" class="text-primary">yonetim_onayi.pdf</a> (320 KB) - 12.12.2025 14:30</li>
+                                        </ul>
+                                    </div>
+                                    <!-- Comments Section (Comment Group) -->
+                                    <div style="margin-top: 10px; padding: 10px; background: white; border-radius: 4px;">
+                                        <strong>💬 Yorumlar (Comment Group ID: CMG-086):</strong>
+                                        <div style="margin-top: 5px; padding: 8px; background: #f1f3f5; border-radius: 4px;">
+                                            <small class="text-muted">Fatma Yildiz - 12.12.2025 09:05</small><br>
+                                            Muhendislik departmanindan gelen model degisikligi bildirimi dogrultusunda.
+                                        </div>
+                                        <div style="margin-top: 5px; padding: 8px; background: #f1f3f5; border-radius: 4px;">
+                                            <small class="text-muted">Hasan Ozturk - 12.12.2025 10:30</small><br>
+                                            Yuksek deger nedeniyle 3 seviyeli onay sureci baslatildi.
+                                        </div>
+                                        <div style="margin-top: 5px; padding: 8px; background: #f1f3f5; border-radius: 4px;">
+                                            <small class="text-muted">Depo Muduru - 12.12.2025 11:35</small><br>
+                                            Teknik analiz raporu incelendi, onayliyorum.
+                                        </div>
+                                        <div style="margin-top: 5px; padding: 8px; background: #f1f3f5; border-radius: 4px;">
+                                            <small class="text-muted">Finans Direktoru - 12.12.2025 14:18</small><br>
+                                            Muhasebe kayitlari icin onayliyorum. Amortisman kaydi olusturulacak.
+                                        </div>
+                                        <div style="margin-top: 5px; padding: 8px; background: #f1f3f5; border-radius: 4px;">
+                                            <small class="text-muted">Fatma Yildiz - 12.12.2025 15:35</small><br>
+                                            Tum islemler tamamlandi. Stok degerleri guncellendi.
+                                        </div>
+                                    </div>
+                                    <!-- Onay Sureci Detay (3 Seviye) -->
+                                    <div style="margin-top: 15px; padding: 10px; background: #d4edda; border-radius: 4px; color: #155724;">
+                                        <strong>Onay Sureci (Data Structure: Approver 1/2/3 - 25.000₺ Uzeri):</strong>
+                                        <table class="table table-sm" style="margin-top: 10px; margin-bottom: 0; background: white;">
+                                            <thead>
+                                                <tr>
+                                                    <th>Seviye</th>
+                                                    <th>Onaylayici ID</th>
+                                                    <th>Onaylayan</th>
+                                                    <th>Onay Tarihi</th>
+                                                    <th>Durum</th>
+                                                    <th>Gerekli mi?</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><strong>Onay 1</strong></td>
+                                                    <td>USR-105</td>
+                                                    <td>USR-105 (Depo Sorumlusu)</td>
+                                                    <td>12.12.2025 10:00</td>
+                                                    <td><span class="badge badge-success">Onaylandi</span></td>
+                                                    <td><span class="badge badge-info">Evet</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Onay 2</strong></td>
+                                                    <td>USR-106</td>
+                                                    <td>USR-106 (Depo Muduru)</td>
+                                                    <td>12.12.2025 11:30</td>
+                                                    <td><span class="badge badge-success">Onaylandi</span></td>
+                                                    <td><span class="badge badge-info">Evet</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Onay 3</strong></td>
+                                                    <td>USR-107</td>
+                                                    <td>USR-107 (Finans Direktoru)</td>
+                                                    <td>12.12.2025 14:15</td>
+                                                    <td><span class="badge badge-success">Onaylandi</span></td>
+                                                    <td><span class="badge badge-info">Evet (25000₺+)</span></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <div style="margin-top: 10px;">
+                                            <strong>Stok Islemleri:</strong> Tamamlandi (12.12.2025 15:00)<br>
+                                            <strong>Muhasebe Kaydi:</strong> Olusturuldu (12.12.2025 15:30)
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Document Row 5 - Rejected (Onay 1 Reddedildi) -->
+                        <tr class="document-row" data-doc-id="SC-2025-000085" data-status="rejected"
+                            data-approver1-id="USR-101" data-approver1-required="true"
+                            data-approver2-required="false" data-approver3-required="false"
+                            data-comment-group-id="CMG-085" data-document-group-id="">
+                            <td>
+                                <button class="btn btn-sm btn-icon toggle-items">▶</button>
+                            </td>
+                            <td><strong>SC-2025-000085</strong></td>
+                            <td>Hurda - Asinmis Kayislar</td>
+                            <td><span class="text-muted" style="font-size:11px;">Asindigi dusunulen kayislar</span></td>
+                            <td><span class="badge badge-dark">Hurda</span></td>
+                            <td>11.12.2025 13:20</td>
+                            <td>Mehmet Demir</td>
+                            <td>Ayse Kara</td>
+                            <td class="text-info"><strong>88,15 €</strong></td>
+                            <td class="text-danger"><strong>3.200,00 ₺</strong></td>
+                            <td><span class="badge badge-danger" title="Onay 1: Reddedildi - 11.12.2025 14:00">✗</span></td>
+                            <td><span class="badge badge-secondary" title="Onay 2: Gerekli Degil">-</span></td>
+                            <td><span class="badge badge-secondary" title="Onay 3: Gerekli Degil">-</span></td>
+                            <td><span class="text-muted">-</span></td>
+                            <td><button class="btn btn-sm btn-icon comment-btn" title="Comment Group: CMG-085 (1 yorum)">💬<sup>1</sup></button></td>
+                            <td>
+                                <a href="scrapping-detail.html?mode=view&id=SC-2025-000085" class="btn btn-sm btn-primary">Goruntule</a>
+                                <a href="scrapping-detail.html?mode=edit&id=SC-2025-000085" class="btn btn-sm btn-outline">Duzenle</a>
+                            </td>
+                        </tr>
+                        <tr class="items-row" data-doc-id="SC-2025-000085" style="display: none;">
+                            <td colspan="16">
+                                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                                    <h5 style="margin-bottom: 10px;">Belge Kalemleri (Stock Correction Items)</h5>
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Sira No</th>
+                                                <th>Stok Kayit ID</th>
+                                                <th>Malzeme No</th>
+                                                <th>Malzeme Adi</th>
+                                                <th>Malzeme Grubu</th>
+                                                <th>Maliyet ID</th>
+                                                <th>Depo/Lok/Raf</th>
+                                                <th>Stok Mik.</th>
+                                                <th>Secilen Mik.</th>
+                                                <th>Birim</th>
+                                                <th>Birim Deger</th>
+                                                <th>EUR Deger</th>
+                                                <th>TRY Deger</th>
+                                                <th title="Acik Talep">MR</th>
+                                                <th title="Acik SRM">SRM</th>
+                                                <th title="Acik PO">PO</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>1</td>
+                                                <td><span class="text-muted">STK-2025-4321</span></td>
+                                                <td>02.00045-0003</td>
+                                                <td>V Kayis A-45</td>
+                                                <td><span class="badge badge-secondary">Mekanik</span></td>
+                                                <td><span class="text-muted">COST-321</span></td>
+                                                <td><span style="font-size:11px;">MRK-01/A-05/R03</span></td>
+                                                <td>80</td>
+                                                <td><strong>40</strong></td>
+                                                <td>AD</td>
+                                                <td>80,00 ₺</td>
+                                                <td>88,15 €</td>
+                                                <td>3.200,00 ₺</td>
+                                                <td><span class="badge badge-warning">2</span></td>
+                                                <td>-</td>
+                                                <td>-</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <!-- Comments Section (Comment Group) -->
+                                    <div style="margin-top: 10px; padding: 10px; background: white; border-radius: 4px;">
+                                        <strong>💬 Yorumlar (Comment Group ID: CMG-085):</strong>
+                                        <div style="margin-top: 5px; padding: 8px; background: #f1f3f5; border-radius: 4px;">
+                                            <small class="text-muted">Mehmet Demir - 11.12.2025 13:25</small><br>
+                                            Gorsel inceleme sonucu asindigi degerlendirildi.
+                                        </div>
+                                    </div>
+                                    <!-- Onay Sureci Detay (Reddedildi) -->
+                                    <div style="margin-top: 15px; padding: 10px; background: #f8d7da; border-radius: 4px; color: #721c24;">
+                                        <strong>Onay Sureci (Data Structure: Approver 1/2/3):</strong>
+                                        <table class="table table-sm" style="margin-top: 10px; margin-bottom: 0; background: white;">
+                                            <thead>
+                                                <tr>
+                                                    <th>Seviye</th>
+                                                    <th>Onaylayici ID</th>
+                                                    <th>Onaylayan</th>
+                                                    <th>Onay Tarihi</th>
+                                                    <th>Durum</th>
+                                                    <th>Gerekli mi?</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><strong>Onay 1</strong></td>
+                                                    <td>USR-101</td>
+                                                    <td>USR-101 (Depo Sorumlusu)</td>
+                                                    <td>11.12.2025 14:00</td>
+                                                    <td><span class="badge badge-danger">Reddedildi</span></td>
+                                                    <td><span class="badge badge-info">Evet</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Onay 2</strong></td>
+                                                    <td>-</td>
+                                                    <td>-</td>
+                                                    <td>-</td>
+                                                    <td><span class="badge badge-secondary">-</span></td>
+                                                    <td><span class="badge badge-secondary">Hayir (0-5000₺)</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Onay 3</strong></td>
+                                                    <td>-</td>
+                                                    <td>-</td>
+                                                    <td>-</td>
+                                                    <td><span class="badge badge-secondary">-</span></td>
+                                                    <td><span class="badge badge-secondary">Hayir (0-5000₺)</span></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <div style="margin-top: 10px;">
+                                            <strong>Red Nedeni:</strong> Kayislar halen kullanilabilir durumda, teknik kontrol gerekli. Lutfen teknik ekip degerlendirmesi sonrasi tekrar basvurun.
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Document Row 6 - Draft (Henuz onaya sunulmamis) -->
+                        <tr class="document-row" data-doc-id="SC-2025-000084" data-status="draft"
+                            data-approver1-id="" data-approver1-required="false"
+                            data-approver2-required="false" data-approver3-required="false"
+                            data-comment-group-id="" data-document-group-id="">
+                            <td>
+                                <button class="btn btn-sm btn-icon toggle-items">▶</button>
+                            </td>
+                            <td><strong>SC-2025-000084</strong></td>
+                            <td>Taslak Belge - Devam Ediyor</td>
+                            <td><span class="text-muted" style="font-size:11px;">-</span></td>
+                            <td><span class="badge badge-secondary">Hasar</span></td>
+                            <td>10.12.2025 15:00</td>
+                            <td>Ahmet Yilmaz</td>
+                            <td>-</td>
+                            <td class="text-muted">-</td>
+                            <td class="text-muted">-</td>
+                            <td><span class="badge badge-secondary" title="Onay 1: Henuz belirlenmedi">-</span></td>
+                            <td><span class="badge badge-secondary" title="Onay 2: Henuz belirlenmedi">-</span></td>
+                            <td><span class="badge badge-secondary" title="Onay 3: Henuz belirlenmedi">-</span></td>
+                            <td><span class="text-muted">-</span></td>
+                            <td><span class="text-muted">-</span></td>
+                            <td>
+                                <a href="scrapping-detail.html?mode=view&id=SC-2025-000084" class="btn btn-sm btn-primary">Goruntule</a>
+                                <a href="scrapping-detail.html?mode=edit&id=SC-2025-000084" class="btn btn-sm btn-outline">Duzenle</a>
+                                <button class="btn btn-sm btn-danger delete-draft-btn">Sil</button>
+                            </td>
+                        </tr>
+                        <tr class="items-row" data-doc-id="SC-2025-000084" style="display: none;">
+                            <td colspan="16">
+                                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                                    <p style="color: #666; font-style: italic;">Henuz kalem eklenmemis. Belgeyi duzenleyin ve kalem ekleyin.</p>
+                                    <div style="margin-top: 15px; padding: 10px; background: #e2e3e5; border-radius: 4px; color: #383d41;">
+                                        <strong>Onay Sureci:</strong> Taslak belgeler icin onay sureci baslatilmamistir. Belgeyi tamamlayip onaya gonderin.
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="pagination">
+                    <button class="btn btn-sm btn-outline">‹ Onceki</button>
+                    <span class="pagination-info">Sayfa 1 / 3</span>
+                    <button class="btn btn-sm btn-outline">Sonraki ›</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Database Operations - Data Structure IMMA.xlsx Uyumlu -->
+        <div class="dev-note success">
+            <h4>Veritabani Islemleri - Data Structure IMMA.xlsx Uyumlu</h4>
+            <p><strong>API Endpoint:</strong> POST /api/stock-correction</p>
+            <p><strong>Tablo Yapisi (Stock Correction Header - Data Structure'dan):</strong></p>
+            <pre style="background: #f5f5f5; padding: 10px; border-radius: 4px;">
+Stock_Correction_Header:
+  - stock_correction_document_id (PK, int 8)
+  - stock_correction_document_title (text 64)
+  - stock_correction_document_description (text 64)
+  - correction_type (char 1)
+  - creation_datetime (datetime)
+  - created_by_user_info (int 8, FK to User)
+  - created_for_user_info (int 8, FK to User)
+
+  /* Onay Seviye 1 - Her zaman gerekli */
+  - approver_1_user_id (int 8, FK to User)
+  - 1_approved_by_user_id (int 8, FK to User)
+  - 1_approved_datetime (datetime)
+  - 1_approval (bool)
+
+  /* Onay Seviye 2 - 5000-25000₺ arasi icin gerekli */
+  - approver_2_requirement_check (bool)
+  - 2_approved_by_user_id (int 8, FK to User)
+  - 2_approved_datetime (datetime)
+  - 2_approval (bool)
+
+  /* Onay Seviye 3 - 25000₺ uzeri icin gerekli */
+  - approver_3_requirement_check (bool)
+  - 3_approved_by_user_id (int 8, FK to User)
+  - 3_approved_datetime (datetime)
+  - 3_approval (bool)
+
+  /* Degerler */
+  - euro_total_value (float 14, 12 int 2 float)
+  - try_total_value (float 14, 12 int 2 float)
+
+  /* Grup Referanslari */
+  - comment_group_id (int 8, FK to Comment_Group)
+  - document_group_id (int 8, FK to Document_Group)
+            </pre>
+
+            <p><strong>Tablo Yapisi (Stock Correction Item - Data Structure'dan):</strong></p>
+            <pre style="background: #f5f5f5; padding: 10px; border-radius: 4px;">
+Stock_Correction_Item:
+  - stock_correction_document_id (int 8, FK to Stock_Correction_Header)
+  - stock_correction_document_item_number (int 4, Sira no: 1, 2, 3...)
+  - stock_record_id (int 8, FK to Material_Stock)
+  - selected_quantity (float 15, 12 int 3 float)
+            </pre>
+
+            <p><strong>Screen Designs'tan Ek Goruntulenecek Alanlar (Join ile):</strong></p>
+            <pre style="background: #f5f5f5; padding: 10px; border-radius: 4px;">
+/* Material tablosundan */
+  - material_number (text 13)
+  - material_title (text 64)
+  - material_group (FK to Material_Group)
+  - unit_of_measure (FK to Unit_of_Measure)
+
+/* Material_Stock tablosundan */
+  - stock_quantity (float 15)
+  - cost_id (int 8, FK to Cost)
+
+/* Cost tablosundan */
+  - storage (FK to Storage_Type)
+  - location (text)
+  - bin (text)
+
+/* Hesaplanan Degerler */
+  - currency (TRY/EUR)
+  - unit_value (birim fiyat)
+  - total_stock_value (secilen miktar x birim fiyat)
+  - euro_total_value (EUR karsiligi)
+  - try_total_value (TRY karsiligi)
+
+/* Acik Islemler (Sorgu ile) */
+  - open_material_requests (Acik talep sayisi)
+  - open_srm_requests (Acik SRM sayisi)
+  - open_purchasing_orders (Acik PO sayisi)
+            </pre>
+
+            <p><strong>Iliskili Tablolar:</strong></p>
+            <pre style="background: #f5f5f5; padding: 10px; border-radius: 4px;">
+Document_Group:
+  - document_group_id (PK)
+  - (Attachment'lar burada gruplanir)
+
+Document (Attachment):
+  - document_id (PK)
+  - document_group_id (FK)
+  - attachment_type
+  - attachment_link
+  - created_by_user_info
+  - creation_datetime
+
+Comment_Group:
+  - comment_group_id (PK)
+  - (Yorumlar burada gruplanir)
+
+Comment:
+  - comment_id (PK)
+  - comment_group_id (FK)
+  - entered_by_user_id
+  - comment_text
+  - creation_datetime
+            </pre>
+        </div>
+
+        <div class="dev-note warning">
+            <h4>Is Akisi Kurallari</h4>
+            <ol>
+                <li><strong>Belge Olusturma:</strong> Modal ile belge bilgileri girilir (baslik, tip, aciklama)</li>
+                <li><strong>Malzeme Ekleme:</strong> Belge olusturulduktan sonra kalemler eklenir</li>
+                <li><strong>Deger Hesaplama:</strong> FIFO prensibi ile birim ve toplam degerler hesaplanir</li>
+                <li><strong>Onay Sureci:</strong>
+                    <ul>
+                        <li>0 - 5.000 TL: Depo Sorumlusu onayi yeterli</li>
+                        <li>5.000 - 25.000 TL: Depo Muduru onayi gerekli</li>
+                        <li>25.000 TL uzeri: Finans Direktoru onayi gerekli</li>
+                    </ul>
+                </li>
+                <li><strong>Stok Dusurme:</strong> Onay sonrasi stok miktarlari guncellenir</li>
+                <li><strong>Muhasebe Entegrasyon:</strong> Stok deger dususu muhasebe sistemine aktarilir</li>
+            </ol>
+        </div>
+    </main>
+
+    <style>
+        /* Toggle button styles */
+        .btn-icon {
+            padding: 4px 8px;
+            font-size: 12px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #667eea;
+        }
+
+        .btn-icon:hover {
+            background: #f8f9fa;
+        }
+
+        .btn-icon.expanded {
+            transform: rotate(90deg);
+        }
+
+        /* Items row styling */
+        .items-row td {
+            padding: 0 !important;
+        }
+
+        .items-row > td > div {
+            margin: 10px 0;
+        }
+
+        /* Badge colors */
+        .badge-dark {
+            background: #343a40;
+            color: white;
+        }
+
+        .badge-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        /* Action button sizing */
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+    </style>
+
+    <script>
+        // Toggle items row
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('toggle-items')) {
+                const docRow = e.target.closest('.document-row');
+                const docId = docRow.dataset.docId;
+                const itemsRow = document.querySelector(`.items-row[data-doc-id="${docId}"]`);
+
+                if (itemsRow.style.display === 'none') {
+                    itemsRow.style.display = 'table-row';
+                    e.target.textContent = '▼';
+                    e.target.classList.add('expanded');
+                } else {
+                    itemsRow.style.display = 'none';
+                    e.target.textContent = '▶';
+                    e.target.classList.remove('expanded');
+                }
+            }
+        });
+
+        // Approve document
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('approve-btn')) {
+                const docRow = e.target.closest('.document-row');
+                const docId = docRow.dataset.docId;
+                const docTitle = docRow.cells[2].textContent;
+                const totalValue = docRow.cells[6].textContent;
+
+                const note = prompt('Belge onaylanacak:\n\n' + docId + ' - ' + docTitle + '\nToplam Deger: ' + totalValue + '\n\nOnay notu (opsiyonel):');
+
+                if (note !== null) {
+                    alert('Belge onaylandi!\n\nBelge No: ' + docId + '\nOnaylayan: Ahmet Yilmaz\nOnay Tarihi: ' + new Date().toLocaleString('tr-TR') + '\nNot: ' + (note || '-'));
+
+                    // Update UI
+                    docRow.querySelector('.badge').textContent = 'Onaylandi';
+                    docRow.querySelector('.badge').className = 'badge badge-success';
+                    docRow.cells[7].innerHTML = '<button class="btn btn-sm btn-primary view-document-btn">Goruntule</button>';
+                }
+            }
+        });
+
+        // Reject document
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('reject-btn')) {
+                const docRow = e.target.closest('.document-row');
+                const docId = docRow.dataset.docId;
+                const docTitle = docRow.cells[2].textContent;
+
+                const reason = prompt('Belge reddedilecek:\n\n' + docId + ' - ' + docTitle + '\n\nRed nedeni (zorunlu):');
+
+                if (reason && reason.trim()) {
+                    alert('Belge reddedildi!\n\nBelge No: ' + docId + '\nReddeden: Ahmet Yilmaz\nRed Tarihi: ' + new Date().toLocaleString('tr-TR') + '\nNeden: ' + reason);
+
+                    // Update UI
+                    docRow.querySelector('.badge').textContent = 'Reddedildi';
+                    docRow.querySelector('.badge').className = 'badge badge-danger';
+                    docRow.cells[7].innerHTML = '<button class="btn btn-sm btn-primary view-document-btn">Goruntule</button><button class="btn btn-sm btn-outline edit-document-btn">Duzenle</button>';
+                } else if (reason !== null) {
+                    alert('Red nedeni zorunludur!');
+                }
+            }
+        });
+
+        // Delete draft
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('delete-draft-btn')) {
+                const docRow = e.target.closest('.document-row');
+                const docId = docRow.dataset.docId;
+                const docTitle = docRow.cells[2].textContent;
+
+                if (confirm('Taslak belge silinecek:\n\n' + docId + ' - ' + docTitle + '\n\nBu islem geri alinamaz!\n\nDevam etmek istiyor musunuz?')) {
+                    const itemsRow = document.querySelector(`.items-row[data-doc-id="${docId}"]`);
+                    docRow.style.transition = 'opacity 0.3s';
+                    docRow.style.opacity = '0';
+                    if (itemsRow) {
+                        itemsRow.style.transition = 'opacity 0.3s';
+                        itemsRow.style.opacity = '0';
+                    }
+
+                    setTimeout(function() {
+                        docRow.remove();
+                        if (itemsRow) itemsRow.remove();
+                        alert('Taslak belge silindi!\n\nBelge No: ' + docId);
+                    }, 300);
+                }
+            }
+        });
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            document.querySelectorAll('.document-row').forEach(function(row) {
+                const text = row.textContent.toLowerCase();
+                const itemsRow = document.querySelector(`.items-row[data-doc-id="${row.dataset.docId}"]`);
+
+                if (text.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                    if (itemsRow) itemsRow.style.display = 'none';
+                }
+            });
+        });
+
+        // Filter by status
+        document.getElementById('filterStatus').addEventListener('change', function() {
+            const filterValue = this.value.toLowerCase();
+            document.querySelectorAll('.document-row').forEach(function(row) {
+                const status = row.dataset.status;
+                const itemsRow = document.querySelector(`.items-row[data-doc-id="${row.dataset.docId}"]`);
+
+                if (!filterValue || status === filterValue) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                    if (itemsRow) itemsRow.style.display = 'none';
+                }
+            });
+        });
+
+        // Attachment button click handler
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('attachment-btn') || e.target.closest('.attachment-btn')) {
+                const btn = e.target.classList.contains('attachment-btn') ? e.target : e.target.closest('.attachment-btn');
+                const docRow = btn.closest('.document-row');
+                const docId = docRow.dataset.docId;
+
+                // Toggle items row to show attachments
+                const itemsRow = document.querySelector(`.items-row[data-doc-id="${docId}"]`);
+                if (itemsRow && itemsRow.style.display === 'none') {
+                    itemsRow.style.display = 'table-row';
+                    const toggleBtn = docRow.querySelector('.toggle-items');
+                    if (toggleBtn) {
+                        toggleBtn.textContent = '▼';
+                        toggleBtn.classList.add('expanded');
+                    }
+                }
+                alert('Ek dosyalar icin belge detay sayfasina yonlendiriliyorsunuz.');
+            }
+        });
+
+        // Comment button click handler
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('comment-btn') || e.target.closest('.comment-btn')) {
+                const btn = e.target.classList.contains('comment-btn') ? e.target : e.target.closest('.comment-btn');
+                const docRow = btn.closest('.document-row');
+                const docId = docRow.dataset.docId;
+
+                // Toggle items row to show comments
+                const itemsRow = document.querySelector(`.items-row[data-doc-id="${docId}"]`);
+                if (itemsRow && itemsRow.style.display === 'none') {
+                    itemsRow.style.display = 'table-row';
+                    const toggleBtn = docRow.querySelector('.toggle-items');
+                    if (toggleBtn) {
+                        toggleBtn.textContent = '▼';
+                        toggleBtn.classList.add('expanded');
+                    }
+                }
+
+                // Prompt for new comment
+                const newComment = prompt('Yeni yorum ekle:');
+                if (newComment && newComment.trim()) {
+                    alert('Yorum eklendi:\n\n"' + newComment + '"\n\nKullanici: Ahmet Yilmaz\nTarih: ' + new Date().toLocaleString('tr-TR'));
+                }
+            }
+        });
+
+        // Add attachment function (for detail page)
+        function addAttachment(docId) {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx';
+            fileInput.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    alert('Dosya yukleniyor:\n\n' + file.name + '\nBoyut: ' + (file.size / 1024).toFixed(2) + ' KB\n\nBelge: ' + docId);
+                }
+            };
+            fileInput.click();
+        }
+    </script>
+</body>
+</html>

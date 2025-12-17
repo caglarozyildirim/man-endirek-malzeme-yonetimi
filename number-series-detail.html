@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Numara Serisi Detay - IMMA</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">M</div>
+                <div class="brand-text">
+                    <span class="brand-name">IMMA</span>
+                    <span class="brand-subtitle">Endirek Malzeme Yonetimi</span>
+                </div>
+            </a>
+            <ul class="navbar-menu">
+                <li class="nav-item"><a href="index.html" class="nav-link"><span class="nav-icon">📊</span>Dashboard</a></li>
+                <li class="nav-item">
+                    <a href="material-list.html" class="nav-link active"><span class="nav-icon">📦</span>Ana Veriler</a>
+                    <div class="dropdown-menu">
+                        <a href="material-list.html" class="dropdown-item">Malzeme Listesi</a>
+                        <a href="supplier-list.html" class="dropdown-item">Tedarikci Listesi</a>
+                        <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
+                        <a href="number-series.html" class="dropdown-item active">Numara Serileri</a>
+                        <a href="material-group.html" class="dropdown-item">Malzeme Gruplari</a>
+                    </div>
+                </li>
+            </ul>
+            <div class="navbar-user">
+                <span class="user-name">Ahmet Yilmaz</span>
+                <div class="user-avatar">AY</div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="modern-container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title" id="pageTitle">Numara Serisi Detay</h1>
+                <p class="page-subtitle">Ana Veriler > Numara Serileri > <span id="breadcrumbAction">Goruntule</span></p>
+            </div>
+            <div class="page-actions">
+                <a href="number-series.html" class="btn btn-outline">← Listeye Don</a>
+                <button class="btn btn-primary" id="editModeBtn" style="display: none;">Duzenle</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 id="formTitle">Numara Serisi Bilgileri</h3>
+            </div>
+            <div class="card-body">
+                <form id="numberSeriesForm">
+                    <div class="form-row">
+                        <div class="form-group col-4">
+                            <label>Seri ID</label>
+                            <input type="text" id="serialId" class="form-control" readonly>
+                        </div>
+                        <div class="form-group col-4">
+                            <label>Seri Kodu <span class="required">*</span></label>
+                            <input type="text" id="serialCode" class="form-control" maxlength="2" placeholder="Ornek: MK, EL" required>
+                            <small class="form-text">2 karakterli seri kodu</small>
+                        </div>
+                        <div class="form-group col-4">
+                            <label>Seri Adi <span class="required">*</span></label>
+                            <input type="text" id="serialTitle" class="form-control" maxlength="32" placeholder="Ornek: Mekanik Parca" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-4">
+                            <label>Son Olusturulan No</label>
+                            <input type="text" id="lastNumber" class="form-control" readonly placeholder="Otomatik olusturulacak">
+                        </div>
+                        <div class="form-group col-4">
+                            <label>Olusturma Tarihi</label>
+                            <input type="text" id="createdDate" class="form-control" readonly>
+                        </div>
+                        <div class="form-group col-4">
+                            <label>Olusturan</label>
+                            <input type="text" id="createdBy" class="form-control" readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-12">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="inactivationCheck">
+                                <span>Pasif Et</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="inactivationDetails" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group col-6">
+                                <label>Pasif Edilme Tarihi</label>
+                                <input type="text" id="inactivationDate" class="form-control" readonly>
+                            </div>
+                            <div class="form-group col-6">
+                                <label>Pasif Eden Kullanici</label>
+                                <input type="text" id="inactivatedBy" class="form-control" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions" style="margin-top: 30px;" id="formActions">
+                        <a href="number-series.html" class="btn btn-outline">Iptal</a>
+                        <button type="submit" class="btn btn-primary">Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <style>
+        .required { color: #dc3545; font-weight: bold; }
+        .checkbox-label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .form-control[readonly] { background-color: #f5f5f5; }
+        .form-control:disabled { background-color: #f5f5f5; cursor: not-allowed; }
+        .form-text { font-size: 12px; color: #666; margin-top: 4px; }
+    </style>
+
+    <script>
+        const numberSeries = {
+            'SER-00001': { id: 'SER-00001', code: 'MK', title: 'Mekanik Parca', lastNumber: 'MK-00847', createdDate: '05.01.2025 09:15', createdBy: 'Ali Kaya', isInactive: false },
+            'SER-00002': { id: 'SER-00002', code: 'EL', title: 'Elektrik Malzemesi', lastNumber: 'EL-00523', createdDate: '08.01.2025 14:30', createdBy: 'Mehmet Demir', isInactive: false },
+            'SER-00003': { id: 'SER-00003', code: 'HY', title: 'Hidrolik Parca', lastNumber: 'HY-00156', createdDate: '10.01.2025 11:20', createdBy: 'Ayse Yildirim', isInactive: false },
+            'SER-00004': { id: 'SER-00004', code: 'PN', title: 'Pnomatik Parca', lastNumber: 'PN-00089', createdDate: '12.01.2025 16:45', createdBy: 'Fatma Ozturk', isInactive: false },
+            'SER-00005': { id: 'SER-00005', code: 'SH', title: 'Sarf Malzemesi', lastNumber: 'SH-01245', createdDate: '13.01.2025 10:00', createdBy: 'Hasan Can', isInactive: false },
+            'SER-00006': { id: 'SER-00006', code: 'YD', title: 'Yedek Parca (Eski)', lastNumber: 'YD-00034', createdDate: '02.01.2025 08:30', createdBy: 'Can Arslan', isInactive: true, inactivationDate: '14.01.2025 15:20', inactivatedBy: 'Ali Kaya' }
+        };
+
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return { mode: params.get('mode') || 'view', id: params.get('id') || null };
+        }
+
+        function initializePage() {
+            const { mode, id } = getUrlParams();
+            const formElements = document.querySelectorAll('#numberSeriesForm input:not([type="checkbox"]):not([readonly])');
+
+            switch(mode) {
+                case 'view':
+                    document.getElementById('pageTitle').textContent = 'Numara Serisi Goruntule';
+                    document.getElementById('breadcrumbAction').textContent = 'Goruntule';
+                    document.getElementById('editModeBtn').style.display = 'inline-block';
+                    document.getElementById('formActions').style.display = 'none';
+                    document.getElementById('serialCode').disabled = true;
+                    document.getElementById('serialTitle').disabled = true;
+                    document.getElementById('inactivationCheck').disabled = true;
+                    document.getElementById('editModeBtn').addEventListener('click', function() {
+                        window.location.href = `number-series-detail.html?mode=edit&id=${id}`;
+                    });
+                    if (id && numberSeries[id]) loadData(numberSeries[id]);
+                    break;
+                case 'edit':
+                    document.getElementById('pageTitle').textContent = 'Numara Serisi Duzenle';
+                    document.getElementById('breadcrumbAction').textContent = 'Duzenle';
+                    document.getElementById('editModeBtn').style.display = 'none';
+                    document.getElementById('formActions').style.display = 'flex';
+                    document.getElementById('serialCode').disabled = false;
+                    document.getElementById('serialTitle').disabled = false;
+                    document.getElementById('inactivationCheck').disabled = false;
+                    if (id && numberSeries[id]) loadData(numberSeries[id]);
+                    break;
+                case 'create':
+                    document.getElementById('pageTitle').textContent = 'Yeni Numara Serisi';
+                    document.getElementById('breadcrumbAction').textContent = 'Yeni';
+                    document.getElementById('editModeBtn').style.display = 'none';
+                    document.getElementById('formActions').style.display = 'flex';
+                    document.getElementById('serialId').value = 'SER-' + String(Math.floor(Math.random() * 90000) + 10000);
+                    document.getElementById('createdDate').value = new Date().toLocaleString('tr-TR');
+                    document.getElementById('createdBy').value = 'Ahmet Yilmaz';
+                    document.getElementById('serialCode').disabled = false;
+                    document.getElementById('serialTitle').disabled = false;
+                    document.getElementById('inactivationCheck').disabled = false;
+                    break;
+            }
+        }
+
+        function loadData(series) {
+            document.getElementById('serialId').value = series.id;
+            document.getElementById('serialCode').value = series.code;
+            document.getElementById('serialTitle').value = series.title;
+            document.getElementById('lastNumber').value = series.lastNumber;
+            document.getElementById('createdDate').value = series.createdDate;
+            document.getElementById('createdBy').value = series.createdBy;
+            document.getElementById('inactivationCheck').checked = series.isInactive;
+
+            if (series.isInactive) {
+                document.getElementById('inactivationDetails').style.display = 'block';
+                document.getElementById('inactivationDate').value = series.inactivationDate || '';
+                document.getElementById('inactivatedBy').value = series.inactivatedBy || '';
+            }
+        }
+
+        document.getElementById('numberSeriesForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const { mode } = getUrlParams();
+            const action = mode === 'create' ? 'olusturuldu' : 'guncellendi';
+            alert(`Numara serisi ${action}!\n\n(Backend entegrasyonu ile calisacak)`);
+            window.location.href = 'number-series.html';
+        });
+
+        document.getElementById('inactivationCheck').addEventListener('change', function() {
+            if (this.checked) {
+                document.getElementById('inactivationDetails').style.display = 'block';
+                document.getElementById('inactivationDate').value = new Date().toLocaleString('tr-TR');
+                document.getElementById('inactivatedBy').value = 'Ahmet Yilmaz';
+            } else {
+                document.getElementById('inactivationDetails').style.display = 'none';
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+</body>
+</html>

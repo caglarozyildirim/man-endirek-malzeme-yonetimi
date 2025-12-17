@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bütçe Yönetimi - IMMA</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">M</div>
+                <div class="brand-text">
+                    <span class="brand-name">IMMA</span>
+                    <span class="brand-subtitle">Endirek Malzeme Yönetimi</span>
+                </div>
+            </a>
+            <ul class="navbar-menu">
+                <li class="nav-item"><a href="index.html" class="nav-link"><span class="nav-icon">📊</span>Dashboard</a></li>
+                <li class="nav-item">
+                    <a href="material-list.html" class="nav-link"><span class="nav-icon">📦</span>Ana Veriler</a>
+                    <div class="dropdown-menu">
+                        <a href="material-list.html" class="dropdown-item">Malzeme Listesi</a>
+                        <a href="supplier-list.html" class="dropdown-item">Tedarikçi Listesi</a>
+                        <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
+                        <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
+                        <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                    </div>
+                </li>
+                <li class="nav-item"><a href="mrp.html" class="nav-link"><span class="nav-icon">📈</span>MRP</a></li>
+                <li class="nav-item">
+                    <a href="srm-list.html" class="nav-link"><span class="nav-icon">🛒</span>Satınalma</a>
+                    <div class="dropdown-menu">
+                        <a href="srm-list.html" class="dropdown-item">Talep Listesi</a>
+                        <a href="goods-receipt.html" class="dropdown-item">Mal Kabul</a>
+                        <a href="po-list.html" class="dropdown-item">Satınalma Siparişleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="budget-management.html" class="nav-link active"><span class="nav-icon">💰</span>Bütçe</a>
+                    <div class="dropdown-menu">
+                        <a href="budget-management.html" class="dropdown-item active">Bütçe Yönetimi</a>
+                        <a href="budget-preference.html" class="dropdown-item">Bütçe Tercihleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="material-request-list.html" class="nav-link"><span class="nav-icon">📋</span>Talepler</a>
+                    <div class="dropdown-menu">
+                        <a href="material-request-list.html" class="dropdown-item">Talep Listesi</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="transfer-list.html" class="nav-link"><span class="nav-icon">🏭</span>Stok</a>
+                    <div class="dropdown-menu">
+                        <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
+                        <a href="warehouse-transfer.html" class="dropdown-item">Depo Transferi</a>
+                        <a href="transfer-list.html" class="dropdown-item">Transfer Listesi</a>
+                        <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
+                        <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
+                        <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+            </ul>
+            <div class="navbar-user">
+                <span class="user-name">Ahmet Yılmaz</span>
+                <div class="user-avatar">AY</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="modern-container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Bütçe Yönetimi</h1>
+                <p class="page-subtitle">Bütçe > Maintain Budget (14 MB)</p>
+            </div>
+            <div class="page-actions">
+                <button class="btn btn-primary" onclick="showCreateModal()">+ Yeni Bütçe</button>
+            </div>
+        </div>
+
+        <!-- Developer Notes -->
+        <div class="dev-note info">
+            <h4>Ekran: 14 MB - Maintain Budget</h4>
+            <p><strong>Fonksiyonlar (Activities X Screens):</strong></p>
+            <ul>
+                <li>a) Yearly budget for a department (Departman için yıllık bütçe)</li>
+                <li>b) Monthly budget for a department (Departman için aylık bütçe)</li>
+                <li>c) Month budget for SL (Bölüm Lideri için aylık bütçe)</li>
+                <li>d) Weekly budget for SL (Bölüm Lideri için haftalık bütçe)</li>
+            </ul>
+        </div>
+
+        <!-- Filter/Search Section -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Bütçe Ara / Filtrele</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-row">
+                    <div class="form-group col-2">
+                        <label>Year (Yıl)</label>
+                        <select class="form-control" id="filterYear">
+                            <option value="2025" selected>2025</option>
+                            <option value="2024">2024</option>
+                            <option value="2026">2026</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-2">
+                        <label>Department (Departman)</label>
+                        <select class="form-control" id="filterDepartment">
+                            <option value="">Tümü</option>
+                            <option value="URETIM">URETIM</option>
+                            <option value="BAKIM">BAKIM</option>
+                            <option value="KALITE">KALITE</option>
+                            <option value="LOJISTIK">LOJISTIK</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-2">
+                        <label>Month (Ay)</label>
+                        <select class="form-control" id="filterMonth">
+                            <option value="">Tümü</option>
+                            <option value="1">1 - Ocak</option>
+                            <option value="2">2 - Şubat</option>
+                            <option value="3">3 - Mart</option>
+                            <option value="4">4 - Nisan</option>
+                            <option value="5">5 - Mayıs</option>
+                            <option value="6">6 - Haziran</option>
+                            <option value="7">7 - Temmuz</option>
+                            <option value="8">8 - Ağustos</option>
+                            <option value="9">9 - Eylül</option>
+                            <option value="10">10 - Ekim</option>
+                            <option value="11">11 - Kasım</option>
+                            <option value="12">12 - Aralık</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-2">
+                        <label>Budget Closed</label>
+                        <select class="form-control" id="filterClosed">
+                            <option value="">Tümü</option>
+                            <option value="false">Açık</option>
+                            <option value="true">Kapalı</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-2">
+                        <label>&nbsp;</label>
+                        <button class="btn btn-primary btn-block" onclick="applyFilters()">Ara</button>
+                    </div>
+                    <div class="form-group col-2">
+                        <label>&nbsp;</label>
+                        <button class="btn btn-outline btn-block" onclick="clearFilters()">Temizle</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Budget List Table - Screen Designs 14 MB'ye göre -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Bütçe Listesi</h3>
+                <span class="result-count" id="resultCount">5 kayıt</span>
+            </div>
+            <div class="card-body" style="padding: 0; overflow-x: auto;">
+                <!-- Tablo kolonları Screen Designs 14 MB'den alındı -->
+                <table class="table table-hover" id="budgetTable">
+                    <thead>
+                        <tr>
+                            <th>Budget Id</th>
+                            <th>Year</th>
+                            <th>Month</th>
+                            <th>Week</th>
+                            <th>Department</th>
+                            <th>Responsible SL</th>
+                            <th class="text-right">Budget Value</th>
+                            <th class="text-right">Consumed Value</th>
+                            <th class="text-right">Open Value</th>
+                            <th class="text-right">Open %</th>
+                            <th>Closed</th>
+                            <th>Last Change</th>
+                            <th>İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 1. Yearly Budget - Departman için yıllık (Month=-, Week=-, SL=-) -->
+                        <tr data-id="12345678" data-type="yearly">
+                            <td><strong>12345678</strong></td>
+                            <td>2025</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>URETIM</td>
+                            <td>-</td>
+                            <td class="text-right">1.000.000</td>
+                            <td class="text-right">750.000</td>
+                            <td class="text-right">250.000</td>
+                            <td class="text-right">25%</td>
+                            <td></td>
+                            <td>17.09.2025</td>
+                            <td>
+                                <div class="table-actions">
+                                    <button class="btn btn-xs btn-outline" onclick="viewBudget('12345678')">Görüntüle</button>
+                                    <button class="btn btn-xs btn-primary" onclick="editBudget('12345678')">Düzenle</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- 2. Monthly SL Budget (Month=1, Week=-, SL=Ahmet Yılmaz) -->
+                        <tr data-id="12345679" data-type="monthly-sl">
+                            <td><strong>12345679</strong></td>
+                            <td>2025</td>
+                            <td>1</td>
+                            <td>-</td>
+                            <td>URETIM</td>
+                            <td>Ahmet Yılmaz</td>
+                            <td class="text-right">75.000</td>
+                            <td class="text-right">75.000</td>
+                            <td class="text-right">0</td>
+                            <td class="text-right">0%</td>
+                            <td>X</td>
+                            <td>17.09.2025</td>
+                            <td>
+                                <div class="table-actions">
+                                    <button class="btn btn-xs btn-outline" onclick="viewBudget('12345679')">Görüntüle</button>
+                                    <button class="btn btn-xs btn-primary" onclick="editBudget('12345679')">Düzenle</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- 3. Weekly SL Budget (Month=3, Week=10, SL=Mustafa Kara) -->
+                        <tr data-id="12345681" data-type="weekly-sl">
+                            <td><strong>12345681</strong></td>
+                            <td>2025</td>
+                            <td>3</td>
+                            <td>10</td>
+                            <td>URETIM</td>
+                            <td>Mustafa Kara</td>
+                            <td class="text-right">75.000</td>
+                            <td class="text-right">80.000</td>
+                            <td class="text-right text-danger">-5.000</td>
+                            <td class="text-right text-danger">-7%</td>
+                            <td>X</td>
+                            <td>17.09.2025</td>
+                            <td>
+                                <div class="table-actions">
+                                    <button class="btn btn-xs btn-outline" onclick="viewBudget('12345681')">Görüntüle</button>
+                                    <button class="btn btn-xs btn-primary" onclick="editBudget('12345681')">Düzenle</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- 4. Monthly Dept Budget - BAKIM (Month=12, Week=-, SL=-) -->
+                        <tr data-id="12345800" data-type="monthly">
+                            <td><strong>12345800</strong></td>
+                            <td>2025</td>
+                            <td>12</td>
+                            <td>-</td>
+                            <td>BAKIM</td>
+                            <td>-</td>
+                            <td class="text-right">500.000</td>
+                            <td class="text-right">420.000</td>
+                            <td class="text-right">80.000</td>
+                            <td class="text-right">16%</td>
+                            <td></td>
+                            <td>17.09.2025</td>
+                            <td>
+                                <div class="table-actions">
+                                    <button class="btn btn-xs btn-outline" onclick="viewBudget('12345800')">Görüntüle</button>
+                                    <button class="btn btn-xs btn-primary" onclick="editBudget('12345800')">Düzenle</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- 5. Weekly SL Budget - KALITE (Month=11, Week=48, SL=Zeynep Arslan) -->
+                        <tr data-id="12345901" data-type="weekly-sl">
+                            <td><strong>12345901</strong></td>
+                            <td>2025</td>
+                            <td>11</td>
+                            <td>48</td>
+                            <td>KALITE</td>
+                            <td>Zeynep Arslan</td>
+                            <td class="text-right">8.000</td>
+                            <td class="text-right">8.500</td>
+                            <td class="text-right text-danger">-500</td>
+                            <td class="text-right text-danger">-6%</td>
+                            <td>X</td>
+                            <td>30.11.2025</td>
+                            <td>
+                                <div class="table-actions">
+                                    <button class="btn btn-xs btn-outline" onclick="viewBudget('12345901')">Görüntüle</button>
+                                    <button class="btn btn-xs btn-primary" onclick="editBudget('12345901')">Düzenle</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Data Structure Reference -->
+        <div class="dev-note">
+            <h4>Data Structure IMMA.xlsx - Budget Tablosu</h4>
+            <table class="table" style="font-size: 12px;">
+                <thead>
+                    <tr><th>Field Name</th><th>Type</th><th>Length</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Budget Id</td><td>int</td><td>8</td></tr>
+                    <tr><td>Year</td><td>int</td><td>4</td></tr>
+                    <tr><td>Month</td><td>int</td><td>2</td></tr>
+                    <tr><td>Week</td><td>int</td><td>2</td></tr>
+                    <tr><td>First day of the week</td><td>date</td><td>-</td></tr>
+                    <tr><td>Value</td><td>float</td><td>15</td></tr>
+                    <tr><td>Consumed value</td><td>float</td><td>15</td></tr>
+                    <tr><td>Open Value</td><td>float</td><td>15</td></tr>
+                    <tr><td>Department</td><td>text</td><td>8</td></tr>
+                    <tr><td>responsible SL</td><td>int</td><td>8</td></tr>
+                    <tr><td>Budget Closed check</td><td>bool</td><td>-</td></tr>
+                    <tr><td>Creation datetime</td><td>datetime</td><td>-</td></tr>
+                    <tr><td>Created by user info</td><td>int</td><td>8</td></tr>
+                    <tr><td>Last change date time</td><td>datetime</td><td>-</td></tr>
+                    <tr><td>Last change user info</td><td>int</td><td>-</td></tr>
+                </tbody>
+            </table>
+            <p><strong>Not:</strong> Currency (Para Birimi) alanı Data Structure'da yok, ancak Screen Designs'ta gösteriliyor.</p>
+        </div>
+    </main>
+
+    <!-- View Modal -->
+    <div id="viewModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3 id="viewModalTitle">Bütçe Detayı</h3>
+                <button class="modal-close" onclick="closeViewModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group col-3">
+                        <label>Budget Id</label>
+                        <input type="text" class="form-control" id="viewBudgetId" readonly>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Year</label>
+                        <input type="text" class="form-control" id="viewYear" readonly>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Month</label>
+                        <input type="text" class="form-control" id="viewMonth" readonly>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Week</label>
+                        <input type="text" class="form-control" id="viewWeek" readonly>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-4">
+                        <label>Department</label>
+                        <input type="text" class="form-control" id="viewDepartment" readonly>
+                    </div>
+                    <div class="form-group col-4">
+                        <label>Responsible SL</label>
+                        <input type="text" class="form-control" id="viewResponsibleSL" readonly>
+                    </div>
+                    <div class="form-group col-4">
+                        <label>Budget Closed</label>
+                        <input type="text" class="form-control" id="viewClosed" readonly>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-4">
+                        <label>Value (Budget Value)</label>
+                        <input type="text" class="form-control" id="viewValue" readonly>
+                    </div>
+                    <div class="form-group col-4">
+                        <label>Consumed Value</label>
+                        <input type="text" class="form-control" id="viewConsumed" readonly>
+                    </div>
+                    <div class="form-group col-4">
+                        <label>Open Value</label>
+                        <input type="text" class="form-control" id="viewOpenValue" readonly>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-6">
+                        <label>Created By</label>
+                        <input type="text" class="form-control" id="viewCreatedBy" readonly>
+                    </div>
+                    <div class="form-group col-6">
+                        <label>Creation DateTime</label>
+                        <input type="text" class="form-control" id="viewCreationDate" readonly>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-6">
+                        <label>Last Change By</label>
+                        <input type="text" class="form-control" id="viewLastChangeBy" readonly>
+                    </div>
+                    <div class="form-group col-6">
+                        <label>Last Change DateTime</label>
+                        <input type="text" class="form-control" id="viewLastChangeDate" readonly>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeViewModal()">Kapat</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3 id="editModalTitle">Bütçe Düzenle</h3>
+                <button class="modal-close" onclick="closeEditModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editBudgetId">
+                <div class="form-row">
+                    <div class="form-group col-3">
+                        <label>Year <span class="required">*</span></label>
+                        <input type="number" class="form-control" id="editYear" min="2020" max="2030">
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Month</label>
+                        <select class="form-control" id="editMonth">
+                            <option value="">-</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Week</label>
+                        <input type="number" class="form-control" id="editWeek" min="1" max="53" placeholder="-">
+                    </div>
+                    <div class="form-group col-3">
+                        <label>First Day of Week</label>
+                        <input type="date" class="form-control" id="editFirstDay">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-4">
+                        <label>Department <span class="required">*</span></label>
+                        <select class="form-control" id="editDepartment">
+                            <option value="">Seçiniz</option>
+                            <option value="URETIM">URETIM</option>
+                            <option value="BAKIM">BAKIM</option>
+                            <option value="KALITE">KALITE</option>
+                            <option value="LOJISTIK">LOJISTIK</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-4">
+                        <label>Responsible SL</label>
+                        <select class="form-control" id="editResponsibleSL">
+                            <option value="">-</option>
+                            <option value="Ahmet Yılmaz">Ahmet Yılmaz</option>
+                            <option value="Mehmet Demir">Mehmet Demir</option>
+                            <option value="Ali Kaya">Ali Kaya</option>
+                            <option value="Zeynep Arslan">Zeynep Arslan</option>
+                            <option value="Fatma Özkan">Fatma Özkan</option>
+                            <option value="Mustafa Kara">Mustafa Kara</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-4">
+                        <label>Budget Closed</label>
+                        <select class="form-control" id="editClosed">
+                            <option value="false">Hayır</option>
+                            <option value="true">Evet</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-4">
+                        <label>Value (Budget Value) <span class="required">*</span></label>
+                        <input type="number" class="form-control" id="editValue" step="0.01">
+                    </div>
+                    <div class="form-group col-4">
+                        <label>Consumed Value</label>
+                        <input type="number" class="form-control" id="editConsumed" step="0.01" readonly>
+                    </div>
+                    <div class="form-group col-4">
+                        <label>Open Value (Hesaplanan)</label>
+                        <input type="text" class="form-control" id="editOpenValue" readonly>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeEditModal()">İptal</button>
+                <button class="btn btn-primary" onclick="saveBudget()">Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .modal-header h3 { margin: 0; }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+        .modal-body { padding: 20px; }
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #e0e0e0;
+            text-align: right;
+        }
+        .modal-footer .btn { margin-left: 10px; }
+        .table-actions {
+            display: flex;
+            gap: 4px;
+        }
+        .btn-xs {
+            padding: 2px 8px;
+            font-size: 11px;
+        }
+        .required { color: #dc3545; }
+        .text-danger { color: #dc3545; }
+    </style>
+
+    <script>
+        // Mock data - Data Structure'dan (5 örnek kayıt)
+        const mockBudgets = {
+            // 1. Yearly Budget - URETIM (Month=-, Week=-, SL=-)
+            '12345678': { id: '12345678', year: 2025, month: null, week: null, department: 'URETIM', responsibleSL: null, value: 1000000, consumed: 750000, closed: false, createdBy: 'Yasin Taşdelen', creationDate: '17.09.2025 17:18', lastChangeBy: 'Yasin Taşdelen', lastChangeDate: '17.09.2025 17:18' },
+            // 2. Monthly SL Budget - URETIM (Month=1, Week=-, SL=Ahmet Yılmaz)
+            '12345679': { id: '12345679', year: 2025, month: 1, week: null, department: 'URETIM', responsibleSL: 'Ahmet Yılmaz', value: 75000, consumed: 75000, closed: true, createdBy: 'Yasin Taşdelen', creationDate: '01.01.2025 09:00', lastChangeBy: 'Ahmet Yılmaz', lastChangeDate: '31.01.2025 17:00' },
+            // 3. Weekly SL Budget - URETIM (Month=3, Week=10, SL=Mustafa Kara)
+            '12345681': { id: '12345681', year: 2025, month: 3, week: 10, department: 'URETIM', responsibleSL: 'Mustafa Kara', value: 75000, consumed: 80000, closed: true, createdBy: 'Yasin Taşdelen', creationDate: '01.03.2025 09:00', lastChangeBy: 'Mustafa Kara', lastChangeDate: '31.03.2025 17:00' },
+            // 4. Monthly Dept Budget - BAKIM (Month=12, Week=-, SL=-)
+            '12345800': { id: '12345800', year: 2025, month: 12, week: null, department: 'BAKIM', responsibleSL: null, value: 500000, consumed: 420000, closed: false, createdBy: 'Yasin Taşdelen', creationDate: '17.09.2025 17:18', lastChangeBy: 'Yasin Taşdelen', lastChangeDate: '17.09.2025 17:18' },
+            // 5. Weekly SL Budget - KALITE (Month=11, Week=48, SL=Zeynep Arslan)
+            '12345901': { id: '12345901', year: 2025, month: 11, week: 48, department: 'KALITE', responsibleSL: 'Zeynep Arslan', value: 8000, consumed: 8500, closed: true, createdBy: 'Yasin Taşdelen', creationDate: '01.11.2025 09:00', lastChangeBy: 'Zeynep Arslan', lastChangeDate: '30.11.2025 17:00' }
+        };
+
+        // View Budget
+        function viewBudget(id) {
+            const budget = mockBudgets[id];
+            if (!budget) return;
+
+            document.getElementById('viewModalTitle').textContent = 'Bütçe Detayı - ' + id;
+            document.getElementById('viewBudgetId').value = budget.id;
+            document.getElementById('viewYear').value = budget.year;
+            document.getElementById('viewMonth').value = budget.month || '-';
+            document.getElementById('viewWeek').value = budget.week || '-';
+            document.getElementById('viewDepartment').value = budget.department;
+            document.getElementById('viewResponsibleSL').value = budget.responsibleSL || '-';
+            document.getElementById('viewClosed').value = budget.closed ? 'Evet' : 'Hayır';
+            document.getElementById('viewValue').value = budget.value.toLocaleString('tr-TR');
+            document.getElementById('viewConsumed').value = budget.consumed.toLocaleString('tr-TR');
+            document.getElementById('viewOpenValue').value = (budget.value - budget.consumed).toLocaleString('tr-TR');
+            document.getElementById('viewCreatedBy').value = budget.createdBy;
+            document.getElementById('viewCreationDate').value = budget.creationDate;
+            document.getElementById('viewLastChangeBy').value = budget.lastChangeBy;
+            document.getElementById('viewLastChangeDate').value = budget.lastChangeDate;
+
+            document.getElementById('viewModal').style.display = 'flex';
+        }
+
+        function closeViewModal() {
+            document.getElementById('viewModal').style.display = 'none';
+        }
+
+        // Edit Budget
+        function editBudget(id) {
+            const budget = mockBudgets[id];
+            if (!budget) return;
+
+            document.getElementById('editModalTitle').textContent = 'Bütçe Düzenle - ' + id;
+            document.getElementById('editBudgetId').value = budget.id;
+            document.getElementById('editYear').value = budget.year;
+            document.getElementById('editMonth').value = budget.month || '';
+            document.getElementById('editWeek').value = budget.week || '';
+            document.getElementById('editDepartment').value = budget.department;
+            document.getElementById('editResponsibleSL').value = budget.responsibleSL || '';
+            document.getElementById('editClosed').value = budget.closed ? 'true' : 'false';
+            document.getElementById('editValue').value = budget.value;
+            document.getElementById('editConsumed').value = budget.consumed;
+            document.getElementById('editOpenValue').value = (budget.value - budget.consumed).toLocaleString('tr-TR');
+
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        function saveBudget() {
+            const id = document.getElementById('editBudgetId').value;
+            alert('Bütçe kaydedildi: ' + id + '\n\n(Backend entegrasyonu ile çalışacak)');
+            closeEditModal();
+        }
+
+        // Create new budget
+        function showCreateModal() {
+            document.getElementById('editModalTitle').textContent = 'Yeni Bütçe Oluştur';
+            document.getElementById('editBudgetId').value = '';
+            document.getElementById('editYear').value = 2025;
+            document.getElementById('editMonth').value = '';
+            document.getElementById('editWeek').value = '';
+            document.getElementById('editDepartment').value = '';
+            document.getElementById('editResponsibleSL').value = '';
+            document.getElementById('editClosed').value = 'false';
+            document.getElementById('editValue').value = '';
+            document.getElementById('editConsumed').value = 0;
+            document.getElementById('editOpenValue').value = '';
+
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        // Calculate Open Value on Value change
+        document.getElementById('editValue').addEventListener('input', function() {
+            const value = parseFloat(this.value) || 0;
+            const consumed = parseFloat(document.getElementById('editConsumed').value) || 0;
+            document.getElementById('editOpenValue').value = (value - consumed).toLocaleString('tr-TR');
+        });
+
+        // Filter functions
+        function applyFilters() {
+            const year = document.getElementById('filterYear').value;
+            const dept = document.getElementById('filterDepartment').value.toLowerCase();
+            const month = document.getElementById('filterMonth').value;
+            const closed = document.getElementById('filterClosed').value;
+
+            const rows = document.querySelectorAll('#budgetTable tbody tr');
+            let count = 0;
+
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                const rowYear = cells[1].textContent;
+                const rowMonth = cells[2].textContent;
+                const rowDept = cells[4].textContent.toLowerCase();
+                const rowClosed = cells[10].textContent.trim();
+
+                let visible = true;
+                if (year && rowYear !== year) visible = false;
+                if (dept && rowDept !== dept) visible = false;
+                if (month && rowMonth !== month && rowMonth !== '-') visible = false;
+                if (closed === 'true' && rowClosed !== 'X') visible = false;
+                if (closed === 'false' && rowClosed === 'X') visible = false;
+
+                row.style.display = visible ? '' : 'none';
+                if (visible) count++;
+            });
+
+            document.getElementById('resultCount').textContent = count + ' kayıt';
+        }
+
+        function clearFilters() {
+            document.getElementById('filterYear').value = '2025';
+            document.getElementById('filterDepartment').value = '';
+            document.getElementById('filterMonth').value = '';
+            document.getElementById('filterClosed').value = '';
+
+            document.querySelectorAll('#budgetTable tbody tr').forEach(row => {
+                row.style.display = '';
+            });
+            document.getElementById('resultCount').textContent = document.querySelectorAll('#budgetTable tbody tr').length + ' kayıt';
+        }
+
+        // ESC to close modals
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeViewModal();
+                closeEditModal();
+            }
+        });
+    </script>
+</body>
+</html>

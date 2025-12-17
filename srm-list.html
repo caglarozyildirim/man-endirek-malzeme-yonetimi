@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRM Talep Listesi - IMMA</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- NAVBAR - Top Navigation (Maximo Style) -->
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">M</div>
+                <div class="brand-text">
+                    <span class="brand-name">IMMA</span>
+                    <span class="brand-subtitle">Endirek Malzeme Yönetimi</span>
+                </div>
+            </a>
+            <ul class="navbar-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="material-list.html" class="nav-link">
+                        <span class="nav-icon">📦</span>
+                        Ana Veriler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-list.html" class="dropdown-item">Malzeme Listesi</a>
+                        <a href="supplier-list.html" class="dropdown-item">Tedarikçi Listesi</a>
+                        <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
+                        <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
+                        <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="mrp.html" class="nav-link">
+                        <span class="nav-icon">📈</span>
+                        MRP
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="srm-list.html" class="nav-link active">
+                        <span class="nav-icon">🛒</span>
+                        Satınalma
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="srm-list.html" class="dropdown-item active">Talep Listesi</a>
+                        <a href="goods-receipt.html" class="dropdown-item">Mal Kabul</a>
+                        <a href="po-list.html" class="dropdown-item">Satınalma Siparişleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="budget-management.html" class="nav-link">
+                        <span class="nav-icon">💰</span>
+                        Bütçe
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="budget-management.html" class="dropdown-item">Bütçe Yönetimi</a>
+                        <a href="budget-preference.html" class="dropdown-item">Bütçe Tercihleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="material-request-list.html" class="nav-link">
+                        <span class="nav-icon">📋</span>
+                        Talepler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-request-list.html" class="dropdown-item">Talep Listesi</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="transfer-list.html" class="nav-link">
+                        <span class="nav-icon">🏭</span>
+                        Stok
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
+                        <a href="warehouse-transfer.html" class="dropdown-item">Depo Transferi</a>
+                        <a href="transfer-list.html" class="dropdown-item">Transfer Listesi</a>
+                        <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
+                        <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
+                        <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+            </ul>
+            <div class="navbar-user">
+                <span class="user-name">Ahmet Yılmaz</span>
+                <div class="user-avatar">AY</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="modern-container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">SRM Talep Listesi</h1>
+                <p class="page-subtitle">Satınalma > Talep Listesi</p>
+            </div>
+            <div class="page-actions">
+                <button class="btn btn-primary" onclick="window.location.href='srm-request.html?mode=create'">+ Yeni SRM Talebi</button>
+            </div>
+        </div>
+
+        <!-- Developer Notes -->
+        <div class="dev-note info">
+            <h4>📋 Ekran Bilgisi: SRM Talep Listesi - Screen 11 (SRM RL - SRM Request List)</h4>
+            <p><strong>Referans:</strong> Excel "11 SRM RL - SRM Requests List" specification</p>
+            <p><strong>Amaç:</strong> LIST-ONLY page - SRM talep listesi, filtreleme ve durum takibi</p>
+            <p><strong>SRM:</strong> Supplier Relationship Management - Tedarikçi İlişki Yönetimi</p>
+            <p><strong>Durum İş Akışı:</strong> Taslak → Onay Bekliyor → Onaylandı</p>
+            <p><strong>Navigasyon:</strong> Tüm işlemler srm-request.html'e yönlendirir (mode parametresi ile)</p>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Arama Kriterleri</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-row">
+                    <div class="form-group col-12">
+                        <label>Genel Arama</label>
+                        <input type="text" class="form-control" id="searchGeneral" placeholder="Talep no, talep eden, departman ara...">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-3">
+                        <label>Talep Numarası</label>
+                        <input type="text" class="form-control" id="searchRequestNo" placeholder="Örn: SRM-2025-000124">
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Talep Eden</label>
+                        <select class="form-control" id="filterRequester">
+                            <option value="">Tümü</option>
+                            <option value="1">Ahmet Yılmaz</option>
+                            <option value="2">Mehmet Demir</option>
+                            <option value="3">Fatma Şahin</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Departman</label>
+                        <select class="form-control" id="filterDepartment">
+                            <option value="">Tümü</option>
+                            <option value="maintenance">Bakım</option>
+                            <option value="production">Üretim</option>
+                            <option value="quality">Kalite</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Durum</label>
+                        <select class="form-control" id="filterStatus">
+                            <option value="">Tümü</option>
+                            <option value="draft">Taslak</option>
+                            <option value="pending">Onay Bekliyor</option>
+                            <option value="approved">Onaylandı</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-3">
+                        <label>Başlangıç Tarihi</label>
+                        <input type="date" class="form-control" id="filterDateFrom" value="2025-12-01">
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Bitiş Tarihi</label>
+                        <input type="date" class="form-control" id="filterDateTo" value="2025-12-15">
+                    </div>
+                </div>
+                <button class="btn btn-primary" id="btnFilter">Filtrele</button>
+                <button class="btn btn-outline" id="btnClear">Temizle</button>
+            </div>
+        </div>
+
+        <!-- SRM Requests List Table -->
+        <div class="card">
+            <div class="card-header">
+                <h3>SRM Talepleri</h3>
+                <span class="result-count">12 kayıt bulundu</span>
+            </div>
+            <div class="card-body" style="padding: 0;">
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th class="sortable">Talep No</th>
+                                <th class="sortable">Tarih</th>
+                                <th>Talep Eden</th>
+                                <th>Departman</th>
+                                <th class="sortable">Kalem Sayısı</th>
+                                <th class="sortable">Toplam Tutar</th>
+                                <th>Durum</th>
+                                <th>İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Taslak Status -->
+                            <tr>
+                                <td><a href="srm-request.html?id=124&mode=view" class="table-cell-primary">SRM-2025-000124</a></td>
+                                <td>15.12.2025</td>
+                                <td>Ahmet Yılmaz</td>
+                                <td>Bakım</td>
+                                <td>3</td>
+                                <td><strong>15.750,00 TL</strong></td>
+                                <td><span class="status-badge taslak">Taslak</span></td>
+                                <td>
+                                    <div class="table-actions">
+                                        <button class="btn btn-sm btn-outline view-btn" data-id="124">Görüntüle</button>
+                                        <button class="btn btn-sm btn-primary edit-btn" data-id="124">Düzenle</button>
+                                        <button class="btn btn-sm btn-danger delete-btn" data-id="124">Sil</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><a href="srm-request.html?id=123&mode=view" class="table-cell-primary">SRM-2025-000123</a></td>
+                                <td>14.12.2025</td>
+                                <td>Mehmet Demir</td>
+                                <td>Üretim</td>
+                                <td>2</td>
+                                <td><strong>8.450,00 TL</strong></td>
+                                <td><span class="status-badge taslak">Taslak</span></td>
+                                <td>
+                                    <div class="table-actions">
+                                        <button class="btn btn-sm btn-outline view-btn" data-id="123">Görüntüle</button>
+                                        <button class="btn btn-sm btn-primary edit-btn" data-id="123">Düzenle</button>
+                                        <button class="btn btn-sm btn-danger delete-btn" data-id="123">Sil</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- Onay Bekliyor Status -->
+                            <tr>
+                                <td><a href="srm-request.html?id=122&mode=view" class="table-cell-primary">SRM-2025-000122</a></td>
+                                <td>13.12.2025</td>
+                                <td>Fatma Şahin</td>
+                                <td>Kalite</td>
+                                <td>5</td>
+                                <td><strong>24.680,00 TL</strong></td>
+                                <td><span class="status-badge beklemede">Onay Bekliyor</span></td>
+                                <td>
+                                    <div class="table-actions">
+                                        <button class="btn btn-sm btn-outline view-btn" data-id="122">Görüntüle</button>
+                                        <button class="btn btn-sm btn-success approve-btn" data-id="122">Onayla</button>
+                                        <button class="btn btn-sm btn-danger reject-btn" data-id="122">Reddet</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><a href="srm-request.html?id=121&mode=view" class="table-cell-primary">SRM-2025-000121</a></td>
+                                <td>13.12.2025</td>
+                                <td>Ahmet Yılmaz</td>
+                                <td>Bakım</td>
+                                <td>4</td>
+                                <td><strong>32.150,00 TL</strong></td>
+                                <td><span class="status-badge beklemede">Onay Bekliyor</span></td>
+                                <td>
+                                    <div class="table-actions">
+                                        <button class="btn btn-sm btn-outline view-btn" data-id="121">Görüntüle</button>
+                                        <button class="btn btn-sm btn-success approve-btn" data-id="121">Onayla</button>
+                                        <button class="btn btn-sm btn-danger reject-btn" data-id="121">Reddet</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><a href="srm-request.html?id=120&mode=view" class="table-cell-primary">SRM-2025-000120</a></td>
+                                <td>12.12.2025</td>
+                                <td>Mehmet Demir</td>
+                                <td>Üretim</td>
+                                <td>6</td>
+                                <td><strong>18.920,00 TL</strong></td>
+                                <td><span class="status-badge beklemede">Onay Bekliyor</span></td>
+                                <td>
+                                    <div class="table-actions">
+                                        <button class="btn btn-sm btn-outline view-btn" data-id="120">Görüntüle</button>
+                                        <button class="btn btn-sm btn-success approve-btn" data-id="120">Onayla</button>
+                                        <button class="btn btn-sm btn-danger reject-btn" data-id="120">Reddet</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- Onaylandı Status -->
+                            <tr>
+                                <td><a href="srm-request.html?id=119&mode=view" class="table-cell-primary">SRM-2025-000119</a></td>
+                                <td>11.12.2025</td>
+                                <td>Fatma Şahin</td>
+                                <td>Kalite</td>
+                                <td>3</td>
+                                <td><strong>12.560,00 TL</strong></td>
+                                <td><span class="status-badge onaylandi">Onaylandı</span></td>
+                                <td>
+                                    <div class="table-actions">
+                                        <button class="btn btn-sm btn-outline view-btn" data-id="119">Görüntüle</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><a href="srm-request.html?id=118&mode=view" class="table-cell-primary">SRM-2025-000118</a></td>
+                                <td>11.12.2025</td>
+                                <td>Ahmet Yılmaz</td>
+                                <td>Bakım</td>
+                                <td>7</td>
+                                <td><strong>45.890,00 TL</strong></td>
+                                <td><span class="status-badge onaylandi">Onaylandı</span></td>
+                                <td>
+                                    <div class="table-actions">
+                                        <button class="btn btn-sm btn-outline view-btn" data-id="118">Görüntüle</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><a href="srm-request.html?id=117&mode=view" class="table-cell-primary">SRM-2025-000117</a></td>
+                                <td>10.12.2025</td>
+                                <td>Mehmet Demir</td>
+                                <td>Üretim</td>
+                                <td>2</td>
+                                <td><strong>7.340,00 TL</strong></td>
+                                <td><span class="status-badge onaylandi">Onaylandı</span></td>
+                                <td>
+                                    <div class="table-actions">
+                                        <button class="btn btn-sm btn-outline view-btn" data-id="117">Görüntüle</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><a href="srm-request.html?id=116&mode=view" class="table-cell-primary">SRM-2025-000116</a></td>
+                                <td>10.12.2025</td>
+                                <td>Fatma Şahin</td>
+                                <td>Kalite</td>
+                                <td>4</td>
+                                <td><strong>21.750,00 TL</strong></td>
+                                <td><span class="status-badge onaylandi">Onaylandı</span></td>
+                                <td>
+                                    <div class="table-actions">
+                                        <button class="btn btn-sm btn-outline view-btn" data-id="116">Görüntüle</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><a href="srm-request.html?id=115&mode=view" class="table-cell-primary">SRM-2025-000115</a></td>
+                                <td>09.12.2025</td>
+                                <td>Ahmet Yılmaz</td>
+                                <td>Bakım</td>
+                                <td>5</td>
+                                <td><strong>38.920,00 TL</strong></td>
+                                <td><span class="status-badge onaylandi">Onaylandı</span></td>
+                                <td>
+                                    <div class="table-actions">
+                                        <button class="btn btn-sm btn-outline view-btn" data-id="115">Görüntüle</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><a href="srm-request.html?id=114&mode=view" class="table-cell-primary">SRM-2025-000114</a></td>
+                                <td>08.12.2025</td>
+                                <td>Mehmet Demir</td>
+                                <td>Üretim</td>
+                                <td>3</td>
+                                <td><strong>15.680,00 TL</strong></td>
+                                <td><span class="status-badge onaylandi">Onaylandı</span></td>
+                                <td>
+                                    <div class="table-actions">
+                                        <button class="btn btn-sm btn-outline view-btn" data-id="114">Görüntüle</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><a href="srm-request.html?id=113&mode=view" class="table-cell-primary">SRM-2025-000113</a></td>
+                                <td>07.12.2025</td>
+                                <td>Fatma Şahin</td>
+                                <td>Kalite</td>
+                                <td>6</td>
+                                <td><strong>29.450,00 TL</strong></td>
+                                <td><span class="status-badge onaylandi">Onaylandı</span></td>
+                                <td>
+                                    <div class="table-actions">
+                                        <button class="btn btn-sm btn-outline view-btn" data-id="113">Görüntüle</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination">
+                    <button class="btn btn-sm btn-outline" disabled>Önceki</button>
+                    <span class="pagination-info">Sayfa 1 / 1</span>
+                    <button class="btn btn-sm btn-outline" disabled>Sonraki</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Workflow & Actions -->
+        <div class="dev-note">
+            <h4>📊 Durum İş Akışı ve Aksiyonlar</h4>
+            <p><strong>Workflow:</strong> Taslak → Onay Bekliyor → Onaylandı</p>
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Durum</th>
+                        <th>Açıklama</th>
+                        <th>Görüntüle</th>
+                        <th>Düzenle</th>
+                        <th>Sil</th>
+                        <th>Onayla</th>
+                        <th>Reddet</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="status-badge taslak">Taslak</span></td>
+                        <td>Talep düzenleniyor, henüz onaya gönderilmedi</td>
+                        <td>✅</td>
+                        <td>✅</td>
+                        <td>✅</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td><span class="status-badge beklemede">Onay Bekliyor</span></td>
+                        <td>Talep onay sürecinde</td>
+                        <td>✅</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>✅</td>
+                        <td>✅</td>
+                    </tr>
+                    <tr>
+                        <td><span class="status-badge onaylandi">Onaylandı</span></td>
+                        <td>Talep onaylandı</td>
+                        <td>✅</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p><strong>Navigasyon:</strong> Tüm butonlar srm-request.html'e yönlendirir:</p>
+            <ul>
+                <li>Görüntüle: srm-request.html?id={id}&mode=view</li>
+                <li>Düzenle: srm-request.html?id={id}&mode=edit</li>
+                <li>Onayla/Reddet: Durum değişikliği sonrası sayfa yenilenir</li>
+            </ul>
+        </div>
+
+        <!-- Database Operations -->
+        <div class="dev-note success">
+            <h4>✅ Veritabanı İşlemleri</h4>
+            <p><strong>API Endpoint:</strong> GET /api/srm-requests</p>
+            <p><strong>Primary Table:</strong> PUR_SRMRequest</p>
+            <p><strong>Joins:</strong></p>
+            <ul>
+                <li>Users (Requester Name)</li>
+                <li>Departments (Department Name)</li>
+                <li>PUR_SRMRequestItem (Item Count, Total Amount aggregate)</li>
+            </ul>
+            <p><strong>Filter Criteria:</strong> Request Number, Requester, Department, Status, Date Range</p>
+            <p><strong>Displayed Fields:</strong> Request No, Date, Requester, Department, Item Count, Total Amount, Status</p>
+            <p><strong>Sıralama:</strong> RequestNumber DESC</p>
+        </div>
+    </main>
+
+    <style>
+        .pagination {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--gray-100);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .pagination-info {
+            color: var(--gray-500);
+            font-size: 0.875rem;
+        }
+        .result-count {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            font-weight: 500;
+        }
+        /* Table action buttons */
+        .table-actions {
+            display: flex;
+            gap: 4px;
+            flex-wrap: nowrap;
+        }
+        .table-actions .btn-sm {
+            padding: 4px 8px;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+        .btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
+            color: white;
+        }
+        .btn-success:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+        }
+        /* Sortable columns */
+        th.sortable {
+            cursor: pointer;
+            user-select: none;
+        }
+        th.sortable:hover {
+            background-color: var(--gray-50);
+        }
+    </style>
+
+    <script>
+        // ============================================
+        // FILTER FUNCTIONALITY
+        // ============================================
+
+        // Apply filters function
+        function applyFilters() {
+            const searchGeneral = document.getElementById('searchGeneral').value.toLowerCase().trim();
+            const searchRequestNo = document.getElementById('searchRequestNo').value.toLowerCase().trim();
+            const filterRequester = document.getElementById('filterRequester').value;
+            const filterDepartment = document.getElementById('filterDepartment').value;
+            const filterStatus = document.getElementById('filterStatus').value;
+            const filterDateFrom = document.getElementById('filterDateFrom').value;
+            const filterDateTo = document.getElementById('filterDateTo').value;
+
+            const rows = document.querySelectorAll('tbody tr');
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const requestNo = row.cells[0].textContent.toLowerCase().trim();
+                const dateText = row.cells[1].textContent.trim();
+                const requester = row.cells[2].textContent.toLowerCase().trim();
+                const department = row.cells[3].textContent.toLowerCase().trim();
+                const itemCount = row.cells[4].textContent.trim();
+                const totalAmount = row.cells[5].textContent.trim();
+                const statusBadge = row.cells[6].querySelector('.status-badge');
+                const status = statusBadge ? statusBadge.textContent.toLowerCase().trim() : '';
+
+                let showRow = true;
+
+                // Genel Arama - searches across all text columns
+                if (searchGeneral) {
+                    const allText = `${requestNo} ${dateText} ${requester} ${department} ${itemCount} ${totalAmount} ${status}`;
+                    if (!allText.includes(searchGeneral)) {
+                        showRow = false;
+                    }
+                }
+
+                // Talep Numarası filter
+                if (searchRequestNo && !requestNo.includes(searchRequestNo)) {
+                    showRow = false;
+                }
+
+                // Talep Eden filter (dropdown)
+                if (filterRequester) {
+                    const requesterMap = {
+                        '1': 'ahmet yılmaz',
+                        '2': 'mehmet demir',
+                        '3': 'fatma şahin'
+                    };
+                    if (requesterMap[filterRequester] && !requester.includes(requesterMap[filterRequester])) {
+                        showRow = false;
+                    }
+                }
+
+                // Departman filter
+                if (filterDepartment) {
+                    const departmentMap = {
+                        'maintenance': 'bakım',
+                        'production': 'üretim',
+                        'quality': 'kalite'
+                    };
+                    if (departmentMap[filterDepartment] && !department.includes(departmentMap[filterDepartment])) {
+                        showRow = false;
+                    }
+                }
+
+                // Durum filter
+                if (filterStatus) {
+                    const statusMap = {
+                        'draft': 'taslak',
+                        'pending': 'onay bekliyor',
+                        'approved': 'onaylandı'
+                    };
+                    if (statusMap[filterStatus] && status !== statusMap[filterStatus]) {
+                        showRow = false;
+                    }
+                }
+
+                // Date range filter (convert dd.mm.yyyy to Date)
+                if (filterDateFrom || filterDateTo) {
+                    const dateParts = dateText.split('.');
+                    if (dateParts.length === 3) {
+                        const rowDate = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+
+                        if (filterDateFrom) {
+                            const fromDate = new Date(filterDateFrom);
+                            if (rowDate < fromDate) {
+                                showRow = false;
+                            }
+                        }
+
+                        if (filterDateTo) {
+                            const toDate = new Date(filterDateTo);
+                            if (rowDate > toDate) {
+                                showRow = false;
+                            }
+                        }
+                    }
+                }
+
+                // Show or hide row
+                row.style.display = showRow ? '' : 'none';
+                if (showRow) visibleCount++;
+            });
+
+            // Update result count
+            document.querySelector('.result-count').textContent = `${visibleCount} kayıt bulundu`;
+        }
+
+        // Filter button
+        document.getElementById('btnFilter').addEventListener('click', function(e) {
+            e.preventDefault();
+            applyFilters();
+        });
+
+        // Clear filter button
+        document.getElementById('btnClear').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('searchGeneral').value = '';
+            document.getElementById('searchRequestNo').value = '';
+            document.getElementById('filterRequester').selectedIndex = 0;
+            document.getElementById('filterDepartment').selectedIndex = 0;
+            document.getElementById('filterStatus').selectedIndex = 0;
+            document.getElementById('filterDateFrom').value = '2025-12-01';
+            document.getElementById('filterDateTo').value = '2025-12-15';
+
+            // Show all rows
+            document.querySelectorAll('tbody tr').forEach(row => {
+                row.style.display = '';
+            });
+
+            // Update result count
+            const totalRows = document.querySelectorAll('tbody tr').length;
+            document.querySelector('.result-count').textContent = `${totalRows} kayıt bulundu`;
+        });
+
+        // Enter key support for filter inputs
+        document.getElementById('searchGeneral').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                applyFilters();
+            }
+        });
+        document.getElementById('searchRequestNo').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                applyFilters();
+            }
+        });
+
+        // Görüntüle (View) buttons - All statuses
+        document.querySelectorAll('.view-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                window.location.href = 'srm-request.html?id=' + id + '&mode=view';
+            });
+        });
+
+        // Düzenle (Edit) buttons - Only for Taslak status
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                window.location.href = 'srm-request.html?id=' + id + '&mode=edit';
+            });
+        });
+
+        // Sil (Delete) buttons - Only for Taslak status
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                const row = this.closest('tr');
+                const requestNo = row.cells[0].textContent.trim();
+
+                if (confirm('SRM Talebi silinecek:\n\n' +
+                           'Talep No: ' + requestNo + '\n\n' +
+                           'Bu işlem geri alınamaz. Emin misiniz?')) {
+                    alert('✅ Talep silindi!\n\n' +
+                          'Talep No: ' + requestNo + '\n\n' +
+                          'API: DELETE /api/srm-requests/' + id);
+                    // After successful delete, row would be removed from table
+                    row.remove();
+                }
+            });
+        });
+
+        // Onayla (Approve) buttons - Only for Onay Bekliyor status
+        document.querySelectorAll('.approve-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                const row = this.closest('tr');
+                const requestNo = row.cells[0].textContent.trim();
+                const totalAmount = row.cells[5].textContent.trim();
+
+                if (confirm('SRM Talebi Onaylanacak:\n\n' +
+                           'Talep No: ' + requestNo + '\n' +
+                           'Toplam Tutar: ' + totalAmount + '\n\n' +
+                           'Onaylıyor musunuz?')) {
+
+                    alert('✅ Talep onaylandı!\n\n' +
+                          'Talep No: ' + requestNo + '\n\n' +
+                          'API: POST /api/srm-requests/' + id + '/approve\n' +
+                          'Sayfa yenilenecek...');
+
+                    // After successful approval, page would reload to show updated status
+                    // window.location.reload();
+                }
+            });
+        });
+
+        // Reddet (Reject) buttons - Only for Onay Bekliyor status
+        document.querySelectorAll('.reject-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                const row = this.closest('tr');
+                const requestNo = row.cells[0].textContent.trim();
+
+                const reason = prompt('SRM Talebi Reddedilecek:\n\n' +
+                                    'Talep No: ' + requestNo + '\n\n' +
+                                    'Red sebebini girin:');
+
+                if (reason && reason.trim()) {
+                    alert('❌ Talep reddedildi!\n\n' +
+                          'Talep No: ' + requestNo + '\n' +
+                          'Red Sebebi: ' + reason + '\n\n' +
+                          'API: POST /api/srm-requests/' + id + '/reject\n' +
+                          'Sayfa yenilenecek...');
+
+                    // After successful rejection, page would reload to show updated status
+                    // window.location.reload();
+                }
+            });
+        });
+
+        // Pagination buttons
+        document.querySelectorAll('.pagination .btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (!this.disabled) {
+                    alert('Sayfa değiştiriliyor: ' + this.textContent.trim());
+                }
+            });
+        });
+
+        // Sortable columns
+        document.querySelectorAll('th.sortable').forEach(th => {
+            th.addEventListener('click', function() {
+                const column = this.textContent.trim();
+                alert('Sıralama: ' + column + '\n\n(API üzerinden sıralama yapılacak)');
+            });
+        });
+
+        // Table row click (except action buttons)
+        document.querySelectorAll('tbody tr').forEach(row => {
+            row.addEventListener('click', function(e) {
+                // Don't trigger if clicking on buttons or links
+                if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A' || e.target.closest('.table-actions')) {
+                    return;
+                }
+
+                const link = this.querySelector('a.table-cell-primary');
+                if (link) {
+                    window.location.href = link.href;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

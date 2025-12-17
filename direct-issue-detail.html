@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doğrudan Çıkış Detay - IMMA</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">M</div>
+                <div class="brand-text">
+                    <span class="brand-name">IMMA</span>
+                    <span class="brand-subtitle">Endirek Malzeme Yönetimi</span>
+                </div>
+            </a>
+            <ul class="navbar-menu">
+                <li class="nav-item"><a href="index.html" class="nav-link"><span class="nav-icon">📊</span>Dashboard</a></li>
+                <li class="nav-item"><a href="material-list.html" class="nav-link"><span class="nav-icon">📦</span>Ana Veriler</a></li>
+                <li class="nav-item"><a href="mrp.html" class="nav-link"><span class="nav-icon">📈</span>MRP</a></li>
+                <li class="nav-item"><a href="srm-list.html" class="nav-link"><span class="nav-icon">🛒</span>Satınalma</a></li>
+                <li class="nav-item"><a href="budget-management.html" class="nav-link"><span class="nav-icon">💰</span>Bütçe</a></li>
+                <li class="nav-item"><a href="material-request-list.html" class="nav-link"><span class="nav-icon">📋</span>Talepler</a></li>
+                <li class="nav-item">
+                    <a href="transfer-list.html" class="nav-link active"><span class="nav-icon">🏭</span>Stok</a>
+                    <div class="dropdown-menu">
+                        <a href="direct-issue.html" class="dropdown-item active">Doğrudan Çıkış</a>
+                        <a href="warehouse-transfer.html" class="dropdown-item">Depo Transferi</a>
+                        <a href="transfer-list.html" class="dropdown-item">Transfer Listesi</a>
+                        <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
+                        <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
+                        <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+            </ul>
+            <div class="navbar-user">
+                <span class="user-name">Ahmet Yılmaz</span>
+                <div class="user-avatar">AY</div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="modern-container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Doğrudan Çıkış Detayı</h1>
+                <p class="page-subtitle">Stok > Doğrudan Çıkış > <span id="issueId">-</span></p>
+            </div>
+            <div class="page-actions">
+                <a href="direct-issue.html" class="btn btn-outline">← Geri Dön</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Çıkış Bilgileri</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Çıkış ID:</label>
+                        <span id="displayIssueId">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Tarih:</label>
+                        <span id="displayDate">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Durum:</label>
+                        <span id="displayStatus">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>İşlem Yapan:</label>
+                        <span id="displayUser">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Malzeme Bilgileri</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Malzeme No:</label>
+                        <span id="displayMaterialNo">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Malzeme Adı:</label>
+                        <span id="displayMaterialName">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Miktar:</label>
+                        <span id="displayQuantity">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Birim:</label>
+                        <span id="displayUnit">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Lokasyon Bilgileri</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Kaynak Depo:</label>
+                        <span id="displayWarehouse">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Lokasyon:</label>
+                        <span id="displayLocation">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Bin:</label>
+                        <span id="displayBin">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Maliyet Merkezi:</label>
+                        <span id="displayCostCenter">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <style>
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .info-item label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 600;
+        }
+        .info-item span {
+            font-size: 14px;
+            color: #333;
+        }
+    </style>
+
+    <script>
+        const issues = {
+            'DGI-2025-000789': {
+                id: 'DGI-2025-000789',
+                date: '2025-12-14',
+                status: 'Tamamlandı',
+                user: 'Ahmet Yılmaz',
+                materialNo: '01.00002-0001',
+                materialName: 'Rulman 6205-2RS',
+                quantity: 5,
+                unit: 'AD',
+                warehouse: 'Merkez Depo',
+                location: 'A-01-03',
+                bin: 'SHELF-A-003',
+                costCenter: 'BAKIM-001'
+            },
+            'DGI-2025-000788': {
+                id: 'DGI-2025-000788',
+                date: '2025-12-13',
+                status: 'Tamamlandı',
+                user: 'Mehmet Demir',
+                materialNo: '02.00004-0001',
+                materialName: 'Sensör Endüktif M12',
+                quantity: 2,
+                unit: 'AD',
+                warehouse: 'Merkez Depo',
+                location: 'B-02-01',
+                bin: 'SHELF-B-010',
+                costCenter: 'URETIM-001'
+            },
+            'DGI-2025-000787': {
+                id: 'DGI-2025-000787',
+                date: '2025-12-12',
+                status: 'Tamamlandı',
+                user: 'Ali Kaya',
+                materialNo: '03.00001-0001',
+                materialName: 'Elektrik Kablosu 3x1.5',
+                quantity: 50,
+                unit: 'M',
+                warehouse: 'Merkez Depo',
+                location: 'C-03-01',
+                bin: 'ROLL-C-001',
+                costCenter: 'ELEKTRIK-001'
+            },
+            'DGI-2025-000786': {
+                id: 'DGI-2025-000786',
+                date: '2025-12-11',
+                status: 'Tamamlandı',
+                user: 'Fatma Öz',
+                materialNo: '01.00005-0001',
+                materialName: 'Güvenlik Eldiveni',
+                quantity: 10,
+                unit: 'AD',
+                warehouse: 'Merkez Depo',
+                location: 'D-01-01',
+                bin: 'BIN-D-100',
+                costCenter: 'ISG-001'
+            }
+        };
+
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return { id: params.get('id') || null };
+        }
+
+        function initializePage() {
+            const { id } = getUrlParams();
+            if (id && issues[id]) {
+                loadIssueData(issues[id]);
+            } else {
+                alert('Çıkış kaydı bulunamadı!');
+                window.location.href = 'direct-issue.html';
+            }
+        }
+
+        function loadIssueData(issue) {
+            document.getElementById('issueId').textContent = issue.id;
+            document.getElementById('displayIssueId').textContent = issue.id;
+            document.getElementById('displayDate').textContent = issue.date;
+            document.getElementById('displayStatus').innerHTML = `<span class="status-badge status-active">${issue.status}</span>`;
+            document.getElementById('displayUser').textContent = issue.user;
+            document.getElementById('displayMaterialNo').textContent = issue.materialNo;
+            document.getElementById('displayMaterialName').textContent = issue.materialName;
+            document.getElementById('displayQuantity').textContent = issue.quantity;
+            document.getElementById('displayUnit').textContent = issue.unit;
+            document.getElementById('displayWarehouse').textContent = issue.warehouse;
+            document.getElementById('displayLocation').textContent = issue.location;
+            document.getElementById('displayBin').textContent = issue.bin;
+            document.getElementById('displayCostCenter').textContent = issue.costCenter;
+        }
+
+        document.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+</body>
+</html>

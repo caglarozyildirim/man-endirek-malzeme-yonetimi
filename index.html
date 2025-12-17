@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IMMA - Endirek Malzeme Yönetimi</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- ============================================
+         NAVBAR - Top Navigation (Maximo Style)
+         ============================================ -->
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <!-- Brand -->
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">M</div>
+                <div class="brand-text">
+                    <span class="brand-name">IMMA</span>
+                    <span class="brand-subtitle">Endirek Malzeme Yönetimi</span>
+                </div>
+            </a>
+
+            <!-- Navigation Menu -->
+                        <ul class="navbar-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link active">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="material-list.html" class="nav-link">
+                        <span class="nav-icon">📦</span>
+                        Ana Veriler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-list.html" class="dropdown-item">Malzeme Listesi</a>
+                        <a href="supplier-list.html" class="dropdown-item">Tedarikçi Listesi</a>
+                        <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
+                        <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
+                        <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="mrp.html" class="nav-link">
+                        <span class="nav-icon">📈</span>
+                        MRP
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="srm-list.html" class="nav-link">
+                        <span class="nav-icon">🛒</span>
+                        Satınalma
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="srm-list.html" class="dropdown-item">Talep Listesi</a>
+                        <a href="goods-receipt.html" class="dropdown-item">Mal Kabul</a>
+                        <a href="po-list.html" class="dropdown-item">Satınalma Siparişleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="budget-management.html" class="nav-link">
+                        <span class="nav-icon">💰</span>
+                        Bütçe
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="budget-management.html" class="dropdown-item">Bütçe Yönetimi</a>
+                        <a href="budget-preference.html" class="dropdown-item">Bütçe Tercihleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="material-request-list.html" class="nav-link">
+                        <span class="nav-icon">📋</span>
+                        Talepler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-request-list.html" class="dropdown-item">Talep Listesi</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="transfer-list.html" class="nav-link">
+                        <span class="nav-icon">🏭</span>
+                        Stok
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
+                        <a href="warehouse-transfer.html" class="dropdown-item">Depo Transferi</a>
+                        <a href="transfer-list.html" class="dropdown-item">Transfer Listesi</a>
+                        <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
+                        <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
+                        <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+            </ul>
+
+            <!-- User Menu -->
+            <div class="navbar-user">
+                <span class="user-name">Ahmet Yılmaz</span>
+                <div class="user-avatar">AY</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ============================================
+         MAIN CONTENT
+         ============================================ -->
+    <main class="modern-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Dashboard</h1>
+                <p class="page-subtitle">Endirek Malzeme Yönetimi - Genel Bakış</p>
+            </div>
+            <div class="page-actions">
+                <button class="btn btn-secondary">📥 Rapor İndir</button>
+            </div>
+        </div>
+
+        <!-- Hızlı İşlemler - Quick Actions Bar -->
+        <div class="quick-actions-bar" style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 1.5rem; padding: 16px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 8px; border: 1px solid #dee2e6;">
+            <a href="material-request.html" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px;">
+                📋 Yeni Talep
+            </a>
+            <a href="material-data.html" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 8px;">
+                📦 Yeni Malzeme
+            </a>
+            <a href="srm-request.html" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 8px;">
+                🛒 SRM Talebi
+            </a>
+            <a href="goods-receipt.html" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 8px;">
+                📥 Mal Kabul
+            </a>
+            <a href="direct-issue.html" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 8px;">
+                📤 Doğrudan Çıkış
+            </a>
+            <a href="warehouse-transfer.html" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 8px;">
+                🔄 Depo Transferi
+            </a>
+        </div>
+
+        <!-- Developer Notes -->
+        <div class="dev-note info">
+            <h4>📋 Proje Bilgisi: IMMA (Indirect Material Management Application)</h4>
+            <p><strong>Amaç:</strong> MAN Türkiye A.Ş. için Maximo sistemini değiştirmek üzere geliştirilen endirek malzeme yönetim uygulaması.</p>
+            <p><strong>Modüller:</strong> Ana Veri, MRP, SRM Talepleri, Mal Kabul, Bütçe Yönetimi, Malzeme Talepleri, Stok İşlemleri, Sayım, Hurda</p>
+            <p><strong>Entegrasyonlar:</strong> SAP (Kullanıcı, Kur, Sözleşme, Sipariş), IAM (Kimlik Doğrulama)</p>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📦</div>
+                <div class="stat-content">
+                    <div class="stat-label">Toplam Malzeme</div>
+                    <div class="stat-value">1,247</div>
+                </div>
+            </div>
+            <div class="stat-card warning">
+                <div class="stat-icon">⚠️</div>
+                <div class="stat-content">
+                    <div class="stat-label">Düşük Stok Uyarısı</div>
+                    <div class="stat-value">23</div>
+                </div>
+            </div>
+            <div class="stat-card info">
+                <div class="stat-icon">📋</div>
+                <div class="stat-content">
+                    <div class="stat-label">Bekleyen Talepler</div>
+                    <div class="stat-value">18</div>
+                </div>
+            </div>
+            <div class="stat-card success">
+                <div class="stat-icon">✅</div>
+                <div class="stat-content">
+                    <div class="stat-label">Bugün Mal Kabul</div>
+                    <div class="stat-value">7</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Developer Note for Stats -->
+        <div class="dev-note">
+            <h4>🔧 Dashboard İstatistikleri API</h4>
+            <ul>
+                <li><strong>Toplam Malzeme:</strong> SELECT COUNT(*) FROM MDM_Material WHERE StatusID = 1</li>
+                <li><strong>Düşük Stok:</strong> SELECT COUNT(*) FROM INV_Stock s JOIN MDM_Material m ON s.MaterialID = m.ID WHERE s.Quantity < m.MinStock</li>
+                <li><strong>Bekleyen Talepler:</strong> SELECT COUNT(*) FROM MR_Request WHERE StatusID IN (1,2)</li>
+                <li><strong>Bugün Mal Kabul:</strong> SELECT COUNT(*) FROM GR_GoodsReceipt WHERE CAST(CreatedDate AS DATE) = CAST(GETDATE() AS DATE)</li>
+            </ul>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Son İşlemler</h3>
+                <a href="material-request-list.html" class="btn btn-sm btn-outline">Tümünü Gör</a>
+            </div>
+            <div class="card-body" style="padding: 0;">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>İşlem No</th>
+                            <th>Tip</th>
+                            <th>Açıklama</th>
+                            <th>Kullanıcı</th>
+                            <th>Tarih</th>
+                            <th>Durum</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>MR-2025-001234</strong></td>
+                            <td>Malzeme Talebi</td>
+                            <td>Bakım malzemeleri</td>
+                            <td>Ali Yıldız</td>
+                            <td>11.12.2025 14:30</td>
+                            <td><span class="status-badge status-pending">Onay Bekliyor</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>GR-2025-000567</strong></td>
+                            <td>Mal Kabul</td>
+                            <td>PO-4500012345</td>
+                            <td>Hasan Kara</td>
+                            <td>11.12.2025 11:15</td>
+                            <td><span class="status-badge status-active">Tamamlandı</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>SRM-2025-000456</strong></td>
+                            <td>SRM Talebi</td>
+                            <td>Elektrik malzemeleri</td>
+                            <td>Mehmet Demir</td>
+                            <td>11.12.2025 09:45</td>
+                            <td><span class="status-badge status-preparing">SL Onayında</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>DI-2025-000789</strong></td>
+                            <td>Doğrudan Çıkış</td>
+                            <td>Acil arıza</td>
+                            <td>Fatma Şahin</td>
+                            <td>10.12.2025 16:20</td>
+                            <td><span class="status-badge status-active">Tamamlandı</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>WT-2025-000456</strong></td>
+                            <td>Depo Transferi</td>
+                            <td>Merkez → Hat 1</td>
+                            <td>Ayşe Yılmaz</td>
+                            <td>10.12.2025 14:00</td>
+                            <td><span class="status-badge status-active">Tamamlandı</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Alerts Section -->
+        <div class="card" style="margin-top: 1.5rem;">
+            <div class="card-header">
+                <h3>⚠️ Dikkat Gerektiren Durumlar</h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-danger">
+                    <strong>Kritik Stok Uyarısı:</strong> 3 malzeme stok tükenme noktasında!
+                    <a href="material-list.html?filter=critical" style="color: inherit; text-decoration: underline;">Görüntüle</a>
+                </div>
+                <div class="alert alert-warning">
+                    <strong>Bütçe Uyarısı:</strong> CC002 (Bakım) bütçesi %98 kullanıldı.
+                    <a href="budget-management.html" style="color: inherit; text-decoration: underline;">Detaylar</a>
+                </div>
+                <div class="alert alert-info">
+                    <strong>MRP Önerisi:</strong> 34 yeni satınalma önerisi oluşturuldu.
+                    <a href="mrp.html" style="color: inherit; text-decoration: underline;">İncele</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Developer Notes - System Info -->
+        <div class="dev-note success" style="margin-top: 1.5rem;">
+            <h4>✅ Sistem Bilgileri</h4>
+            <ul>
+                <li><strong>Son SAP Senkronizasyonu:</strong> 11.12.2025 06:00 (Başarılı)</li>
+                <li><strong>Son MRP Çalışması:</strong> 11.12.2025 02:00 (34 öneri)</li>
+                <li><strong>Aktif Kullanıcı Sayısı:</strong> 127</li>
+                <li><strong>Veritabanı Durumu:</strong> Normal</li>
+            </ul>
+        </div>
+
+        <div class="dev-note">
+            <h4>📊 Veritabanı Tabloları (37 Tablo)</h4>
+            <p>Ana tablolar:</p>
+            <ul>
+                <li><strong>MDM_*:</strong> Master Data Management (Material, Supplier, Unit, Status, StorageType, CostCenter)</li>
+                <li><strong>INV_*:</strong> Inventory (Stock, StockTransaction, StockReservation, DirectIssue, WarehouseTransfer)</li>
+                <li><strong>SRM_*:</strong> Supplier Relationship (Request, RequestItem, RequestApproval)</li>
+                <li><strong>MR_*:</strong> Material Request (Request, RequestItem, RequestApproval)</li>
+                <li><strong>GR_*:</strong> Goods Receipt (GoodsReceipt, GoodsReceiptItem, Document)</li>
+                <li><strong>PO_*:</strong> Purchase Order (PurchaseOrder, PurchaseOrderItem) - SAP'den</li>
+                <li><strong>BUD_*:</strong> Budget (Budget, BudgetUsage, BudgetReservation, BudgetTransfer)</li>
+                <li><strong>MRP_*:</strong> MRP (Run, Suggestion, SuggestionHistory)</li>
+                <li><strong>USR_*:</strong> User (User, Role, UserRole, Permission, RolePermission, Session)</li>
+                <li><strong>SAP_*:</strong> SAP Integration (User, ExchangeRate, Contract)</li>
+                <li><strong>AUD_*:</strong> Audit (AuditLog, UserActivity)</li>
+            </ul>
+        </div>
+    </main>
+
+    <script>
+        // Page action buttons
+        document.querySelector('.page-actions .btn-secondary').addEventListener('click', function() {
+            alert('📥 Rapor İndirme\n\nDashboard raporu PDF olarak hazırlanıyor...\n\n(Gerçek uygulamada rapor indirilir)');
+        });
+
+        // Make transaction table rows clickable - navigate to detail pages
+        document.querySelectorAll('.card-body table tbody tr').forEach(function(row) {
+            row.style.cursor = 'pointer';
+            row.addEventListener('click', function() {
+                const transactionNo = this.cells[0].textContent.trim();
+
+                let targetPage = '';
+                if (transactionNo.startsWith('MR-')) {
+                    targetPage = 'material-request.html?mode=view&id=' + transactionNo;
+                } else if (transactionNo.startsWith('GR-')) {
+                    targetPage = 'goods-receipt.html?mode=view&id=' + transactionNo;
+                } else if (transactionNo.startsWith('SRM-')) {
+                    targetPage = 'srm-request.html?mode=view&id=' + transactionNo;
+                } else if (transactionNo.startsWith('DI-')) {
+                    targetPage = 'direct-issue-detail.html?mode=view&id=' + transactionNo;
+                } else if (transactionNo.startsWith('WT-')) {
+                    targetPage = 'transfer-detail.html?mode=view&id=' + transactionNo;
+                }
+
+                if (targetPage) {
+                    window.location.href = targetPage;
+                }
+            });
+        });
+
+        // Stat cards clickable
+        document.querySelectorAll('.stat-card').forEach(function(card, index) {
+            card.style.cursor = 'pointer';
+            card.addEventListener('click', function() {
+                const pages = ['material-list.html', 'material-list.html?filter=low', 'material-request-list.html', 'po-list.html'];
+                window.location.href = pages[index];
+            });
+        });
+    </script>
+</body>
+</html>

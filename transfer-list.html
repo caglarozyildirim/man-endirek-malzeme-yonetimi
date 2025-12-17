@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transfer Listesi - IMMA</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- NAVBAR - Top Navigation (Maximo Style) -->
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">M</div>
+                <div class="brand-text">
+                    <span class="brand-name">IMMA</span>
+                    <span class="brand-subtitle">Endirek Malzeme Yonetimi</span>
+                </div>
+            </a>
+            <ul class="navbar-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="material-list.html" class="nav-link">
+                        <span class="nav-icon">📦</span>
+                        Ana Veriler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-list.html" class="dropdown-item">Malzeme Listesi</a>
+                        <a href="supplier-list.html" class="dropdown-item">Tedarikci Listesi</a>
+                        <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
+                        <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
+                        <a href="material-group.html" class="dropdown-item">Malzeme Gruplari</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="mrp.html" class="nav-link">
+                        <span class="nav-icon">📈</span>
+                        MRP
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="srm-list.html" class="nav-link">
+                        <span class="nav-icon">🛒</span>
+                        Satinalma
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="srm-list.html" class="dropdown-item">Talep Listesi</a>
+                        <a href="goods-receipt.html" class="dropdown-item">Mal Kabul</a>
+                        <a href="po-list.html" class="dropdown-item">Satinalma Siparisleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="budget-management.html" class="nav-link">
+                        <span class="nav-icon">💰</span>
+                        Butce
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="budget-management.html" class="dropdown-item">Butce Yonetimi</a>
+                        <a href="budget-preference.html" class="dropdown-item">Butce Tercihleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="material-request-list.html" class="nav-link">
+                        <span class="nav-icon">📋</span>
+                        Talepler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-request-list.html" class="dropdown-item">Talep Listesi</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="transfer-list.html" class="nav-link active">
+                        <span class="nav-icon">🏭</span>
+                        Stok
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="direct-issue.html" class="dropdown-item">Dogrudan Cikis</a>
+                        <a href="warehouse-transfer.html" class="dropdown-item">Depo Transferi</a>
+                        <a href="transfer-list.html" class="dropdown-item active">Transfer Listesi</a>
+                        <a href="inventory-counting.html" class="dropdown-item">Sayim Islemleri</a>
+                        <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayimi</a>
+                        <a href="scrapping.html" class="dropdown-item">Hurda Islemleri</a>
+                    </div>
+                </li>
+            </ul>
+            <div class="navbar-user">
+                <span class="user-name">Ahmet Yilmaz</span>
+                <div class="user-avatar">AY</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="modern-container">
+        <!-- PAGE HEADER -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Malzeme Transfer Onayi</h1>
+                <p class="page-subtitle">Stok > Transfer Listesi</p>
+            </div>
+            <div class="page-actions">
+                <button class="btn btn-outline" onclick="printTransferList()">Yazdir</button>
+            </div>
+        </div>
+
+        <!-- DEVELOPER NOTES -->
+        <div class="dev-note info">
+            <h4>Ekran Bilgisi: 18 CMTR - Confirm Material Transfer Requests</h4>
+            <p><strong>Amac:</strong> Onaylanmis malzeme taleplerinin transfer islemlerini onaylamak ve depo/konum atamak.</p>
+            <p><strong>Pattern:</strong> LIST - Filter + Expandable Rows + Transfer Confirmation</p>
+            <p><strong>Data Structure Alanlari (Material Request Header):</strong></p>
+            <ul style="font-size: 12px; columns: 2;">
+                <li>Material request number</li>
+                <li>SL user info</li>
+                <li>Created by user info</li>
+                <li>Created for user info</li>
+                <li>Creation date time</li>
+                <li>Selected week number</li>
+                <li>Selected weeks first day, date</li>
+                <li>Description for the request</li>
+                <li>Requesting department</li>
+                <li>Delivery Location 1-5 id</li>
+                <li>Approval finish date time</li>
+            </ul>
+            <p><strong>Data Structure Alanlari (Material Request Item):</strong></p>
+            <ul style="font-size: 12px; columns: 2;">
+                <li>Material number</li>
+                <li>Requested Quantity</li>
+                <li>Unit of Measure</li>
+                <li>Priority</li>
+                <li>Stock record Id</li>
+                <li>Assigned storage/location/bin</li>
+                <li>Selected to transfer</li>
+                <li>Delivered quantity</li>
+                <li>Material delivery finalized</li>
+                <li>Rollback initiated check</li>
+            </ul>
+        </div>
+
+        <!-- WORKFLOW NOTE -->
+        <div class="dev-note warning">
+            <h4>İş Akışı: Malzeme Talep ve Transfer Süreci</h4>
+            <div style="display: flex; gap: 40px; flex-wrap: wrap;">
+                <div>
+                    <p><strong>MALZEME TALEP SÜRECİ:</strong></p>
+                    <ol style="font-size: 12px; margin-left: 20px;">
+                        <li>16 MR → Talep Oluştur</li>
+                        <li>Bütçe Kontrolü</li>
+                        <li>Bütçe Onayı / Aşım Onayı</li>
+                        <li>SL Onayı</li>
+                    </ol>
+                </div>
+                <div>
+                    <p><strong>TRANSFER SÜRECİ:</strong></p>
+                    <ol style="font-size: 12px; margin-left: 20px;" start="5">
+                        <li>17 MR L → Talepleri Listele</li>
+                        <li><strong>18 CMTR → Transfer Onayı (BU SAYFA)</strong></li>
+                        <li>19 TL P → Transfer Listesi Yazdır</li>
+                        <li>Transfer Onayı (Individual/Enmasse/Rollback)</li>
+                        <li>Otomatik Mal Çıkışı</li>
+                    </ol>
+                </div>
+            </div>
+            <p style="margin-top: 10px; font-size: 11px; color: #666;">
+                <strong>Transfer Türleri:</strong> Individual (Tekil onay) | Enmasse (Toplu onay) | Rollback (Geri alma)
+            </p>
+        </div>
+
+        <!-- FILTER SECTION -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Filtreler</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-row">
+                    <div class="form-group col-2">
+                        <label>Talep No</label>
+                        <input type="text" class="form-control" id="filterRequestNo" placeholder="MR-2025-...">
+                    </div>
+                    <div class="form-group col-2">
+                        <label>Talep Eden Departman</label>
+                        <select class="form-control" id="filterDepartment">
+                            <option value="">Tumu</option>
+                            <option value="production">Uretim</option>
+                            <option value="maintenance">Bakim</option>
+                            <option value="quality">Kalite</option>
+                            <option value="warehouse">Depo</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-2">
+                        <label>Teslimat Lokasyonu</label>
+                        <select class="form-control" id="filterLocation">
+                            <option value="">Tumu</option>
+                            <option value="loc1">Lokasyon 1</option>
+                            <option value="loc2">Lokasyon 2</option>
+                            <option value="loc3">Lokasyon 3</option>
+                            <option value="loc4">Lokasyon 4</option>
+                            <option value="loc5">Lokasyon 5</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-2">
+                        <label>Hafta Numarasi</label>
+                        <input type="number" class="form-control" id="filterWeek" placeholder="50" min="1" max="53">
+                    </div>
+                    <div class="form-group col-2">
+                        <label>Baslangic Tarihi</label>
+                        <input type="date" class="form-control" id="filterStartDate" value="2025-12-01">
+                    </div>
+                    <div class="form-group col-2">
+                        <label>Bitis Tarihi</label>
+                        <input type="date" class="form-control" id="filterEndDate" value="2025-12-15">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-primary" onclick="applyFilters()">Filtrele</button>
+                    <button class="btn btn-outline" onclick="clearFilters()">Temizle</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TRANSFER REQUESTS LIST -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Onaylanmis Malzeme Talepleri</h3>
+                <span class="result-count">12 talep bulundu</span>
+            </div>
+            <div class="card-body" style="padding: 0;">
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th style="width: 30px;"></th>
+                                <th class="sortable">Talep No</th>
+                                <th>SL Kullanici</th>
+                                <th>Olusturan</th>
+                                <th>Olusturulan Icin</th>
+                                <th class="sortable">Olusturulma</th>
+                                <th class="sortable">Onay Bitis</th>
+                                <th>Hafta</th>
+                                <th>Departman</th>
+                                <th>Teslimat Lok.</th>
+                                <th>Oncelik</th>
+                                <th>Kalem</th>
+                                <th>Islem</th>
+                            </tr>
+                        </thead>
+                        <tbody id="requestListBody">
+                            <!-- Request 1 - Expandable Row -->
+                            <tr class="expandable-row" data-request-id="MR-2025-001234">
+                                <td><button class="btn-expand" onclick="toggleRequestDetails('MR-2025-001234')">▶</button></td>
+                                <td><a href="#" class="table-cell-primary">MR-2025-001234</a></td>
+                                <td>
+                                    <div class="user-info">
+                                        <strong>Mustafa Kara</strong><br>
+                                        <small>SL - Uretim</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="user-info">
+                                        <strong>Ahmet Yilmaz</strong><br>
+                                        <small>ahmet.yilmaz@fabrika.com</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="user-info">
+                                        <strong>Mehmet Kaya</strong><br>
+                                        <small>mehmet.kaya@fabrika.com</small>
+                                    </div>
+                                </td>
+                                <td>08.12.2025 14:30</td>
+                                <td>11.12.2025 16:45</td>
+                                <td>
+                                    <span class="priority-badge normal">W50</span><br>
+                                    <small>09.12.2025</small>
+                                </td>
+                                <td>Uretim</td>
+                                <td>Lokasyon 1</td>
+                                <td><span class="badge badge-priority-high">Yuksek</span></td>
+                                <td><span class="badge badge-info">5</span></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-sm btn-success" onclick="confirmTransfer('MR-2025-001234')">Transfer Onayla</button>
+                                        <button class="btn btn-sm btn-warning" onclick="rollbackTransfer('MR-2025-001234')">Geri Al</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- Expandable Detail Row -->
+                            <tr class="detail-row" id="detail-MR-2025-001234" style="display: none;">
+                                <td colspan="13">
+                                    <div class="detail-content">
+                                        <div class="detail-header">
+                                            <h4>Talep Detaylari: MR-2025-001234</h4>
+                                            <p><strong>Aciklama:</strong> Hat 1 icin acil bakim malzemeleri talebi</p>
+                                            <p><strong>Teslimat Lokasyonlari:</strong> Lokasyon 1 (Ana), Lokasyon 3 (Yedek)</p>
+                                        </div>
+
+                                        <!-- Item List -->
+                                        <div class="items-table">
+                                            <table class="table table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th style="width: 40px;">
+                                                            <input type="checkbox" onclick="selectAllItems('MR-2025-001234', this.checked)">
+                                                        </th>
+                                                        <th>Malzeme No</th>
+                                                        <th>Stok Kayit ID</th>
+                                                        <th>Oncelik</th>
+                                                        <th>Talep Edilen</th>
+                                                        <th>Onaylanan</th>
+                                                        <th>Transfer Miktari</th>
+                                                        <th>Depo Atama</th>
+                                                        <th>Lokasyon</th>
+                                                        <th>Bin</th>
+                                                        <th>Geri Alma</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td><input type="checkbox" class="item-checkbox" data-item-id="1"></td>
+                                                        <td><strong>MAT-001234</strong></td>
+                                                        <td><small>STK-2025-1001</small></td>
+                                                        <td><span class="badge badge-priority-high">Yuksek</span></td>
+                                                        <td>100</td>
+                                                        <td>80</td>
+                                                        <td><input type="number" class="form-control form-control-sm" value="80" max="80" style="width: 70px;"></td>
+                                                        <td>
+                                                            <select class="form-control form-control-sm" style="width: 100px;">
+                                                                <option value="">Seciniz...</option>
+                                                                <option value="WH-CENTRAL">Merkez Depo</option>
+                                                                <option value="WH-LINE1" selected>Hat 1 Deposu</option>
+                                                                <option value="WH-LINE2">Hat 2 Deposu</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <select class="form-control form-control-sm" style="width: 70px;">
+                                                                <option value="">Sec...</option>
+                                                                <option value="A-01" selected>A-01</option>
+                                                                <option value="A-02">A-02</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <select class="form-control form-control-sm" style="width: 80px;">
+                                                                <option value="">Sec...</option>
+                                                                <option value="BIN-001" selected>BIN-001</option>
+                                                                <option value="BIN-002">BIN-002</option>
+                                                            </select>
+                                                        </td>
+                                                        <td><input type="checkbox" class="rollback-checkbox" title="Rollback initiated"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><input type="checkbox" class="item-checkbox" data-item-id="2"></td>
+                                                        <td><strong>MAT-005678</strong></td>
+                                                        <td><small>STK-2025-1002</small></td>
+                                                        <td><span class="badge badge-priority-normal">Normal</span></td>
+                                                        <td>20</td>
+                                                        <td>20</td>
+                                                        <td><input type="number" class="form-control form-control-sm" value="10" max="10" style="width: 70px;"></td>
+                                                        <td>
+                                                            <select class="form-control form-control-sm" style="width: 100px;">
+                                                                <option value="">Seciniz...</option>
+                                                                <option value="WH-CENTRAL">Merkez Depo</option>
+                                                                <option value="WH-LINE1" selected>Hat 1 Deposu</option>
+                                                                <option value="WH-LINE2">Hat 2 Deposu</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <select class="form-control form-control-sm" style="width: 70px;">
+                                                                <option value="">Sec...</option>
+                                                                <option value="A-01" selected>A-01</option>
+                                                                <option value="A-02">A-02</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <select class="form-control form-control-sm" style="width: 80px;">
+                                                                <option value="">Sec...</option>
+                                                                <option value="BIN-001" selected>BIN-001</option>
+                                                                <option value="BIN-002">BIN-002</option>
+                                                            </select>
+                                                        </td>
+                                                        <td><input type="checkbox" class="rollback-checkbox" title="Rollback initiated"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><input type="checkbox" class="item-checkbox" data-item-id="3"></td>
+                                                        <td><strong>MAT-009012</strong></td>
+                                                        <td><small>STK-2025-1003</small></td>
+                                                        <td><span class="badge badge-priority-normal">Normal</span></td>
+                                                        <td>10</td>
+                                                        <td>10</td>
+                                                        <td><input type="number" class="form-control form-control-sm" value="0" max="0" style="width: 70px;" disabled></td>
+                                                        <td>
+                                                            <select class="form-control form-control-sm" style="width: 100px;" disabled>
+                                                                <option value="WH-LINE1" selected>Hat 1 Deposu</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <select class="form-control form-control-sm" style="width: 70px;" disabled>
+                                                                <option value="A-01" selected>A-01</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <select class="form-control form-control-sm" style="width: 80px;" disabled>
+                                                                <option value="BIN-001" selected>BIN-001</option>
+                                                            </select>
+                                                        </td>
+                                                        <td><input type="checkbox" class="rollback-checkbox" title="Rollback initiated"></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <!-- Transfer Confirmation Actions -->
+                                        <div class="detail-actions">
+                                            <button class="btn btn-success" onclick="confirmSelectedItems('MR-2025-001234')">Secili Kalemleri Transfer Et</button>
+                                            <button class="btn btn-primary" onclick="confirmAllItems('MR-2025-001234')">Tumunu Transfer Et</button>
+                                            <button class="btn btn-outline" onclick="toggleRequestDetails('MR-2025-001234')">Iptal</button>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Request 2 -->
+                            <tr class="expandable-row" data-request-id="MR-2025-001235">
+                                <td><button class="btn-expand" onclick="toggleRequestDetails('MR-2025-001235')">▶</button></td>
+                                <td><a href="#" class="table-cell-primary">MR-2025-001235</a></td>
+                                <td>
+                                    <div class="user-info">
+                                        <strong>Fatma Sahin</strong><br>
+                                        <small>fatma.sahin@fabrika.com</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="user-info">
+                                        <strong>Ali Demir</strong><br>
+                                        <small>ali.demir@fabrika.com</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="user-info">
+                                        <strong>Ayse Celik</strong><br>
+                                        <small>ayse.celik@fabrika.com</small>
+                                    </div>
+                                </td>
+                                <td>09.12.2025 09:15</td>
+                                <td>12.12.2025 11:20</td>
+                                <td>
+                                    <span class="priority-badge normal">W50</span><br>
+                                    <small>09.12.2025</small>
+                                </td>
+                                <td>Bakim</td>
+                                <td>Lokasyon 2</td>
+                                <td><span class="badge badge-priority-normal">Normal</span></td>
+                                <td><span class="badge badge-info">3</span></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-sm btn-success" onclick="confirmTransfer('MR-2025-001235')">Transfer Onayla</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="detail-row" id="detail-MR-2025-001235" style="display: none;">
+                                <td colspan="13">
+                                    <div class="detail-content">
+                                        <div class="detail-header">
+                                            <h4>Talep Detaylari: MR-2025-001235</h4>
+                                            <p><strong>Aciklama:</strong> Rutin bakim icin elektrik malzemeleri</p>
+                                        </div>
+                                        <div class="items-table">
+                                            <table class="table table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th style="width: 40px;">
+                                                            <input type="checkbox" onclick="selectAllItems('MR-2025-001235', this.checked)">
+                                                        </th>
+                                                        <th>Malzeme No</th>
+                                                        <th>Stok Kayit ID</th>
+                                                        <th>Oncelik</th>
+                                                        <th>Talep Edilen</th>
+                                                        <th>Onaylanan</th>
+                                                        <th>Transfer Miktari</th>
+                                                        <th>Depo Atama</th>
+                                                        <th>Lokasyon</th>
+                                                        <th>Bin</th>
+                                                        <th>Geri Alma</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td><input type="checkbox" class="item-checkbox" data-item-id="4"></td>
+                                                        <td><strong>MAT-002345</strong></td>
+                                                        <td><small>STK-2025-2001</small></td>
+                                                        <td><span class="badge badge-priority-normal">Normal</span></td>
+                                                        <td>500</td>
+                                                        <td>500</td>
+                                                        <td><input type="number" class="form-control form-control-sm" value="500" max="500" style="width: 80px;"></td>
+                                                        <td>
+                                                            <select class="form-control form-control-sm">
+                                                                <option value="">Seciniz...</option>
+                                                                <option value="WH-CENTRAL" selected>Merkez Depo</option>
+                                                                <option value="WH-LINE1">Hat 1 Deposu</option>
+                                                                <option value="WH-LINE2">Hat 2 Deposu</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <select class="form-control form-control-sm">
+                                                                <option value="">Seciniz...</option>
+                                                                <option value="B-01" selected>B-01</option>
+                                                                <option value="B-02">B-02</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <select class="form-control form-control-sm">
+                                                                <option value="">Seciniz...</option>
+                                                                <option value="BIN-003" selected>BIN-003</option>
+                                                                <option value="BIN-004">BIN-004</option>
+                                                            </select>
+                                                        </td>
+                                                        <td><input type="checkbox" class="rollback-checkbox" title="Rollback initiated"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><input type="checkbox" class="item-checkbox" data-item-id="5"></td>
+                                                        <td><strong>MAT-003456</strong></td>
+                                                        <td><small>STK-2025-2002</small></td>
+                                                        <td><span class="badge badge-priority-normal">Normal</span></td>
+                                                        <td>50</td>
+                                                        <td>40</td>
+                                                        <td><input type="number" class="form-control form-control-sm" value="40" max="40" style="width: 80px;"></td>
+                                                        <td>
+                                                            <select class="form-control form-control-sm">
+                                                                <option value="">Seciniz...</option>
+                                                                <option value="WH-CENTRAL" selected>Merkez Depo</option>
+                                                                <option value="WH-LINE1">Hat 1 Deposu</option>
+                                                                <option value="WH-LINE2">Hat 2 Deposu</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <select class="form-control form-control-sm">
+                                                                <option value="">Seciniz...</option>
+                                                                <option value="B-01" selected>B-01</option>
+                                                                <option value="B-02">B-02</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <select class="form-control form-control-sm">
+                                                                <option value="">Seciniz...</option>
+                                                                <option value="BIN-003" selected>BIN-003</option>
+                                                                <option value="BIN-004">BIN-004</option>
+                                                            </select>
+                                                        </td>
+                                                        <td><input type="checkbox" class="rollback-checkbox" title="Rollback initiated"></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="detail-actions">
+                                            <button class="btn btn-success" onclick="confirmSelectedItems('MR-2025-001235')">Secili Kalemleri Transfer Et</button>
+                                            <button class="btn btn-primary" onclick="confirmAllItems('MR-2025-001235')">Tumunu Transfer Et</button>
+                                            <button class="btn btn-outline" onclick="toggleRequestDetails('MR-2025-001235')">Iptal</button>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Request 3 -->
+                            <tr class="expandable-row" data-request-id="MR-2025-001236">
+                                <td><button class="btn-expand" onclick="toggleRequestDetails('MR-2025-001236')">▶</button></td>
+                                <td><a href="#" class="table-cell-primary">MR-2025-001236</a></td>
+                                <td>
+                                    <div class="user-info">
+                                        <strong>Hasan Kara</strong><br>
+                                        <small>hasan.kara@fabrika.com</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="user-info">
+                                        <strong>Zeynep Yildiz</strong><br>
+                                        <small>zeynep.yildiz@fabrika.com</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="user-info">
+                                        <strong>Emre Ozturk</strong><br>
+                                        <small>emre.ozturk@fabrika.com</small>
+                                    </div>
+                                </td>
+                                <td>10.12.2025 10:45</td>
+                                <td>13.12.2025 14:30</td>
+                                <td>
+                                    <span class="priority-badge yuksek">W51</span><br>
+                                    <small>16.12.2025</small>
+                                </td>
+                                <td>Kalite</td>
+                                <td>Lokasyon 3</td>
+                                <td><span class="badge badge-priority-low">Dusuk</span></td>
+                                <td><span class="badge badge-info">4</span></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-sm btn-success" onclick="confirmTransfer('MR-2025-001236')">Transfer Onayla</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="detail-row" id="detail-MR-2025-001236" style="display: none;">
+                                <td colspan="13">
+                                    <div class="detail-content">
+                                        <div class="detail-header">
+                                            <h4>Talep Detaylari: MR-2025-001236</h4>
+                                            <p><strong>Aciklama:</strong> Kalite kontrol laboratuvari icin malzemeler</p>
+                                        </div>
+                                        <div class="items-table">
+                                            <table class="table table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th style="width: 40px;">
+                                                            <input type="checkbox" onclick="selectAllItems('MR-2025-001236', this.checked)">
+                                                        </th>
+                                                        <th>Malzeme No</th>
+                                                        <th>Stok Kayit ID</th>
+                                                        <th>Oncelik</th>
+                                                        <th>Talep Edilen</th>
+                                                        <th>Onaylanan</th>
+                                                        <th>Transfer Miktari</th>
+                                                        <th>Depo Atama</th>
+                                                        <th>Lokasyon</th>
+                                                        <th>Bin</th>
+                                                        <th>Geri Alma</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td><input type="checkbox" class="item-checkbox" data-item-id="6"></td>
+                                                        <td><strong>MAT-004567</strong></td>
+                                                        <td><small>STK-2025-3001</small></td>
+                                                        <td><span class="badge badge-priority-low">Dusuk</span></td>
+                                                        <td>200</td>
+                                                        <td>200</td>
+                                                        <td><input type="number" class="form-control form-control-sm" value="200" max="200" style="width: 80px;"></td>
+                                                        <td>
+                                                            <select class="form-control form-control-sm">
+                                                                <option value="">Seciniz...</option>
+                                                                <option value="WH-CENTRAL">Merkez Depo</option>
+                                                                <option value="WH-LAB" selected>Laboratuvar Deposu</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <select class="form-control form-control-sm">
+                                                                <option value="">Seciniz...</option>
+                                                                <option value="C-01" selected>C-01</option>
+                                                                <option value="C-02">C-02</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <select class="form-control form-control-sm">
+                                                                <option value="">Seciniz...</option>
+                                                                <option value="BIN-005" selected>BIN-005</option>
+                                                            </select>
+                                                        </td>
+                                                        <td><input type="checkbox" class="rollback-checkbox" title="Rollback initiated"></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="detail-actions">
+                                            <button class="btn btn-success" onclick="confirmSelectedItems('MR-2025-001236')">Secili Kalemleri Transfer Et</button>
+                                            <button class="btn btn-primary" onclick="confirmAllItems('MR-2025-001236')">Tumunu Transfer Et</button>
+                                            <button class="btn btn-outline" onclick="toggleRequestDetails('MR-2025-001236')">Iptal</button>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination" style="display: flex; justify-content: center; align-items: center; gap: 15px; padding: 20px;">
+                    <button class="btn btn-sm btn-outline" id="prevPageBtn" onclick="changePage('prev')" disabled>Önceki</button>
+                    <span class="pagination-info" id="paginationInfo">Sayfa 1 / 2</span>
+                    <button class="btn btn-sm btn-outline" id="nextPageBtn" onclick="changePage('next')">Sonraki</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SUMMARY STATS -->
+        <div class="stats-grid">
+            <div class="stat-card warning">
+                <div class="stat-content">
+                    <span class="stat-label">Transfer Bekleyen</span>
+                    <span class="stat-value">12</span>
+                </div>
+            </div>
+            <div class="stat-card info">
+                <div class="stat-content">
+                    <span class="stat-label">Bu Hafta Transfer</span>
+                    <span class="stat-value">45</span>
+                </div>
+            </div>
+            <div class="stat-card success">
+                <div class="stat-content">
+                    <span class="stat-label">Bu Ay Tamamlanan</span>
+                    <span class="stat-value">234</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-content">
+                    <span class="stat-label">Toplam Kalem</span>
+                    <span class="stat-value">89</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- DATABASE OPERATIONS -->
+        <div class="dev-note success">
+            <h4>Veritabani Islemleri</h4>
+            <p><strong>API Endpoints:</strong></p>
+            <ul>
+                <li>GET /api/material-requests/approved - Onaylanmis talepleri listele (Status = 'Approved', Transfer Status = 'Pending')</li>
+                <li>POST /api/material-transfers/confirm - Transfer onayi yarat</li>
+                <li>PUT /api/material-requests/{id}/assign-warehouse - Depo/lokasyon/bin atama</li>
+                <li>GET /api/material-requests/print - Transfer listesi yazdirma</li>
+            </ul>
+            <p><strong>Tablolar:</strong></p>
+            <ul>
+                <li><strong>MAT_MaterialRequest</strong> - Malzeme talep basliklari (Material Request number, SL user info, Created by, Created for, Creation date time, Selected week number, Selected week's first day, Description, Requesting department, Delivery Location 1-5 id, Approval finish date time)</li>
+                <li><strong>MAT_MaterialRequestItem</strong> - Talep kalemleri (Material number, Requested Quantity, Approved quantity, Transfer quantity)</li>
+                <li><strong>INV_WarehouseAssignment</strong> - Depo/lokasyon/bin atamalari (Warehouse Assignment)</li>
+                <li><strong>MAT_TransferConfirmation</strong> - Transfer onay kayitlari</li>
+            </ul>
+            <p><strong>Siralama:</strong> ApprovalFinishDate ASC, CreationDate DESC</p>
+        </div>
+    </main>
+
+    <style>
+        /* Developer Notes */
+        .dev-note {
+            background: #e7f3ff;
+            border: 1px solid #b6d4fe;
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+        .dev-note h4 {
+            margin: 0 0 10px 0;
+            color: #0a58ca;
+            font-size: 14px;
+        }
+        .dev-note p {
+            margin: 5px 0;
+        }
+        .dev-note ul, .dev-note ol {
+            margin: 5px 0;
+            padding-left: 20px;
+        }
+        .dev-note.info {
+            background: #e7f3ff;
+            border-color: #b6d4fe;
+        }
+        .dev-note.info h4 {
+            color: #0a58ca;
+        }
+        .dev-note.warning {
+            background: #fff3cd;
+            border-color: #ffda6a;
+        }
+        .dev-note.warning h4 {
+            color: #856404;
+        }
+
+        /* Table Container - Horizontal Scroll */
+        .table-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Action Buttons in Table */
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 120px;
+        }
+
+        .action-buttons .btn {
+            white-space: nowrap;
+            font-size: 11px;
+            padding: 4px 8px;
+        }
+
+        /* Expandable Row Styles */
+        .btn-expand {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            padding: 4px 8px;
+            transition: transform 0.2s;
+            color: #0066cc;
+        }
+
+        .btn-expand.expanded {
+            transform: rotate(90deg);
+        }
+
+        .detail-row {
+            background: #f8f9fa;
+        }
+
+        .detail-content {
+            padding: 20px;
+            border-left: 4px solid #0066cc;
+        }
+
+        .detail-header {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .detail-header h4 {
+            margin: 0 0 10px 0;
+            color: #1a1a2e;
+            font-size: 16px;
+        }
+
+        .detail-header p {
+            margin: 5px 0;
+            color: #666;
+        }
+
+        .items-table {
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        .items-table .table {
+            background: white;
+            margin: 0;
+        }
+
+        .items-table .table-sm td,
+        .items-table .table-sm th {
+            padding: 8px;
+            vertical-align: middle;
+        }
+
+        .detail-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            padding-top: 15px;
+            border-top: 2px solid #dee2e6;
+        }
+
+        /* User Info Display */
+        .user-info {
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .user-info strong {
+            display: block;
+            color: #1a1a2e;
+        }
+
+        .user-info small {
+            color: #666;
+        }
+
+        /* Badge Styles */
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .badge-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .badge-priority-high {
+            background: #dc3545;
+            color: white;
+        }
+
+        .badge-priority-normal {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-warning {
+            background-color: #ffc107;
+            border-color: #ffc107;
+            color: #000;
+        }
+
+        .btn-warning:hover {
+            background-color: #e0a800;
+            border-color: #d39e00;
+        }
+
+        /* Form Controls in Table */
+        .form-control-sm {
+            height: 32px;
+            font-size: 12px;
+            padding: 4px 8px;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 4px solid #dee2e6;
+        }
+
+        .stat-card.warning {
+            border-left-color: #ffc107;
+        }
+
+        .stat-card.info {
+            border-left-color: #17a2b8;
+        }
+
+        .stat-card.success {
+            border-left-color: #28a745;
+        }
+
+        .stat-content {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1a1a2e;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 20px;
+            padding: 15px 0;
+        }
+
+        .pagination-info {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* Button Styles */
+        .btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+        }
+
+        /* Table Cell Primary Link */
+        .table-cell-primary {
+            color: #0066cc;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .table-cell-primary:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1200px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <script>
+        // Toggle request details (expand/collapse)
+        function toggleRequestDetails(requestId) {
+            const detailRow = document.getElementById('detail-' + requestId);
+            const expandBtn = document.querySelector(`[data-request-id="${requestId}"] .btn-expand`);
+
+            if (detailRow.style.display === 'none') {
+                // Close all other detail rows
+                document.querySelectorAll('.detail-row').forEach(row => {
+                    row.style.display = 'none';
+                });
+                document.querySelectorAll('.btn-expand').forEach(btn => {
+                    btn.classList.remove('expanded');
+                    btn.textContent = '▶';
+                });
+
+                // Open this detail row
+                detailRow.style.display = 'table-row';
+                expandBtn.classList.add('expanded');
+                expandBtn.textContent = '▼';
+            } else {
+                // Close this detail row
+                detailRow.style.display = 'none';
+                expandBtn.classList.remove('expanded');
+                expandBtn.textContent = '▶';
+            }
+        }
+
+        // Select/Deselect all items in a request
+        function selectAllItems(requestId, checked) {
+            const detailRow = document.getElementById('detail-' + requestId);
+            const checkboxes = detailRow.querySelectorAll('.item-checkbox');
+            checkboxes.forEach(cb => cb.checked = checked);
+        }
+
+        // Confirm transfer for entire request
+        function confirmTransfer(requestId) {
+            // Open the detail view automatically
+            toggleRequestDetails(requestId);
+        }
+
+        // Confirm selected items
+        function confirmSelectedItems(requestId) {
+            const detailRow = document.getElementById('detail-' + requestId);
+            const checkedItems = detailRow.querySelectorAll('.item-checkbox:checked');
+
+            if (checkedItems.length === 0) {
+                alert('Lutfen en az bir kalem seciniz!');
+                return;
+            }
+
+            // Validate warehouse assignments
+            let missingAssignments = false;
+            checkedItems.forEach(checkbox => {
+                const row = checkbox.closest('tr');
+                const warehouse = row.querySelector('select').value;
+                if (!warehouse) {
+                    missingAssignments = true;
+                }
+            });
+
+            if (missingAssignments) {
+                alert('Lutfen secili tum kalemler icin depo atamasi yapiniz!');
+                return;
+            }
+
+            if (confirm(`${checkedItems.length} kalem icin transfer onaylanacak.\n\nDevam edilsin mi?`)) {
+                // Simulate API call
+                console.log('Confirming transfer for request:', requestId);
+                console.log('Selected items:', checkedItems.length);
+
+                alert('Transfer basariyla onaylandi!\n\nTransfer No: WT-2025-' + Math.floor(Math.random() * 1000));
+
+                // Remove the row from table
+                const requestRow = document.querySelector(`[data-request-id="${requestId}"]`);
+                const detailRow = document.getElementById('detail-' + requestId);
+                requestRow.remove();
+                detailRow.remove();
+
+                // Update counter
+                const counter = document.querySelector('.result-count');
+                const currentCount = parseInt(counter.textContent);
+                counter.textContent = (currentCount - 1) + ' talep bulundu';
+            }
+        }
+
+        // Confirm all items
+        function confirmAllItems(requestId) {
+            const detailRow = document.getElementById('detail-' + requestId);
+            const allCheckboxes = detailRow.querySelectorAll('.item-checkbox');
+
+            // Check all items
+            allCheckboxes.forEach(cb => cb.checked = true);
+
+            // Confirm selected items
+            confirmSelectedItems(requestId);
+        }
+
+        // Apply filters
+        function applyFilters() {
+            const requestNo = document.getElementById('filterRequestNo').value;
+            const department = document.getElementById('filterDepartment').value;
+            const location = document.getElementById('filterLocation').value;
+            const week = document.getElementById('filterWeek').value;
+            const startDate = document.getElementById('filterStartDate').value;
+            const endDate = document.getElementById('filterEndDate').value;
+
+            console.log('Applying filters:', { requestNo, department, location, week, startDate, endDate });
+            alert('Filtreler uygulandi! (Demo)\n\nGercek uygulamada API cagrisi yapilacak.');
+        }
+
+        // Clear filters
+        function clearFilters() {
+            document.getElementById('filterRequestNo').value = '';
+            document.getElementById('filterDepartment').selectedIndex = 0;
+            document.getElementById('filterLocation').selectedIndex = 0;
+            document.getElementById('filterWeek').value = '';
+            document.getElementById('filterStartDate').value = '';
+            document.getElementById('filterEndDate').value = '';
+            alert('Filtreler temizlendi!');
+        }
+
+        // Print transfer list
+        function printTransferList() {
+            alert('Transfer Listesi yazdiriliyor...\n\n(Demo - Gercek uygulamada PDF olusturulacak)');
+            // In real implementation, generate PDF report
+        }
+
+        // Rollback transfer
+        function rollbackTransfer(requestId) {
+            if (confirm('Dikkat: Bu islem secili kalemlerin transferini geri alacaktir.\n\n' +
+                'Talep No: ' + requestId + '\n\n' +
+                'Transfer geri alma islemi baslatilsin mi?')) {
+                alert('Transfer geri alma islemi baslatildi!\n\n' +
+                    'Talep No: ' + requestId + '\n' +
+                    'Durum: Rollback Initiated\n\n' +
+                    'Stok miktarlari geri yukleniyor...');
+            }
+        }
+
+        // Finalize delivery
+        function finalizeDelivery(itemId) {
+            if (confirm('Bu kalemin teslimati tamamlandi olarak isaretlenecek.\n\nOnayliyor musunuz?')) {
+                alert('Kalem teslimati tamamlandi!\n\nItem ID: ' + itemId);
+            }
+        }
+
+        // Pagination
+        let currentPage = 1;
+        const totalPages = 2;
+
+        function changePage(direction) {
+            if (direction === 'next' && currentPage < totalPages) {
+                currentPage++;
+            } else if (direction === 'prev' && currentPage > 1) {
+                currentPage--;
+            }
+
+            // Update pagination info
+            document.getElementById('paginationInfo').textContent = `Sayfa ${currentPage} / ${totalPages}`;
+
+            // Update button states
+            document.getElementById('prevPageBtn').disabled = (currentPage === 1);
+            document.getElementById('nextPageBtn').disabled = (currentPage === totalPages);
+
+            // Demo: Show page change notification
+            console.log('Sayfa değiştirildi:', currentPage);
+
+            // In real app, fetch data for the new page
+            // fetchPageData(currentPage);
+        }
+
+        // Sortable headers
+        document.querySelectorAll('.sortable').forEach(header => {
+            header.style.cursor = 'pointer';
+            header.addEventListener('click', function() {
+                alert('Siralama: ' + this.textContent + '\n(Demo)');
+            });
+        });
+
+        // Validate transfer quantity on input
+        document.addEventListener('input', function(e) {
+            if (e.target.type === 'number' && e.target.max) {
+                const max = parseInt(e.target.max);
+                const value = parseInt(e.target.value);
+
+                if (value > max) {
+                    e.target.value = max;
+                    alert('Transfer miktari onaylanan miktardan fazla olamaz!');
+                }
+
+                if (value < 0) {
+                    e.target.value = 0;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

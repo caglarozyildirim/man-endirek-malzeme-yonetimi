@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doğrudan Çıkış - IMMA</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- NAVBAR - Top Navigation (Maximo Style) -->
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">M</div>
+                <div class="brand-text">
+                    <span class="brand-name">IMMA</span>
+                    <span class="brand-subtitle">Endirek Malzeme Yönetimi</span>
+                </div>
+            </a>
+            <ul class="navbar-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="material-list.html" class="nav-link">
+                        <span class="nav-icon">📦</span>
+                        Ana Veriler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-list.html" class="dropdown-item">Malzeme Listesi</a>
+                        <a href="supplier-list.html" class="dropdown-item">Tedarikçi Listesi</a>
+                        <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
+                        <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
+                        <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="mrp.html" class="nav-link">
+                        <span class="nav-icon">📈</span>
+                        MRP
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="srm-list.html" class="nav-link">
+                        <span class="nav-icon">🛒</span>
+                        Satınalma
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="srm-list.html" class="dropdown-item">Talep Listesi</a>
+                        <a href="goods-receipt.html" class="dropdown-item">Mal Kabul</a>
+                        <a href="po-list.html" class="dropdown-item">Satınalma Siparişleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="budget-management.html" class="nav-link">
+                        <span class="nav-icon">💰</span>
+                        Bütçe
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="budget-management.html" class="dropdown-item">Bütçe Yönetimi</a>
+                        <a href="budget-preference.html" class="dropdown-item">Bütçe Tercihleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="material-request-list.html" class="nav-link">
+                        <span class="nav-icon">📋</span>
+                        Talepler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-request-list.html" class="dropdown-item">Talep Listesi</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="transfer-list.html" class="nav-link active">
+                        <span class="nav-icon">🏭</span>
+                        Stok
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="direct-issue.html" class="dropdown-item active">Doğrudan Çıkış</a>
+                        <a href="warehouse-transfer.html" class="dropdown-item">Depo Transferi</a>
+                        <a href="transfer-list.html" class="dropdown-item">Transfer Listesi</a>
+                        <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
+                        <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
+                        <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+            </ul>
+            <div class="navbar-user">
+                <span class="user-name">Ahmet Yılmaz</span>
+                <div class="user-avatar">AY</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="modern-container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Doğrudan Çıkış</h1>
+                <p class="page-subtitle">Stok > Doğrudan Çıkış</p>
+            </div>
+        </div>
+
+        <!-- Developer Notes - Transaction Page Reference -->
+        <div class="dev-note info">
+            <h4>📋 Ekran Bilgisi: 20 DGI - Direct Goods Issue</h4>
+            <p><strong>Transaction Pattern:</strong> Search Material → Display Stock → Issue Form → Submit (Immediate stock reduction)</p>
+            <p><strong>Key Difference:</strong> No approval workflow - stock is immediately deducted upon submission</p>
+            <p><strong>Use Cases:</strong> Emergency needs, shift supplies, consumables</p>
+            <p><strong>Authorization:</strong> Warehouse Manager and authorized personnel only</p>
+            <p><strong>Data Structure Alanlari (Screen 20 DGI):</strong></p>
+            <ul style="font-size: 12px; columns: 2;">
+                <li>Material Movement Header Id</li>
+                <li>Material Movement item number</li>
+                <li>Created by user info</li>
+                <li>Created for user info</li>
+                <li>Creation date time</li>
+                <li>Selected week number</li>
+                <li>Selected weeks first day, date</li>
+                <li>Description for the request</li>
+                <li>Requesting department</li>
+                <li>Requesting user info</li>
+                <li>Cost Center No/Title</li>
+                <li>Material number</li>
+                <li>Requested Quantity</li>
+                <li>Unit of Measure</li>
+                <li>Priority</li>
+                <li>Stock record Id</li>
+                <li>Assigned storage/location/bin</li>
+                <li>Approver 1/2/3 user info</li>
+            </ul>
+        </div>
+
+        <!-- STEP 1: MATERIAL SEARCH SECTION -->
+        <div class="card">
+            <div class="card-header">
+                <h3>1. Malzeme Arama</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-row">
+                    <div class="form-group col-6">
+                        <label>Malzeme Numarası</label>
+                        <input type="text" class="form-control" id="materialNumberSearch" placeholder="Malzeme numarası girin...">
+                        <small class="form-hint">Malzeme numarasına göre ara</small>
+                    </div>
+                    <div class="form-group col-6">
+                        <label>Depo</label>
+                        <select class="form-control" id="warehouseSearch">
+                            <option value="">Tüm Depolar</option>
+                            <option value="WH001">Merkez Depo</option>
+                            <option value="WH002">Yedek Parça Deposu</option>
+                            <option value="WH003">Sarf Malzeme Deposu</option>
+                        </select>
+                        <small class="form-hint">Depoya göre filtrele</small>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-primary" id="searchMaterialBtn">🔍 Ara</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 2: SELECTED MATERIAL INFO DISPLAY -->
+        <div class="card" id="materialInfoSection" style="display: none;">
+            <div class="card-header">
+                <h3>2. Seçilen Malzeme Bilgisi</h3>
+                <div class="card-header-actions">
+                    <button class="btn btn-outline btn-sm" id="clearMaterialBtn">✕ Temizle</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Material Basic Info -->
+                <div class="form-row">
+                    <div class="form-group col-4">
+                        <label>Malzeme Numarası</label>
+                        <div id="selectedMaterialNo" class="form-control-plaintext">01.00005-0001</div>
+                    </div>
+                    <div class="form-group col-8">
+                        <label>Malzeme Açıklaması</label>
+                        <div id="selectedMaterialDesc" class="form-control-plaintext">Güvenlik Eldiveni (Çift)</div>
+                    </div>
+                </div>
+
+                <!-- Stock Levels -->
+                <h4 style="margin-top: 20px; margin-bottom: 15px;">Stok Durumu</h4>
+                <table class="table" id="stockLocationsTable">
+                    <thead>
+                        <tr>
+                            <th>Depo</th>
+                            <th>Lokasyon</th>
+                            <th>Raf</th>
+                            <th>Mevcut Miktar</th>
+                            <th>Birim</th>
+                            <th>Stok Kayıt ID</th>
+                            <th>İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Merkez Depo</td>
+                            <td>A-01</td>
+                            <td>R-101</td>
+                            <td style="color: #28a745; font-weight: bold;">250</td>
+                            <td>AD</td>
+                            <td>STK-12345</td>
+                            <td><button class="btn btn-sm btn-primary select-location-btn" data-stock-id="STK-12345">Seç</button></td>
+                        </tr>
+                        <tr>
+                            <td>Merkez Depo</td>
+                            <td>B-03</td>
+                            <td>R-215</td>
+                            <td style="color: #28a745; font-weight: bold;">120</td>
+                            <td>AD</td>
+                            <td>STK-12346</td>
+                            <td><button class="btn btn-sm btn-primary select-location-btn" data-stock-id="STK-12346">Seç</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- STEP 3: ISSUE FORM -->
+        <div class="card" id="issueFormSection" style="display: none;">
+            <div class="card-header">
+                <h3>3. Çıkış Bilgileri</h3>
+            </div>
+            <div class="card-body">
+                <!-- Selected Stock Location -->
+                <div class="alert alert-info">
+                    <strong>Seçilen Lokasyon:</strong>
+                    <span id="selectedLocation">Merkez Depo / A-01 / R-101</span> -
+                    <strong>Mevcut Stok:</strong>
+                    <span id="selectedStockQty">250</span>
+                    <span id="selectedStockUnit">AD</span>
+                </div>
+
+                <!-- Week and Date Selection -->
+                <div class="form-row">
+                    <div class="form-group col-2">
+                        <label>Hafta Numarası <span class="required">*</span></label>
+                        <input type="number" class="form-control" id="weekNumber" min="1" max="53" value="50">
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Haftanın İlk Günü</label>
+                        <input type="date" class="form-control" id="weekFirstDay" value="2025-12-09" readonly>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Oluşturulma Tarihi</label>
+                        <input type="datetime-local" class="form-control" id="creationDateTime" readonly>
+                    </div>
+                    <div class="form-group col-2">
+                        <label>Öncelik</label>
+                        <select class="form-control" id="prioritySelect">
+                            <option value="0">Normal</option>
+                            <option value="1">Yüksek</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-2">
+                        <label>Movement Header ID</label>
+                        <input type="text" class="form-control" id="movementHeaderId" value="Otomatik" readonly>
+                    </div>
+                </div>
+
+                <!-- User Information -->
+                <div class="form-row">
+                    <div class="form-group col-4">
+                        <label>Oluşturan (Created By)</label>
+                        <input type="text" class="form-control" id="createdByUser" value="Ahmet Yılmaz" readonly>
+                    </div>
+                    <div class="form-group col-4">
+                        <label>Oluşturulan Kişi İçin (Created For)</label>
+                        <select class="form-control" id="createdForUser">
+                            <option value="">Seçiniz (isteğe bağlı)...</option>
+                            <option value="U001">Mehmet Demir</option>
+                            <option value="U002">Ali Yılmaz</option>
+                            <option value="U003">Ayşe Kaya</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-4">
+                        <label>Talep Eden Kullanıcı (Requesting User) <span class="required">*</span></label>
+                        <select class="form-control" id="requestingUser">
+                            <option value="">Seçiniz...</option>
+                            <option value="U001">Mehmet Demir</option>
+                            <option value="U002">Ali Yılmaz</option>
+                            <option value="U003">Ayşe Kaya</option>
+                            <option value="U004">Fatma Şahin</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Department and Cost Center -->
+                <div class="form-row">
+                    <div class="form-group col-3">
+                        <label>Talep Eden Departman <span class="required">*</span></label>
+                        <select class="form-control" id="requestingDepartment">
+                            <option value="">Seçiniz...</option>
+                            <option value="URETIM">Üretim</option>
+                            <option value="BAKIM">Bakım</option>
+                            <option value="KALITE">Kalite</option>
+                            <option value="LOJISTIK">Lojistik</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Maliyet Merkezi <span class="required">*</span></label>
+                        <select class="form-control" id="costCenterSelect">
+                            <option value="">Seçiniz...</option>
+                            <option value="CC001">CC001 - Üretim Hat 1</option>
+                            <option value="CC002">CC002 - Bakım Mekanik</option>
+                            <option value="CC003">CC003 - Kalite Kontrol</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-6">
+                        <label>Maliyet Merkezi Adı</label>
+                        <input type="text" class="form-control" id="costCenterTitle" readonly placeholder="Maliyet merkezi seçildiğinde otomatik dolar">
+                    </div>
+                </div>
+
+                <!-- Issue Details -->
+                <div class="form-row">
+                    <div class="form-group col-3">
+                        <label>Çıkış Miktarı <span class="required">*</span></label>
+                        <input type="number" class="form-control" id="issueQuantity" min="1" placeholder="0">
+                    </div>
+                    <div class="form-group col-2">
+                        <label>Birim</label>
+                        <input type="text" class="form-control" id="issueUnit" value="AD" readonly>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Stock Record ID</label>
+                        <input type="text" class="form-control" id="stockRecordId" readonly>
+                    </div>
+                    <div class="form-group col-4">
+                        <label>Teslim Alan Kişi <span class="required">*</span></label>
+                        <input type="text" class="form-control" id="recipientUser" placeholder="Teslim alan kişinin adı soyadı">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-12">
+                        <label>Çıkış Nedeni/Açıklama <span class="required">*</span></label>
+                        <input type="text" class="form-control" id="issueReason" placeholder="Çıkış nedenini açıklayın (min. 20 karakter)">
+                        <small class="form-hint">Bu bilgi denetim kayıtlarında kullanılır (Description for the request)</small>
+                    </div>
+                </div>
+
+                <!-- 3-Level Approval (Read Only - for display) -->
+                <div class="form-row" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                    <div class="form-group col-12">
+                        <label style="font-weight: bold;">Onay Bilgileri (Approver Information)</label>
+                    </div>
+                    <div class="form-group col-4">
+                        <label>Onaylayan 1 (Approver 1)</label>
+                        <input type="text" class="form-control" id="approver1" placeholder="Depo Sorumlusu" readonly>
+                    </div>
+                    <div class="form-group col-4">
+                        <label>Onaylayan 2 (Approver 2)</label>
+                        <input type="text" class="form-control" id="approver2" placeholder="Gerekli değil (opsiyonel)" readonly>
+                    </div>
+                    <div class="form-group col-4">
+                        <label>Onaylayan 3 (Approver 3)</label>
+                        <input type="text" class="form-control" id="approver3" placeholder="Gerekli değil (opsiyonel)" readonly>
+                    </div>
+                    <div class="form-group col-12">
+                        <small class="form-hint">Not: Doğrudan çıkışta onay gerekmez. Bu alanlar sadece bilgi amaçlıdır.</small>
+                    </div>
+                </div>
+
+                <!-- STEP 4: ISSUE BUTTON -->
+                <div class="form-actions" style="margin-top: 20px;">
+                    <button class="btn btn-primary btn-lg" id="submitIssueBtn">✅ Doğrudan Çıkış Yap</button>
+                    <button class="btn btn-outline" id="cancelIssueBtn">İptal</button>
+                </div>
+
+                <div class="alert alert-warning" style="margin-top: 15px;">
+                    <strong>⚠️ Uyarı:</strong> Bu işlem onaysız gerçekleştirilecektir. Stok miktarı anında düşecektir.
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 5: RECENT ISSUES LIST -->
+        <div class="card" style="margin-top: 30px;">
+            <div class="card-header">
+                <h3>Son Doğrudan Çıkışlar (Son 20)</h3>
+                <div class="card-header-actions">
+                    <button class="btn btn-outline btn-sm" id="refreshListBtn">🔄 Yenile</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Çıkış No</th>
+                            <th>Tarih</th>
+                            <th>Malzeme No</th>
+                            <th>Malzeme Açıklaması</th>
+                            <th>Miktar</th>
+                            <th>Teslim Alan</th>
+                            <th>Maliyet Merkezi</th>
+                            <th>İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>DGI-2025-000789</td>
+                            <td>11.12.2025 14:30</td>
+                            <td>01.00005-0001</td>
+                            <td>Güvenlik Eldiveni (Çift)</td>
+                            <td>10 AD</td>
+                            <td>Mehmet Demir</td>
+                            <td>CC001</td>
+                            <td><a href="direct-issue-detail.html?id=DGI-2025-000789" class="btn btn-sm btn-primary">Görüntüle</a></td>
+                        </tr>
+                        <tr>
+                            <td>DGI-2025-000788</td>
+                            <td>11.12.2025 10:15</td>
+                            <td>02.00004-0001</td>
+                            <td>Sensör Endüktif M12</td>
+                            <td>2 AD</td>
+                            <td>Ali Yılmaz</td>
+                            <td>CC002</td>
+                            <td><a href="direct-issue-detail.html?id=DGI-2025-000788" class="btn btn-sm btn-primary">Görüntüle</a></td>
+                        </tr>
+                        <tr>
+                            <td>DGI-2025-000787</td>
+                            <td>10.12.2025 16:45</td>
+                            <td>03.00012-0001</td>
+                            <td>Kablo Bağı 200mm</td>
+                            <td>50 AD</td>
+                            <td>Ayşe Kaya</td>
+                            <td>CC003</td>
+                            <td><a href="direct-issue-detail.html?id=DGI-2025-000787" class="btn btn-sm btn-primary">Görüntüle</a></td>
+                        </tr>
+                        <tr>
+                            <td>DGI-2025-000786</td>
+                            <td>10.12.2025 09:20</td>
+                            <td>04.00008-0001</td>
+                            <td>Yağlama Spreyi 400ml</td>
+                            <td>5 AD</td>
+                            <td>Fatma Demir</td>
+                            <td>CC001</td>
+                            <td><a href="direct-issue-detail.html?id=DGI-2025-000786" class="btn btn-sm btn-primary">Görüntüle</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Database Operations -->
+        <div class="dev-note success">
+            <h4>✅ Veritabanı İşlemleri (20 DGI - Direct Goods Issue)</h4>
+            <p><strong>API Endpoint:</strong> POST /api/direct-goods-issue</p>
+            <p><strong>Transaction Flow:</strong></p>
+            <ol>
+                <li><strong>Validate Stock:</strong> Check if requested quantity is available</li>
+                <li><strong>Create Issue Record:</strong> INV_DirectGoodsIssue (Material no, Quantity, Recipient, Cost center, Reason, Created by, Created at)</li>
+                <li><strong>Deduct Stock:</strong> INV_Stock - IMMEDIATE quantity reduction (no approval)</li>
+                <li><strong>Log Transaction:</strong> INV_StockTransaction (TransactionType = 'DGI', Quantity, Stock ID)</li>
+            </ol>
+            <p><strong>Key Point:</strong> Unlike Material Request, this has NO approval workflow - stock is immediately reduced!</p>
+        </div>
+
+        <div class="dev-note warning">
+            <h4>⚠️ Validation Rules</h4>
+            <ul>
+                <li><strong>Quantity:</strong> Must be > 0 and ≤ available stock</li>
+                <li><strong>Recipient User:</strong> Required, cannot be empty</li>
+                <li><strong>Cost Center:</strong> Required, must be valid</li>
+                <li><strong>Reason:</strong> Required, minimum 20 characters</li>
+                <li><strong>Authorization:</strong> Only warehouse managers and authorized personnel can perform direct issue</li>
+            </ul>
+        </div>
+    </main>
+
+    <script>
+        // STEP 1: Material Search
+        document.getElementById('searchMaterialBtn').addEventListener('click', function() {
+            const materialNo = document.getElementById('materialNumberSearch').value;
+            const warehouse = document.getElementById('warehouseSearch').value;
+
+            if (!materialNo) {
+                alert('⚠️ Lütfen malzeme numarası giriniz.');
+                return;
+            }
+
+            // Demo: Show material info section
+            document.getElementById('materialInfoSection').style.display = 'block';
+
+            // Scroll to material info
+            document.getElementById('materialInfoSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+
+        // Clear material selection
+        document.getElementById('clearMaterialBtn').addEventListener('click', function() {
+            document.getElementById('materialInfoSection').style.display = 'none';
+            document.getElementById('issueFormSection').style.display = 'none';
+            document.getElementById('materialNumberSearch').value = '';
+        });
+
+        // Set creation date time on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const now = new Date();
+            const formattedDate = now.toISOString().slice(0, 16);
+            document.getElementById('creationDateTime').value = formattedDate;
+        });
+
+        // Cost center selection - auto fill title
+        document.getElementById('costCenterSelect').addEventListener('change', function() {
+            const titles = {
+                'CC001': 'Üretim Hat 1',
+                'CC002': 'Bakım Mekanik',
+                'CC003': 'Kalite Kontrol'
+            };
+            document.getElementById('costCenterTitle').value = titles[this.value] || '';
+        });
+
+        // STEP 2: Select Stock Location
+        document.querySelectorAll('.select-location-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                const row = this.closest('tr');
+                const warehouse = row.cells[0].textContent;
+                const location = row.cells[1].textContent;
+                const bin = row.cells[2].textContent;
+                const quantity = row.cells[3].textContent;
+                const unit = row.cells[4].textContent;
+                const stockId = this.getAttribute('data-stock-id');
+
+                // Update issue form with selected location
+                document.getElementById('selectedLocation').textContent = warehouse + ' / ' + location + ' / ' + bin;
+                document.getElementById('selectedStockQty').textContent = quantity;
+                document.getElementById('selectedStockUnit').textContent = unit;
+                document.getElementById('issueUnit').value = unit;
+                document.getElementById('stockRecordId').value = stockId;
+
+                // Show issue form
+                document.getElementById('issueFormSection').style.display = 'block';
+
+                // Scroll to issue form
+                document.getElementById('issueFormSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+
+        // STEP 3 & 4: Submit Direct Issue
+        document.getElementById('submitIssueBtn').addEventListener('click', function() {
+            const quantity = document.getElementById('issueQuantity').value;
+            const recipient = document.getElementById('recipientUser').value;
+            const costCenter = document.getElementById('costCenterSelect').value;
+            const reason = document.getElementById('issueReason').value;
+            const maxStock = parseInt(document.getElementById('selectedStockQty').textContent);
+
+            // Validation
+            if (!quantity || quantity <= 0) {
+                alert('⚠️ Lütfen geçerli bir miktar giriniz.');
+                return;
+            }
+            if (parseInt(quantity) > maxStock) {
+                alert('⚠️ Çıkış miktarı mevcut stoktan fazla olamaz!\n\nMevcut Stok: ' + maxStock + '\nGirilen Miktar: ' + quantity);
+                return;
+            }
+            if (!recipient.trim()) {
+                alert('⚠️ Lütfen teslim alan kişiyi giriniz.');
+                return;
+            }
+            if (!costCenter) {
+                alert('⚠️ Lütfen maliyet merkezi seçiniz.');
+                return;
+            }
+            if (!reason.trim() || reason.length < 20) {
+                alert('⚠️ Lütfen en az 20 karakter çıkış nedeni giriniz.');
+                return;
+            }
+
+            const materialNo = document.getElementById('selectedMaterialNo').textContent;
+            const materialDesc = document.getElementById('selectedMaterialDesc').textContent;
+            const unit = document.getElementById('issueUnit').value;
+
+            if (confirm('⚠️ DOĞRUDAN ÇIKIŞ İŞLEMİ\n\nBu işlem ONAYSIZ gerçekleştirilecektir!\nStok miktarı ANINDA düşecektir!\n\nMalzeme: ' + materialNo + '\n' + materialDesc + '\nMiktar: ' + quantity + ' ' + unit + '\nTeslim Alan: ' + recipient + '\nMaliyet Merkezi: ' + costCenter + '\n\nDevam etmek istiyor musunuz?')) {
+                alert('✅ Doğrudan çıkış başarıyla tamamlandı!\n\nÇıkış No: DGI-2025-000790\nMalzeme: ' + materialNo + '\nMiktar: ' + quantity + ' ' + unit + '\nTeslim Alan: ' + recipient + '\n\nStok anında düşürüldü.\nMaliyet merkezi yüklendi: ' + costCenter);
+
+                // Reset form
+                document.getElementById('issueQuantity').value = '';
+                document.getElementById('recipientUser').value = '';
+                document.getElementById('costCenterSelect').value = '';
+                document.getElementById('issueReason').value = '';
+                document.getElementById('materialInfoSection').style.display = 'none';
+                document.getElementById('issueFormSection').style.display = 'none';
+                document.getElementById('materialNumberSearch').value = '';
+
+                // Refresh recent issues list (in real app, this would reload data)
+                document.getElementById('refreshListBtn').click();
+            }
+        });
+
+        document.getElementById('cancelIssueBtn').addEventListener('click', function() {
+            if (confirm('Girilen bilgiler iptal edilecek. Devam etmek istiyor musunuz?')) {
+                document.getElementById('issueQuantity').value = '';
+                document.getElementById('recipientUser').value = '';
+                document.getElementById('costCenterSelect').value = '';
+                document.getElementById('issueReason').value = '';
+                document.getElementById('issueFormSection').style.display = 'none';
+            }
+        });
+
+        // Refresh list button
+        document.getElementById('refreshListBtn').addEventListener('click', function() {
+            alert('🔄 Liste yenileniyor...\n\nSon doğrudan çıkışlar güncellendi.');
+        });
+    </script>
+</body>
+</html>

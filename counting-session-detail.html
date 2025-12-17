@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sayım Detay - IMMA</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">M</div>
+                <div class="brand-text">
+                    <span class="brand-name">IMMA</span>
+                    <span class="brand-subtitle">Endirek Malzeme Yönetimi</span>
+                </div>
+            </a>
+            <ul class="navbar-menu">
+                <li class="nav-item"><a href="index.html" class="nav-link"><span class="nav-icon">📊</span>Dashboard</a></li>
+                <li class="nav-item"><a href="material-list.html" class="nav-link"><span class="nav-icon">📦</span>Ana Veriler</a></li>
+                <li class="nav-item"><a href="mrp.html" class="nav-link"><span class="nav-icon">📈</span>MRP</a></li>
+                <li class="nav-item"><a href="srm-list.html" class="nav-link"><span class="nav-icon">🛒</span>Satınalma</a></li>
+                <li class="nav-item"><a href="budget-management.html" class="nav-link"><span class="nav-icon">💰</span>Bütçe</a></li>
+                <li class="nav-item"><a href="material-request-list.html" class="nav-link"><span class="nav-icon">📋</span>Talepler</a></li>
+                <li class="nav-item">
+                    <a href="transfer-list.html" class="nav-link active"><span class="nav-icon">🏭</span>Stok</a>
+                    <div class="dropdown-menu">
+                        <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
+                        <a href="warehouse-transfer.html" class="dropdown-item">Depo Transferi</a>
+                        <a href="transfer-list.html" class="dropdown-item">Transfer Listesi</a>
+                        <a href="inventory-counting.html" class="dropdown-item active">Sayım İşlemleri</a>
+                        <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
+                        <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+            </ul>
+            <div class="navbar-user">
+                <span class="user-name">Ahmet Yılmaz</span>
+                <div class="user-avatar">AY</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="modern-container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Sayım Detayları</h1>
+                <p class="page-subtitle">Stok > Sayım İşlemleri > <span id="sessionId">-</span></p>
+            </div>
+            <div class="page-actions">
+                <a href="inventory-counting.html" class="btn btn-outline">← Geri Dön</a>
+            </div>
+        </div>
+
+        <!-- Session Header Info -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Sayım Oturumu Bilgileri</h3>
+            </div>
+            <div class="card-body">
+                <div class="detail-header">
+                    <div class="detail-row">
+                        <div class="detail-col">
+                            <label>Sayım ID</label>
+                            <div id="detailId" class="detail-value">-</div>
+                        </div>
+                        <div class="detail-col">
+                            <label>Sayım Tipi</label>
+                            <div id="detailType" class="detail-value">-</div>
+                        </div>
+                        <div class="detail-col">
+                            <label>Depo</label>
+                            <div id="detailStorage" class="detail-value">-</div>
+                        </div>
+                        <div class="detail-col">
+                            <label>Durum</label>
+                            <div id="detailStatus" class="detail-value">-</div>
+                        </div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-col">
+                            <label>Oluşturma Tarihi</label>
+                            <div id="detailCreationDate" class="detail-value">-</div>
+                        </div>
+                        <div class="detail-col">
+                            <label>Oluşturan</label>
+                            <div id="detailCreatedBy" class="detail-value">-</div>
+                        </div>
+                        <div class="detail-col">
+                            <label>Sayım Sorumlusu</label>
+                            <div id="detailCreatedFor" class="detail-value">-</div>
+                        </div>
+                        <div class="detail-col">
+                            <label>Toplam Kalem</label>
+                            <div id="detailTotalItems" class="detail-value">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detail Items Table -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Sayım Kalemleri</h3>
+            </div>
+            <div class="card-body">
+                <div class="table-container" style="max-height: 500px;">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Malzeme No</th>
+                                <th>Malzeme Adı</th>
+                                <th>Depo</th>
+                                <th>Lokasyon</th>
+                                <th>Bin</th>
+                                <th>Sistem Miktar</th>
+                                <th>Sayılan Miktar</th>
+                                <th>Fark</th>
+                                <th>Birim Değer</th>
+                                <th>Fark Değeri</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detailItemsTable">
+                            <tr>
+                                <td>1</td>
+                                <td><strong>MAT-ELC-0234</strong></td>
+                                <td>Motor Rulman SKF 6205</td>
+                                <td>Merkez Depo</td>
+                                <td>A</td>
+                                <td>A-01</td>
+                                <td>45 PC</td>
+                                <td><strong>43 PC</strong></td>
+                                <td class="difference-negative">-2</td>
+                                <td>125.50 TRY</td>
+                                <td class="difference-negative">-251.00 TRY</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td><strong>MAT-MEC-0891</strong></td>
+                                <td>V Kayış A-45</td>
+                                <td>Merkez Depo</td>
+                                <td>A</td>
+                                <td>A-01</td>
+                                <td>120 PC</td>
+                                <td><strong>125 PC</strong></td>
+                                <td class="difference-positive">+5</td>
+                                <td>85.00 TRY</td>
+                                <td class="difference-positive">+425.00 TRY</td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td><strong>MAT-HYD-0456</strong></td>
+                                <td>Hidrolik Yağ ISO VG 46</td>
+                                <td>Merkez Depo</td>
+                                <td>A</td>
+                                <td>A-02</td>
+                                <td>200 L</td>
+                                <td><strong>200 L</strong></td>
+                                <td class="difference-zero">0</td>
+                                <td>45.75 TRY</td>
+                                <td class="difference-zero">0.00 TRY</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Özet</h3>
+            </div>
+            <div class="card-body">
+                <div class="summary-stats">
+                    <div class="stat-item">
+                        <label>Toplam Kalem</label>
+                        <div class="stat-value" id="totalItems">247</div>
+                    </div>
+                    <div class="stat-item">
+                        <label>Sayılan</label>
+                        <div class="stat-value" style="color: #28a745;" id="countedItems">247</div>
+                    </div>
+                    <div class="stat-item">
+                        <label>Fark Olan</label>
+                        <div class="stat-value" style="color: #ffc107;" id="differenceItems">18</div>
+                    </div>
+                    <div class="stat-item">
+                        <label>Toplam Fark Değeri</label>
+                        <div class="stat-value" style="color: #dc3545;" id="totalDifference">3,247.50 TRY</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <style>
+        .detail-header {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .detail-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+        .detail-col label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .detail-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .table-container {
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+        }
+        .table-container table {
+            margin-bottom: 0;
+        }
+        .table-container thead {
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
+        }
+        .difference-positive { color: #28a745; font-weight: 700; }
+        .difference-negative { color: #dc3545; font-weight: 700; }
+        .difference-zero { color: #6c757d; font-weight: 600; }
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 25px;
+            border-radius: 8px;
+        }
+        .stat-item { text-align: center; }
+        .stat-item label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+    </style>
+
+    <script>
+        // Sample session data
+        const sessions = {
+            'IC-HDR-2025-0012': {
+                id: 'IC-HDR-2025-0012',
+                type: 'Yıllık',
+                storage: 'Merkez Depo',
+                status: 'Tamamlandı',
+                statusClass: 'status-active',
+                creationDate: '2025-12-14',
+                createdBy: 'Ahmet Yılmaz',
+                createdFor: 'Mehmet Kaya',
+                totalItems: 247,
+                countedItems: 247,
+                differenceItems: 18,
+                totalDifference: '3,247.50 TRY'
+            },
+            'IC-HDR-2025-0011': {
+                id: 'IC-HDR-2025-0011',
+                type: 'Dönemsel',
+                storage: 'Hat 1 Deposu',
+                status: 'Tamamlandı',
+                statusClass: 'status-active',
+                creationDate: '2025-12-10',
+                createdBy: 'Ahmet Yılmaz',
+                createdFor: 'Ali Veli',
+                totalItems: 89,
+                countedItems: 89,
+                differenceItems: 5,
+                totalDifference: '1,125.00 TRY'
+            },
+            'IC-HDR-2025-0010': {
+                id: 'IC-HDR-2025-0010',
+                type: 'Dönemsel',
+                storage: 'Konsinye Depo',
+                status: 'Tamamlandı',
+                statusClass: 'status-active',
+                creationDate: '2025-12-05',
+                createdBy: 'Ahmet Yılmaz',
+                createdFor: 'Fatma Şen',
+                totalItems: 156,
+                countedItems: 156,
+                differenceItems: 12,
+                totalDifference: '2,890.00 TRY'
+            },
+            'IC-HDR-2025-0009': {
+                id: 'IC-HDR-2025-0009',
+                type: 'Yıllık',
+                storage: 'Yardımcı Depo',
+                status: 'Tamamlandı',
+                statusClass: 'status-active',
+                creationDate: '2025-11-28',
+                createdBy: 'Ahmet Yılmaz',
+                createdFor: 'Kemal Aydın',
+                totalItems: 324,
+                countedItems: 324,
+                differenceItems: 22,
+                totalDifference: '5,430.00 TRY'
+            }
+        };
+
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return { id: params.get('id') || null };
+        }
+
+        function initializePage() {
+            const { id } = getUrlParams();
+            if (id && sessions[id]) {
+                loadSessionData(sessions[id]);
+            } else {
+                alert('Sayım oturumu bulunamadı!');
+                window.location.href = 'inventory-counting.html';
+            }
+        }
+
+        function loadSessionData(session) {
+            document.getElementById('sessionId').textContent = session.id;
+            document.getElementById('detailId').textContent = session.id;
+            document.getElementById('detailType').textContent = session.type;
+            document.getElementById('detailStorage').textContent = session.storage;
+            document.getElementById('detailStatus').innerHTML = `<span class="status-badge ${session.statusClass}">${session.status}</span>`;
+            document.getElementById('detailCreationDate').textContent = session.creationDate;
+            document.getElementById('detailCreatedBy').textContent = session.createdBy;
+            document.getElementById('detailCreatedFor').textContent = session.createdFor;
+            document.getElementById('detailTotalItems').textContent = session.totalItems;
+            document.getElementById('totalItems').textContent = session.totalItems;
+            document.getElementById('countedItems').textContent = session.countedItems;
+            document.getElementById('differenceItems').textContent = session.differenceItems;
+            document.getElementById('totalDifference').textContent = session.totalDifference;
+        }
+
+        document.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+</body>
+</html>

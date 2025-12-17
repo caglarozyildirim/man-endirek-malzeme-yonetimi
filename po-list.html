@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Satınalma Siparişleri - IMMA</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- NAVBAR - Top Navigation (Maximo Style) -->
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">M</div>
+                <div class="brand-text">
+                    <span class="brand-name">IMMA</span>
+                    <span class="brand-subtitle">Endirek Malzeme Yönetimi</span>
+                </div>
+            </a>
+            <ul class="navbar-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="material-list.html" class="nav-link">
+                        <span class="nav-icon">📦</span>
+                        Ana Veriler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-list.html" class="dropdown-item">Malzeme Listesi</a>
+                        <a href="supplier-list.html" class="dropdown-item">Tedarikçi Listesi</a>
+                        <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
+                        <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
+                        <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="mrp.html" class="nav-link">
+                        <span class="nav-icon">📈</span>
+                        MRP
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="srm-list.html" class="nav-link active">
+                        <span class="nav-icon">🛒</span>
+                        Satınalma
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="srm-list.html" class="dropdown-item">Talep Listesi</a>
+                        <a href="goods-receipt.html" class="dropdown-item">Mal Kabul</a>
+                        <a href="po-list.html" class="dropdown-item active">Satınalma Siparişleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="budget-management.html" class="nav-link">
+                        <span class="nav-icon">💰</span>
+                        Bütçe
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="budget-management.html" class="dropdown-item">Bütçe Yönetimi</a>
+                        <a href="budget-preference.html" class="dropdown-item">Bütçe Tercihleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="material-request-list.html" class="nav-link">
+                        <span class="nav-icon">📋</span>
+                        Talepler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-request-list.html" class="dropdown-item">Talep Listesi</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="transfer-list.html" class="nav-link">
+                        <span class="nav-icon">🏭</span>
+                        Stok
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
+                        <a href="warehouse-transfer.html" class="dropdown-item">Depo Transferi</a>
+                        <a href="transfer-list.html" class="dropdown-item">Transfer Listesi</a>
+                        <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
+                        <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
+                        <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+            </ul>
+            <div class="navbar-user">
+                <span class="user-name">Ahmet Yılmaz</span>
+                <div class="user-avatar">AY</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="modern-container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Açık Satınalma Siparişleri</h1>
+                <p class="page-subtitle">Satınalma > Açık Siparişler (Open Orders)</p>
+            </div>
+        </div>
+
+        <!-- Developer Notes - Doküman Referansları -->
+        <div class="dev-note info">
+            <h4>Ekran: 12 PO L - Purchasing Orders List</h4>
+            <p><strong>Kaynak:</strong> Screen Designs IMMA.xlsx > 12 PO L, Activities X Screens > Row 43 "Open Orders"</p>
+            <p><strong>Amaç:</strong> SAP'tan entegre edilen satınalma siparişlerinin açık kalemlerini listelemek.</p>
+            <p><strong>Not:</strong> PO'lar SAP sisteminde oluşturulur ve bu uygulamaya aktarılır. (Indirect Material Management Application Draft - Business Rules)</p>
+        </div>
+
+        <!-- Search/Filter Section - Goods Receipt dokümanından -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Sipariş Ara / Filtrele</h3>
+            </div>
+            <div class="card-body">
+                <!-- Data Structure: Purchasing Order + Purchasing Order Item alanları -->
+                <div class="form-row">
+                    <div class="form-group col-2">
+                        <label>Arama (Search Box)</label>
+                        <input type="text" class="form-control" id="searchBox" placeholder="Sipariş, malzeme, tedarikçi...">
+                    </div>
+                    <div class="form-group col-2">
+                        <label>Sipariş No (Order Number)</label>
+                        <input type="text" class="form-control" id="filterOrderNo" placeholder="4500012345">
+                    </div>
+                    <div class="form-group col-1">
+                        <label>Kalem No (Item No)</label>
+                        <input type="text" class="form-control" id="filterItemNo" placeholder="10">
+                    </div>
+                    <div class="form-group col-2">
+                        <label>Malzeme No (Material No)</label>
+                        <input type="text" class="form-control" id="filterMaterialNo" placeholder="01.00002-0001">
+                    </div>
+                    <div class="form-group col-2">
+                        <label>Malzeme Adı (Material Title)</label>
+                        <input type="text" class="form-control" id="filterMaterialTitle" placeholder="Rulman">
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Tedarikçi Adı (Supplier Title)</label>
+                        <input type="text" class="form-control" id="filterSupplierTitle" placeholder="ABC Endüstriyel">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-2">
+                        <label>Birim (Unit of Measure)</label>
+                        <select class="form-control" id="filterUOM">
+                            <option value="">Tümü</option>
+                            <option>AD</option>
+                            <option>KG</option>
+                            <option>LT</option>
+                            <option>MT</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-2">
+                        <label>&nbsp;</label>
+                        <button class="btn btn-primary btn-block" id="searchBtn">Ara</button>
+                    </div>
+                    <div class="form-group col-2">
+                        <label>&nbsp;</label>
+                        <button class="btn btn-outline btn-block" id="clearFilterBtn">Temizle</button>
+                    </div>
+                </div>
+                <div class="dev-note" style="margin-top: 10px; padding: 8px; font-size: 11px;">
+                    <strong>Doküman Ref:</strong> Goods Receipt > Selecting Open Purchasing Order > Search fields
+                </div>
+            </div>
+        </div>
+
+        <!-- Open Orders List - Header + Item birlikte görünüm -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Açık Sipariş Kalemleri (Open Orders)</h3>
+                <span class="result-count" id="resultCount">8 kayıt bulundu</span>
+            </div>
+            <div class="card-body" style="padding: 0;">
+                <!--
+                    Data Structure Referansları:
+                    - Purchasing Order: Purchasing Order SAP number, Supplier number, SRM number, creation datetime
+                    - Purchasing Order Item: Item No, Material number, Unit of measure code, Order quantity, Goods receipt quantity, currency code, Unit price
+                    - Open quantity = Order quantity - Goods receipt quantity
+                -->
+                <table class="table table-compact" id="openOrdersTable">
+                    <thead>
+                        <tr>
+                            <th>Sipariş No</th>
+                            <th>Klm</th>
+                            <th>Malzeme No</th>
+                            <th>Malzeme Adı</th>
+                            <th>Tedarikçi</th>
+                            <th>Brm</th>
+                            <th class="text-right">Sip.</th>
+                            <th class="text-right">Tes.</th>
+                            <th class="text-right">Açık</th>
+                            <th class="text-right">Fiyat</th>
+                            <th>Tarih</th>
+                            <th class="text-center">İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Örnek Veri - SAP'tan entegre edilen PO'lar -->
+                        <tr data-po="4500012345" data-item="10">
+                            <td><strong>4500012345</strong></td>
+                            <td>10</td>
+                            <td>01.00002-0001</td>
+                            <td>Rulman 6205-2RS SKF</td>
+                            <td>ABC Endüstriyel</td>
+                            <td>AD</td>
+                            <td class="text-right">100</td>
+                            <td class="text-right">0</td>
+                            <td class="text-right"><strong>100</strong></td>
+                            <td class="text-right">125,50 €</td>
+                            <td>10.12.25</td>
+                            <td class="text-center"><button class="btn btn-xs btn-outline" onclick="viewPO('4500012345', '10')">Detay</button></td>
+                        </tr>
+                        <tr data-po="4500012345" data-item="20">
+                            <td><strong>4500012345</strong></td>
+                            <td>20</td>
+                            <td>01.00015-0003</td>
+                            <td>Hidrolik Yag ISO 46</td>
+                            <td>ABC Endüstriyel</td>
+                            <td>LT</td>
+                            <td class="text-right">200</td>
+                            <td class="text-right">0</td>
+                            <td class="text-right"><strong>200</strong></td>
+                            <td class="text-right">45,00 €</td>
+                            <td>10.12.25</td>
+                            <td class="text-center"><button class="btn btn-xs btn-outline" onclick="viewPO('4500012345', '20')">Detay</button></td>
+                        </tr>
+                        <tr data-po="4500012346" data-item="10">
+                            <td><strong>4500012346</strong></td>
+                            <td>10</td>
+                            <td>01.00028-0001</td>
+                            <td>Elektrik Motoru 5.5kW</td>
+                            <td>XYZ Elektrik</td>
+                            <td>AD</td>
+                            <td class="text-right">5</td>
+                            <td class="text-right">0</td>
+                            <td class="text-right"><strong>5</strong></td>
+                            <td class="text-right">1.850 €</td>
+                            <td>11.12.25</td>
+                            <td class="text-center"><button class="btn btn-xs btn-outline" onclick="viewPO('4500012346', '10')">Detay</button></td>
+                        </tr>
+                        <tr data-po="4500012347" data-item="10">
+                            <td><strong>4500012347</strong></td>
+                            <td>10</td>
+                            <td>01.00030-0002</td>
+                            <td>Kablo NYM 3x2,5mm</td>
+                            <td>Kablo Sanayi</td>
+                            <td>MT</td>
+                            <td class="text-right">500</td>
+                            <td class="text-right">250</td>
+                            <td class="text-right"><strong>250</strong></td>
+                            <td class="text-right">12,50 ₺</td>
+                            <td>05.12.25</td>
+                            <td class="text-center"><button class="btn btn-xs btn-outline" onclick="viewPO('4500012347', '10')">Detay</button></td>
+                        </tr>
+                        <tr data-po="4500012347" data-item="20">
+                            <td><strong>4500012347</strong></td>
+                            <td>20</td>
+                            <td>01.00031-0001</td>
+                            <td>Sigorta 16A C Tipi</td>
+                            <td>Kablo Sanayi</td>
+                            <td>AD</td>
+                            <td class="text-right">100</td>
+                            <td class="text-right">50</td>
+                            <td class="text-right"><strong>50</strong></td>
+                            <td class="text-right">35,00 ₺</td>
+                            <td>05.12.25</td>
+                            <td class="text-center"><button class="btn btn-xs btn-outline" onclick="viewPO('4500012347', '20')">Detay</button></td>
+                        </tr>
+                        <tr data-po="4500012348" data-item="10">
+                            <td><strong>4500012348</strong></td>
+                            <td>10</td>
+                            <td>01.00040-0001</td>
+                            <td>Rulman 6308-2RS</td>
+                            <td>German Bearings</td>
+                            <td>AD</td>
+                            <td class="text-right">50</td>
+                            <td class="text-right">0</td>
+                            <td class="text-right"><strong>50</strong></td>
+                            <td class="text-right">185,00 €</td>
+                            <td>12.12.25</td>
+                            <td class="text-center"><button class="btn btn-xs btn-outline" onclick="viewPO('4500012348', '10')">Detay</button></td>
+                        </tr>
+                        <tr data-po="4500012348" data-item="20">
+                            <td><strong>4500012348</strong></td>
+                            <td>20</td>
+                            <td>01.00041-0001</td>
+                            <td>Rulman NU 309</td>
+                            <td>German Bearings</td>
+                            <td>AD</td>
+                            <td class="text-right">30</td>
+                            <td class="text-right">0</td>
+                            <td class="text-right"><strong>30</strong></td>
+                            <td class="text-right">220,00 €</td>
+                            <td>12.12.25</td>
+                            <td class="text-center"><button class="btn btn-xs btn-outline" onclick="viewPO('4500012348', '20')">Detay</button></td>
+                        </tr>
+                        <tr data-po="4500012349" data-item="10">
+                            <td><strong>4500012349</strong></td>
+                            <td>10</td>
+                            <td>01.00050-0001</td>
+                            <td>Yağlama Gresi 5kg</td>
+                            <td>ABC Endüstriyel</td>
+                            <td>AD</td>
+                            <td class="text-right">20</td>
+                            <td class="text-right">10</td>
+                            <td class="text-right"><strong>10</strong></td>
+                            <td class="text-right">450,00 ₺</td>
+                            <td>08.12.25</td>
+                            <td class="text-center"><button class="btn btn-xs btn-outline" onclick="viewPO('4500012349', '10')">Detay</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Developer Notes - Data Structure Reference -->
+        <div class="dev-note">
+            <h4>Data Structure Referansları - Tablodaki Alanların Kaynakları</h4>
+            <table class="table" style="font-size: 12px;">
+                <thead>
+                    <tr>
+                        <th>Ekrandaki Alan</th>
+                        <th>Data Structure Tablosu</th>
+                        <th>Alan Adı</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Sipariş No</td><td>Purchasing Order</td><td>Purchasing Order SAP number</td></tr>
+                    <tr><td>Kalem No</td><td>Purchasing Order Item</td><td>Purchasing Order SAP Item No</td></tr>
+                    <tr><td>SRM No</td><td>Purchasing Order</td><td>SRM number</td></tr>
+                    <tr><td>Malzeme No</td><td>Purchasing Order Item</td><td>Material number</td></tr>
+                    <tr><td>Malzeme Adı</td><td>Material (JOIN)</td><td>Title</td></tr>
+                    <tr><td>Tedarikçi No</td><td>Purchasing Order</td><td>Supplier number</td></tr>
+                    <tr><td>Tedarikçi Adı</td><td>Supplier (JOIN)</td><td>Supplier title 1</td></tr>
+                    <tr><td>Birim</td><td>Purchasing Order Item</td><td>Unit of measure code</td></tr>
+                    <tr><td>Sipariş Mik.</td><td>Purchasing Order Item</td><td>Order quantity</td></tr>
+                    <tr><td>Teslim Mik.</td><td>Purchasing Order Item</td><td>Goods receipt quantity</td></tr>
+                    <tr><td>Açık Mik.</td><td>Hesaplanan</td><td>Order qty - GR qty</td></tr>
+                    <tr><td>Birim Fiyat</td><td>Purchasing Order Item</td><td>Unit price</td></tr>
+                    <tr><td>Para Birimi</td><td>Purchasing Order Item</td><td>currency code</td></tr>
+                    <tr><td>Oluşturma Tarihi</td><td>Purchasing Order</td><td>creation datetime</td></tr>
+                </tbody>
+            </table>
+            <p><strong>Not:</strong> Malzeme Adı ve Tedarikçi Adı, Goods Receipt dokümanındaki arama alanlarında listelenmiştir.</p>
+        </div>
+
+        <div class="dev-note warning">
+            <h4>Business Rules (Indirect Material Management Application Draft)</h4>
+            <ul>
+                <li>"Purchasing orders are created on the SAP but transferred to Indirect Material Management program."</li>
+                <li>"When open purchasing orders records entered to the application, items of these orders are added to ordered quantity on related SRM Request."</li>
+                <li>"Purchasing order screen should have a view and it include both header and item information together."</li>
+                <li>"Process start with the list of open purchasing order items that waits for goods receipt."</li>
+            </ul>
+        </div>
+
+        <div class="dev-note info">
+            <h4>Screen Designs IMMA.xlsx - Activities X Screens</h4>
+            <p><strong>Ekran:</strong> 12 - Purchasing Orders</p>
+            <p><strong>Screen Variant:</strong> CVCD (Create, <u>View</u>, Change, Delete)</p>
+            <p><strong>Görüntüle Butonu:</strong> CVCD kalıbının "View" işlevi olarak eklenmiştir.</p>
+        </div>
+    </main>
+
+    <!-- PO Detay Modal - "Purchasing order screen should have a view and it include both header and item information together" -->
+    <div id="poDetailModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h3 id="modalTitle">Sipariş Detayı</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Header Information - Purchasing Order tablosundan -->
+                <div class="card" style="margin-bottom: 15px;">
+                    <div class="card-header">
+                        <h4>Sipariş Başlık Bilgileri (Header)</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-row">
+                            <div class="form-group col-3">
+                                <label>Sipariş No (PO SAP Number)</label>
+                                <input type="text" class="form-control" id="modalPoNo" readonly>
+                            </div>
+                            <div class="form-group col-3">
+                                <label>SRM No</label>
+                                <input type="text" class="form-control" id="modalSrmNo" readonly>
+                            </div>
+                            <div class="form-group col-3">
+                                <label>Tedarikçi No (Supplier Number)</label>
+                                <input type="text" class="form-control" id="modalSupplierNo" readonly>
+                            </div>
+                            <div class="form-group col-3">
+                                <label>Oluşturma Tarihi (Creation DateTime)</label>
+                                <input type="text" class="form-control" id="modalCreationDate" readonly>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-6">
+                                <label>Tedarikçi Adı (Supplier Title)</label>
+                                <input type="text" class="form-control" id="modalSupplierTitle" readonly>
+                            </div>
+                            <div class="form-group col-3">
+                                <label>Oluşturan (Created by User)</label>
+                                <input type="text" class="form-control" id="modalCreatedBy" readonly>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item Information - Purchasing Order Item tablosundan -->
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Sipariş Kalemleri (Items)</h4>
+                    </div>
+                    <div class="card-body" style="padding: 0; overflow-x: auto;">
+                        <table class="table" id="modalItemsTable" style="min-width: 700px;">
+                            <thead>
+                                <tr>
+                                    <th>Kalem No</th>
+                                    <th>Malzeme No</th>
+                                    <th>Malzeme Adı</th>
+                                    <th>Birim</th>
+                                    <th class="text-right">Sipariş Mik.</th>
+                                    <th class="text-right">Teslim Mik.</th>
+                                    <th class="text-right">Açık Mik.</th>
+                                    <th class="text-right">Birim Fiyat</th>
+                                    <th>Para Birimi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modalItemsBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="dev-note" style="margin-top: 15px; padding: 8px; font-size: 11px;">
+                    <strong>Doküman Ref:</strong> "Purchasing order screen should have a view and it include both header and item information together." (Business Rules)
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal()">Kapat</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Compact table styling */
+        .table-compact {
+            font-size: 13px;
+        }
+        .table-compact th,
+        .table-compact td {
+            padding: 6px 8px;
+            white-space: nowrap;
+        }
+        .btn-xs {
+            padding: 2px 8px;
+            font-size: 11px;
+        }
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .modal-header h3 {
+            margin: 0;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+        .modal-body {
+            padding: 20px;
+        }
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #e0e0e0;
+            text-align: right;
+        }
+    </style>
+
+    <script>
+        // Mock data - SAP'tan entegre edilen açık PO kalemleri
+        const mockOpenOrders = [
+            { poNo: '4500012345', itemNo: '10', srmNo: '1000056789', materialNo: '01.00002-0001', materialTitle: 'Rulman 6205-2RS SKF', supplierNo: '1000045678', supplierTitle: 'ABC Endüstriyel Malzeme A.Ş.', uom: 'AD', orderQty: 100, grQty: 0, unitPrice: 125.50, currency: 'EUR', creationDate: '10.12.2025' },
+            { poNo: '4500012345', itemNo: '20', srmNo: '1000056789', materialNo: '01.00015-0003', materialTitle: 'Hidrolik Yag ISO 46', supplierNo: '1000045678', supplierTitle: 'ABC Endüstriyel Malzeme A.Ş.', uom: 'LT', orderQty: 200, grQty: 0, unitPrice: 45.00, currency: 'EUR', creationDate: '10.12.2025' },
+            { poNo: '4500012346', itemNo: '10', srmNo: '1000056790', materialNo: '01.00028-0001', materialTitle: 'Elektrik Motoru 5.5kW', supplierNo: '1000045679', supplierTitle: 'XYZ Elektrik San. Tic. Ltd.', uom: 'AD', orderQty: 5, grQty: 0, unitPrice: 1850.00, currency: 'EUR', creationDate: '11.12.2025' },
+            { poNo: '4500012347', itemNo: '10', srmNo: '1000056791', materialNo: '01.00030-0002', materialTitle: 'Kablo NYM 3x2,5mm', supplierNo: '1000045680', supplierTitle: 'Kablo Sanayi A.Ş.', uom: 'MT', orderQty: 500, grQty: 250, unitPrice: 12.50, currency: 'TRY', creationDate: '05.12.2025' },
+            { poNo: '4500012347', itemNo: '20', srmNo: '1000056791', materialNo: '01.00031-0001', materialTitle: 'Sigorta 16A C Tipi', supplierNo: '1000045680', supplierTitle: 'Kablo Sanayi A.Ş.', uom: 'AD', orderQty: 100, grQty: 50, unitPrice: 35.00, currency: 'TRY', creationDate: '05.12.2025' },
+            { poNo: '4500012348', itemNo: '10', srmNo: '1000056792', materialNo: '01.00040-0001', materialTitle: 'Rulman 6308-2RS', supplierNo: '1000045681', supplierTitle: 'German Bearings GmbH', uom: 'AD', orderQty: 50, grQty: 0, unitPrice: 185.00, currency: 'EUR', creationDate: '12.12.2025' },
+            { poNo: '4500012348', itemNo: '20', srmNo: '1000056792', materialNo: '01.00041-0001', materialTitle: 'Rulman NU 309', supplierNo: '1000045681', supplierTitle: 'German Bearings GmbH', uom: 'AD', orderQty: 30, grQty: 0, unitPrice: 220.00, currency: 'EUR', creationDate: '12.12.2025' },
+            { poNo: '4500012349', itemNo: '10', srmNo: '1000056793', materialNo: '01.00050-0001', materialTitle: 'Yağlama Gresi 5kg', supplierNo: '1000045678', supplierTitle: 'ABC Endüstriyel Malzeme A.Ş.', uom: 'AD', orderQty: 20, grQty: 10, unitPrice: 450.00, currency: 'TRY', creationDate: '08.12.2025' }
+        ];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // Arama butonu
+            document.getElementById('searchBtn').addEventListener('click', applyFilters);
+            document.getElementById('clearFilterBtn').addEventListener('click', clearFilters);
+
+            // Enter tuşu ile arama
+            const filterInputs = ['searchBox', 'filterOrderNo', 'filterItemNo', 'filterMaterialNo', 'filterMaterialTitle', 'filterSupplierTitle'];
+            filterInputs.forEach(inputId => {
+                document.getElementById(inputId).addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        applyFilters();
+                    }
+                });
+            });
+
+            // Birim değişikliğinde otomatik filtrele
+            document.getElementById('filterUOM').addEventListener('change', applyFilters);
+
+            // Satır tıklama - Mal Kabul sayfasına yönlendirme
+            document.querySelectorAll('.table-row-clickable').forEach(row => {
+                row.addEventListener('click', function() {
+                    const poNo = this.getAttribute('data-po');
+                    const itemNo = this.getAttribute('data-item');
+                    // Mal Kabul sayfasına yönlendir
+                    window.location.href = `goods-receipt.html?po=${poNo}&item=${itemNo}`;
+                });
+                row.style.cursor = 'pointer';
+            });
+        }
+
+        // Filtreleme fonksiyonu - Goods Receipt dokümanındaki arama alanlarına göre
+        function applyFilters() {
+            const searchBox = document.getElementById('searchBox').value.toLowerCase().trim();
+            const orderNo = document.getElementById('filterOrderNo').value.toLowerCase().trim();
+            const itemNo = document.getElementById('filterItemNo').value.toLowerCase().trim();
+            const materialNo = document.getElementById('filterMaterialNo').value.toLowerCase().trim();
+            const materialTitle = document.getElementById('filterMaterialTitle').value.toLowerCase().trim();
+            const supplierTitle = document.getElementById('filterSupplierTitle').value.toLowerCase().trim();
+            const uom = document.getElementById('filterUOM').value;
+
+            const rows = document.querySelectorAll('#openOrdersTable tbody tr');
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length === 0) return;
+
+                // Updated column indices for compact table:
+                // 0: Sipariş No, 1: Klm, 2: Malzeme No, 3: Malzeme Adı, 4: Tedarikçi, 5: Brm, 6-8: Qty, 9: Fiyat, 10: Tarih, 11: İşlem
+                const rowOrderNo = cells[0].textContent.toLowerCase();
+                const rowItemNo = cells[1].textContent.toLowerCase();
+                const rowMaterialNo = cells[2].textContent.toLowerCase();
+                const rowMaterialTitle = cells[3].textContent.toLowerCase();
+                const rowSupplierTitle = cells[4].textContent.toLowerCase();
+                const rowUom = cells[5].textContent;
+
+                let visible = true;
+
+                // Genel arama - tüm alanlarda
+                if (searchBox && !(
+                    rowOrderNo.includes(searchBox) ||
+                    rowMaterialNo.includes(searchBox) ||
+                    rowMaterialTitle.includes(searchBox) ||
+                    rowSupplierTitle.includes(searchBox)
+                )) {
+                    visible = false;
+                }
+
+                // Spesifik filtreler (supplierNo removed from table, available in modal)
+                if (orderNo && !rowOrderNo.includes(orderNo)) visible = false;
+                if (itemNo && !rowItemNo.includes(itemNo)) visible = false;
+                if (materialNo && !rowMaterialNo.includes(materialNo)) visible = false;
+                if (materialTitle && !rowMaterialTitle.includes(materialTitle)) visible = false;
+                if (supplierTitle && !rowSupplierTitle.includes(supplierTitle)) visible = false;
+                if (uom && rowUom !== uom) visible = false;
+
+                row.style.display = visible ? '' : 'none';
+                if (visible) visibleCount++;
+            });
+
+            document.getElementById('resultCount').textContent = visibleCount + ' kayıt bulundu';
+        }
+
+        // Filtreleri temizle
+        function clearFilters() {
+            document.getElementById('searchBox').value = '';
+            document.getElementById('filterOrderNo').value = '';
+            document.getElementById('filterItemNo').value = '';
+            document.getElementById('filterMaterialNo').value = '';
+            document.getElementById('filterMaterialTitle').value = '';
+            document.getElementById('filterSupplierTitle').value = '';
+            document.getElementById('filterUOM').value = '';
+
+            const rows = document.querySelectorAll('#openOrdersTable tbody tr');
+            rows.forEach(row => {
+                row.style.display = '';
+            });
+
+            document.getElementById('resultCount').textContent = rows.length + ' kayıt bulundu';
+        }
+
+        // Görüntüle - CVCD'nin "View" işlevi
+        // "Purchasing order screen should have a view and it include both header and item information together"
+        function viewPO(poNo, itemNo) {
+            // İlgili siparişin tüm kalemlerini bul
+            const poItems = mockOpenOrders.filter(item => item.poNo === poNo);
+
+            if (poItems.length === 0) return;
+
+            // Header bilgilerini doldur (Purchasing Order tablosundan)
+            const firstItem = poItems[0];
+            document.getElementById('modalTitle').textContent = 'Sipariş Detayı - ' + poNo;
+            document.getElementById('modalPoNo').value = poNo;
+            document.getElementById('modalSrmNo').value = firstItem.srmNo;
+            document.getElementById('modalSupplierNo').value = firstItem.supplierNo;
+            document.getElementById('modalSupplierTitle').value = firstItem.supplierTitle;
+            document.getElementById('modalCreationDate').value = firstItem.creationDate;
+            document.getElementById('modalCreatedBy').value = 'SAP Entegrasyon';
+
+            // Item listesini doldur (Purchasing Order Item tablosundan)
+            const itemsBody = document.getElementById('modalItemsBody');
+            itemsBody.innerHTML = '';
+
+            poItems.forEach(item => {
+                const openQty = item.orderQty - item.grQty;
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.itemNo}</td>
+                    <td>${item.materialNo}</td>
+                    <td>${item.materialTitle}</td>
+                    <td>${item.uom}</td>
+                    <td class="text-right">${item.orderQty}</td>
+                    <td class="text-right">${item.grQty}</td>
+                    <td class="text-right"><strong>${openQty}</strong></td>
+                    <td class="text-right">${item.unitPrice.toLocaleString('tr-TR', {minimumFractionDigits: 2})}</td>
+                    <td>${item.currency}</td>
+                `;
+                itemsBody.appendChild(row);
+            });
+
+            // Modalı göster
+            document.getElementById('poDetailModal').style.display = 'flex';
+        }
+
+        // Modalı kapat
+        function closeModal() {
+            document.getElementById('poDetailModal').style.display = 'none';
+        }
+
+        // ESC tuşu ile modalı kapat
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

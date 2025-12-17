@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tedarikçi Listesi - IMMA</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- NAVBAR - Top Navigation (Maximo Style) -->
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">M</div>
+                <div class="brand-text">
+                    <span class="brand-name">IMMA</span>
+                    <span class="brand-subtitle">Endirek Malzeme Yönetimi</span>
+                </div>
+            </a>
+            <ul class="navbar-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="material-list.html" class="nav-link active">
+                        <span class="nav-icon">📦</span>
+                        Ana Veriler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-list.html" class="dropdown-item">Malzeme Listesi</a>
+                        <a href="supplier-list.html" class="dropdown-item active">Tedarikçi Listesi</a>
+                        <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
+                        <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
+                        <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="mrp.html" class="nav-link">
+                        <span class="nav-icon">📈</span>
+                        MRP
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="srm-list.html" class="nav-link">
+                        <span class="nav-icon">🛒</span>
+                        Satınalma
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="srm-list.html" class="dropdown-item">Talep Listesi</a>
+                        <a href="goods-receipt.html" class="dropdown-item">Mal Kabul</a>
+                        <a href="po-list.html" class="dropdown-item">Satınalma Siparişleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="budget-management.html" class="nav-link">
+                        <span class="nav-icon">💰</span>
+                        Bütçe
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="budget-management.html" class="dropdown-item">Bütçe Yönetimi</a>
+                        <a href="budget-preference.html" class="dropdown-item">Bütçe Tercihleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="material-request-list.html" class="nav-link">
+                        <span class="nav-icon">📋</span>
+                        Talepler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-request-list.html" class="dropdown-item">Talep Listesi</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="transfer-list.html" class="nav-link">
+                        <span class="nav-icon">🏭</span>
+                        Stok
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
+                        <a href="warehouse-transfer.html" class="dropdown-item">Depo Transferi</a>
+                        <a href="transfer-list.html" class="dropdown-item">Transfer Listesi</a>
+                        <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
+                        <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
+                        <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+            </ul>
+            <div class="navbar-user">
+                <span class="user-name">Ahmet Yılmaz</span>
+                <div class="user-avatar">AY</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="modern-container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Tedarikçi Listesi</h1>
+                <p class="page-subtitle">Ana Veriler > Tedarikçi Listesi</p>
+            </div>
+            <div class="page-actions">
+                <button class="btn btn-primary" onclick="window.location.href='supplier-data.html?mode=create'">+ Yeni Tedarikçi Ekle</button>
+            </div>
+        </div>
+
+        <!-- Developer Notes -->
+        <div class="dev-note info">
+            <h4>📋 Ekran Bilgisi: 8 SL - Supplier List</h4>
+            <p><strong>Amaç:</strong> Sistemde kayıtlı tedarikçilerin listesi ve yönetimi.</p>
+            <p><strong>Filtreler:</strong> Tedarikçi tipi, durum, arama</p>
+            <p><strong>İşlemler:</strong> Görüntüle (view mode), Düzenle (edit mode)</p>
+        </div>
+
+        <!-- Filters -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Filtreler</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-row">
+                    <div class="form-group col-3">
+                        <label>Tedarikçi Tipi</label>
+                        <select class="form-control" id="filterType">
+                            <option value="">Tümü</option>
+                            <option value="domestic">Yerli</option>
+                            <option value="import">İthalat</option>
+                            <option value="consignment">Konsinye</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Durum</label>
+                        <select class="form-control" id="filterStatus">
+                            <option value="">Tümü</option>
+                            <option value="1">Aktif</option>
+                            <option value="2">Diskalifiye</option>
+                            <option value="3">Pasif</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>SAP No</label>
+                        <input type="text" class="form-control" id="filterSapNo" placeholder="SAP numarası...">
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Arama</label>
+                        <input type="text" class="form-control" id="filterSearch" placeholder="Tedarikçi adı...">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="applyFilters()">Filtrele</button>
+                <button class="btn btn-outline" onclick="clearFilters()">Temizle</button>
+            </div>
+        </div>
+
+        <!-- Supplier List Table -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Tedarikçiler</h3>
+                <span class="result-count">45 kayıt bulundu</span>
+            </div>
+            <div class="card-body" style="padding: 0;">
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th style="width: 60px;">Sıra</th>
+                                <th class="sortable">Tedarikçi ID</th>
+                                <th class="sortable">SAP No</th>
+                                <th class="sortable">Tedarikçi Adı 1</th>
+                                <th>Tedarikçi Adı 2</th>
+                                <th>Durum</th>
+                                <th>Ortalama Teslimat Süresi</th>
+                                <th style="width: 200px;">İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td><span class="table-cell-primary">SUP-00001</span></td>
+                                <td>10001234</td>
+                                <td>ABC Rulman San. Tic. Ltd. Şti.</td>
+                                <td>ABC Bearings Industrial</td>
+                                <td><span class="status-badge onaylandi">Aktif</span></td>
+                                <td>5 gün</td>
+                                <td>
+                                    <div class="table-actions">
+                                        <button class="btn btn-sm btn-outline" onclick="viewSupplier('SUP-00001')" title="Görüntüle">Görüntüle</button>
+                                        <button class="btn btn-sm btn-primary" onclick="editSupplier('SUP-00001')" title="Düzenle">Düzenle</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td><span class="table-cell-primary">SUP-00002</span></td>
+                                <td>10001235</td>
+                                <td>XYZ Elektrik Malzemeleri A.Ş.</td>
+                                <td>XYZ Electrical Supplies Inc.</td>
+                                <td><span class="status-badge onaylandi">Aktif</span></td>
+                                <td>7 gün</td>
+                                <td>
+                                    <div class="table-actions">
+                                        <button class="btn btn-sm btn-outline" onclick="viewSupplier('SUP-00002')" title="Görüntüle">Görüntüle</button>
+                                        <button class="btn btn-sm btn-primary" onclick="editSupplier('SUP-00002')" title="Düzenle">Düzenle</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td><span class="table-cell-primary">SUP-00003</span></td>
+                                <td>10001236</td>
+                                <td>German Bearings GmbH</td>
+                                <td>Deutsche Lager Vertrieb</td>
+                                <td><span class="status-badge onaylandi">Aktif</span></td>
+                                <td>14 gün</td>
+                                <td>
+                                    <div class="table-actions">
+                                        <button class="btn btn-sm btn-outline" onclick="viewSupplier('SUP-00003')" title="Görüntüle">Görüntüle</button>
+                                        <button class="btn btn-sm btn-primary" onclick="editSupplier('SUP-00003')" title="Düzenle">Düzenle</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td><span class="table-cell-primary">SUP-00004</span></td>
+                                <td>10001237</td>
+                                <td>Konsinye Yedek Parça Ltd.</td>
+                                <td>Consignment Spare Parts</td>
+                                <td><span class="status-badge onaylandi">Aktif</span></td>
+                                <td>3 gün</td>
+                                <td>
+                                    <div class="table-actions">
+                                        <button class="btn btn-sm btn-outline" onclick="viewSupplier('SUP-00004')" title="Görüntüle">Görüntüle</button>
+                                        <button class="btn btn-sm btn-primary" onclick="editSupplier('SUP-00004')" title="Düzenle">Düzenle</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td><span class="table-cell-primary">SUP-00005</span></td>
+                                <td>10001238</td>
+                                <td>Pasif Tedarikçi A.Ş.</td>
+                                <td>Inactive Supplier Corp.</td>
+                                <td><span class="status-badge beklemede">Pasif</span></td>
+                                <td>10 gün</td>
+                                <td>
+                                    <div class="table-actions">
+                                        <button class="btn btn-sm btn-outline" onclick="viewSupplier('SUP-00005')" title="Görüntüle">Görüntüle</button>
+                                        <button class="btn btn-sm btn-primary" onclick="editSupplier('SUP-00005')" title="Düzenle">Düzenle</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>6</td>
+                                <td><span class="table-cell-primary">SUP-00006</span></td>
+                                <td>10001239</td>
+                                <td>Diskalifiye Tedarikçi San. Ltd.</td>
+                                <td>Disqualified Supplier Industries</td>
+                                <td><span class="status-badge reddedildi">Diskalifiye</span></td>
+                                <td>-</td>
+                                <td>
+                                    <div class="table-actions">
+                                        <button class="btn btn-sm btn-outline" onclick="viewSupplier('SUP-00006')" title="Görüntüle">Görüntüle</button>
+                                        <button class="btn btn-sm btn-primary" onclick="editSupplier('SUP-00006')" title="Düzenle">Düzenle</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination">
+                    <button class="btn btn-sm btn-outline" disabled>Önceki</button>
+                    <span class="pagination-info">Sayfa 1 / 8</span>
+                    <button class="btn btn-sm btn-outline">Sonraki</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Database Operations -->
+        <div class="dev-note success">
+            <h4>✅ Veritabanı İşlemleri</h4>
+            <p><strong>API Endpoint:</strong> GET /api/suppliers</p>
+            <p><strong>Tablo:</strong> MD_Supplier</p>
+            <p><strong>Sıralama:</strong> SupplierCode ASC</p>
+            <p><strong>Kolonlar:</strong> SupplierID, SAPCode, SupplierName1, SupplierName2, Status, AvgDeliveryTime</p>
+        </div>
+    </main>
+
+    <style>
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 20px;
+            padding: 20px;
+        }
+        .pagination-info {
+            color: #666;
+        }
+
+        /* Table action buttons */
+        .table-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: nowrap;
+            justify-content: flex-start;
+        }
+        .table-actions .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        /* Table styling */
+        .table-cell-primary {
+            color: #2563eb;
+            font-weight: 600;
+        }
+
+        .result-count {
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+
+    <script>
+        // View supplier - navigates to view mode
+        function viewSupplier(supplierId) {
+            window.location.href = `supplier-data.html?id=${supplierId}&mode=view`;
+        }
+
+        // Edit supplier - navigates to edit mode
+        function editSupplier(supplierId) {
+            window.location.href = `supplier-data.html?id=${supplierId}&mode=edit`;
+        }
+
+        // Apply filters
+        function applyFilters() {
+            const type = document.getElementById('filterType').value;
+            const status = document.getElementById('filterStatus').value;
+            const sapNo = document.getElementById('filterSapNo').value;
+            const search = document.getElementById('filterSearch').value;
+
+            console.log('Filters applied:', { type, status, sapNo, search });
+            alert('Filtreler uygulandı! (Demo)\n\nAPI çağrısı yapılacak: GET /api/suppliers?type=' + type + '&status=' + status + '&sapNo=' + sapNo + '&search=' + search);
+        }
+
+        // Clear filters
+        function clearFilters() {
+            document.getElementById('filterType').selectedIndex = 0;
+            document.getElementById('filterStatus').selectedIndex = 0;
+            document.getElementById('filterSapNo').value = '';
+            document.getElementById('filterSearch').value = '';
+            alert('Filtreler temizlendi!');
+        }
+
+        // Pagination
+        document.querySelectorAll('.pagination .btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (!this.disabled) {
+                    alert('Sayfa değiştiriliyor: ' + this.textContent.trim());
+                }
+            });
+        });
+
+        // Sortable columns
+        document.querySelectorAll('.sortable').forEach(header => {
+            header.style.cursor = 'pointer';
+            header.addEventListener('click', function() {
+                const column = this.textContent;
+                alert('Sıralama: ' + column + ' (Demo)');
+            });
+        });
+    </script>
+</body>
+</html>

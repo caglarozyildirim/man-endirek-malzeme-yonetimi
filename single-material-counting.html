@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tekli Malzeme Sayımı - IMMA</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- NAVBAR - Top Navigation (Maximo Style) -->
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">M</div>
+                <div class="brand-text">
+                    <span class="brand-name">IMMA</span>
+                    <span class="brand-subtitle">Endirek Malzeme Yönetimi</span>
+                </div>
+            </a>
+                        <ul class="navbar-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="material-list.html" class="nav-link">
+                        <span class="nav-icon">📦</span>
+                        Ana Veriler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-list.html" class="dropdown-item">Malzeme Listesi</a>
+                        <a href="supplier-list.html" class="dropdown-item">Tedarikçi Listesi</a>
+                        <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
+                        <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
+                        <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="mrp.html" class="nav-link">
+                        <span class="nav-icon">📈</span>
+                        MRP
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="srm-list.html" class="nav-link">
+                        <span class="nav-icon">🛒</span>
+                        Satınalma
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="srm-list.html" class="dropdown-item">Talep Listesi</a>
+                        <a href="goods-receipt.html" class="dropdown-item">Mal Kabul</a>
+                        <a href="po-list.html" class="dropdown-item">Satınalma Siparişleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="budget-management.html" class="nav-link">
+                        <span class="nav-icon">💰</span>
+                        Bütçe
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="budget-management.html" class="dropdown-item">Bütçe Yönetimi</a>
+                        <a href="budget-preference.html" class="dropdown-item">Bütçe Tercihleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="material-request-list.html" class="nav-link">
+                        <span class="nav-icon">📋</span>
+                        Talepler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-request-list.html" class="dropdown-item">Talep Listesi</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="transfer-list.html" class="nav-link active">
+                        <span class="nav-icon">🏭</span>
+                        Stok
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
+                        <a href="warehouse-transfer.html" class="dropdown-item">Depo Transferi</a>
+                        <a href="transfer-list.html" class="dropdown-item">Transfer Listesi</a>
+                        <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
+                        <a href="single-material-counting.html" class="dropdown-item active">Tekli Malzeme Sayımı</a>
+                        <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+            </ul>
+            <div class="navbar-user">
+                <span class="user-name">Ahmet Yılmaz</span>
+                <div class="user-avatar">AY</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="modern-container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Tekli Malzeme Sayımı</h1>
+                <p class="page-subtitle">Stok > Tekli Malzeme Sayımı</p>
+            </div>
+            <div class="page-actions">
+                <button class="btn btn-outline" onclick="window.location.href='inventory-counting.html'">
+                    ← Sayım İşlemleri
+                </button>
+            </div>
+        </div>
+
+        <!-- Developer Notes - Main -->
+        <div class="dev-note info">
+            <h4>📋 Ekran Bilgisi: 23 IC-SMC - Single Material Counting</h4>
+            <p><strong>Amaç:</strong> Tek bir malzeme için hızlı sayım yapılması ve stok düzeltmesi.</p>
+            <p><strong>Data Structure Alanlari (Screen 23 IC-SMC):</strong></p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <ul style="font-size: 12px;">
+                    <li>Correction document Id</li>
+                    <li>Correction document title</li>
+                    <li>Correction type</li>
+                    <li>Material number / Material title</li>
+                    <li>Stock record Id</li>
+                    <li>Stock quantity / Counting result</li>
+                    <li>Unit of measure</li>
+                    <li>Currency</li>
+                </ul>
+                <ul style="font-size: 12px;">
+                    <li>Unit value / Unit Euro value / Unit TL value</li>
+                    <li>Total stock value</li>
+                    <li>Cost Id / Costing date</li>
+                    <li>Storage / Location / Bin</li>
+                    <li>Open material requests / SRM / PO</li>
+                    <li>Quantity difference / Value difference (EUR/TL)</li>
+                    <li>Confirmed by user id / datetime</li>
+                    <li>Goods movement id</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="dev-note warning">
+            <h4>⚠️ Tekli Sayım İş Akışı</h4>
+            <ol>
+                <li><strong>Malzeme Ara:</strong> Sayılacak malzeme aranır ve seçilir (CVCD Step 1)</li>
+                <li><strong>Stok Bilgileri:</strong> Mevcut stok, değer ve lokasyon bilgileri gösterilir</li>
+                <li><strong>Fiziksel Sayım:</strong> Depo müdürü fiziksel sayım yapar ve sonucu girer</li>
+                <li><strong>Fark Analizi:</strong> Sistem/sayım farkı otomatik hesaplanır</li>
+                <li><strong>Gerekçe:</strong> Fark varsa gerekçe girilir</li>
+                <li><strong>Onay & Düzelt:</strong> Depo müdürü onaylar, stok güncellenir</li>
+            </ol>
+        </div>
+
+        <!-- Material Search Section (CVCD Step 1) -->
+        <div class="card" id="searchSection">
+            <div class="card-header">
+                <h3>Malzeme Ara ve Seç</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-row">
+                    <div class="form-group col-5">
+                        <label>Malzeme No / Tanım <span class="required">*</span></label>
+                        <div class="autocomplete-wrapper">
+                            <input type="text" class="form-control autocomplete-input" id="materialSearch"
+                                   placeholder="En az 2 karakter yazarak arayın..." autocomplete="off">
+                            <div class="autocomplete-results" id="materialResults"></div>
+                        </div>
+                        <small class="form-hint">Malzeme numarası veya açıklama yazarak arama yapın</small>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Depo</label>
+                        <select class="form-control" id="warehouseFilter">
+                            <option value="">Tüm Depolar</option>
+                            <option value="central">Merkez Depo</option>
+                            <option value="line1">Hat 1 Deposu</option>
+                            <option value="line2">Hat 2 Deposu</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Lokasyon</label>
+                        <select class="form-control" id="locationFilter">
+                            <option value="">Tümü</option>
+                            <option value="A">A Bölgesi</option>
+                            <option value="B">B Bölgesi</option>
+                            <option value="C">C Bölgesi</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Counting Form Section (CVCD Step 2 - Hidden by default) -->
+        <div class="card" id="countingSection" style="display: none;">
+            <div class="card-header">
+                <h3>Malzeme Sayım Formu</h3>
+                <button class="btn btn-sm btn-outline" id="backToSearch">← Farklı Malzeme Seç</button>
+            </div>
+            <div class="card-body">
+                <!-- Material Info Display -->
+                <div class="info-section">
+                    <h4>Malzeme Bilgileri</h4>
+                    <div class="form-row">
+                        <div class="form-group col-3">
+                            <label>Malzeme No</label>
+                            <div class="form-control-static" id="displayMaterialNo">-</div>
+                        </div>
+                        <div class="form-group col-5">
+                            <label>Malzeme Tanımı</label>
+                            <div class="form-control-static" id="displayMaterialTitle">-</div>
+                        </div>
+                        <div class="form-group col-4">
+                            <label>Stok Kayıt No (Stock Record ID)</label>
+                            <div class="form-control-static" id="displayStockRecordId">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current Stock Information -->
+                <div class="info-section" style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin: 20px 0;">
+                    <h4>Mevcut Stok Bilgileri</h4>
+                    <div class="form-row">
+                        <div class="form-group col-2">
+                            <label>Depo</label>
+                            <div class="form-control-static" id="displayStorage">-</div>
+                        </div>
+                        <div class="form-group col-2">
+                            <label>Lokasyon</label>
+                            <div class="form-control-static" id="displayLocation">-</div>
+                        </div>
+                        <div class="form-group col-2">
+                            <label>Bin</label>
+                            <div class="form-control-static" id="displayBin">-</div>
+                        </div>
+                        <div class="form-group col-2">
+                            <label>Sistem Stok Miktarı</label>
+                            <div class="form-control-static" id="displayStockQty" style="font-weight: bold; color: #0066cc;">-</div>
+                        </div>
+                        <div class="form-group col-2">
+                            <label>Birim</label>
+                            <div class="form-control-static" id="displayUoM">-</div>
+                        </div>
+                        <div class="form-group col-2">
+                            <label>Maliyet Merkezi</label>
+                            <div class="form-control-static" id="displayCostId">-</div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-2">
+                            <label>Para Birimi</label>
+                            <div class="form-control-static" id="displayCurrency">-</div>
+                        </div>
+                        <div class="form-group col-2">
+                            <label>Birim Değer (TRY)</label>
+                            <div class="form-control-static" id="displayUnitValue">-</div>
+                        </div>
+                        <div class="form-group col-2">
+                            <label>Birim Değer (EUR)</label>
+                            <div class="form-control-static" id="displayUnitValueEUR">-</div>
+                        </div>
+                        <div class="form-group col-2">
+                            <label>Toplam Stok Değeri</label>
+                            <div class="form-control-static" id="displayTotalValue" style="font-weight: bold; color: #28a745;">-</div>
+                        </div>
+                        <div class="form-group col-2">
+                            <label>Maliyet Tarihi</label>
+                            <div class="form-control-static" id="displayCostingDate">-</div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-2">
+                            <label>Açık Mat. Talepleri</label>
+                            <div class="form-control-static" id="displayOpenMR">-</div>
+                        </div>
+                        <div class="form-group col-2">
+                            <label>Açık SRM Talepleri</label>
+                            <div class="form-control-static" id="displayOpenSRM">-</div>
+                        </div>
+                        <div class="form-group col-2">
+                            <label>Açık PO Siparişleri</label>
+                            <div class="form-control-static" id="displayOpenPO">-</div>
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Goods Movement ID</label>
+                            <div class="form-control-static" id="displayGoodsMovementId">-</div>
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Onaylayan / Tarih</label>
+                            <div class="form-control-static" id="displayConfirmedBy">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Correction Document Info -->
+                <div class="info-section">
+                    <h4>Düzeltme Dokümanı Bilgileri</h4>
+                    <div class="form-row">
+                        <div class="form-group col-3">
+                            <label>Düzeltme Doküman No <span class="required">*</span></label>
+                            <input type="text" class="form-control" id="correctionDocId"
+                                   value="IC-SMC-2025-0001" readonly>
+                        </div>
+                        <div class="form-group col-5">
+                            <label>Düzeltme Doküman Başlığı <span class="required">*</span></label>
+                            <input type="text" class="form-control" id="correctionDocTitle"
+                                   placeholder="Örn: Merkez Depo Spot Sayım - Motor Rulman">
+                        </div>
+                        <div class="form-group col-4">
+                            <label>Düzeltme Tipi <span class="required">*</span></label>
+                            <select class="form-control" id="correctionType">
+                                <option value="">Seçiniz...</option>
+                                <option value="spot_count">Spot Sayım</option>
+                                <option value="recount">Yeniden Sayım</option>
+                                <option value="discrepancy">Fark İncelemesi</option>
+                                <option value="emergency">Acil Düzeltme</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Counting Input -->
+                <div class="info-section" style="background: #fff3cd; padding: 20px; border-radius: 6px; border: 2px solid #ffc107;">
+                    <h4>Fiziksel Sayım (Depo Müdürü)</h4>
+                    <div class="form-row">
+                        <div class="form-group col-2">
+                            <label>Sayım Değeri <span class="required">*</span></label>
+                            <input type="number" class="form-control" id="countingValue"
+                                   placeholder="Sayım sonucu" step="0.01" min="0">
+                        </div>
+                        <div class="form-group col-2">
+                            <label>Fark (Miktar)</label>
+                            <input type="text" class="form-control" id="difference" readonly
+                                   style="font-weight: bold; background: #e9ecef;">
+                        </div>
+                        <div class="form-group col-2">
+                            <label>Fark Değeri (TRY)</label>
+                            <input type="text" class="form-control" id="differenceValue" readonly
+                                   style="font-weight: bold; background: #e9ecef;">
+                        </div>
+                        <div class="form-group col-2">
+                            <label>Fark Değeri (EUR)</label>
+                            <input type="text" class="form-control" id="differenceValueEUR" readonly
+                                   style="font-weight: bold; background: #e9ecef;">
+                        </div>
+                        <div class="form-group col-4">
+                            <label>Fark Durumu</label>
+                            <div class="form-control-static" id="differenceStatus">
+                                <span class="badge badge-secondary">Sayım bekleniyor</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-12">
+                            <label>Fark Gerekçesi <span id="reasonRequired" style="display: none;" class="required">*</span></label>
+                            <textarea class="form-control" id="countReason" rows="3"
+                                      placeholder="Fark tespit edildiğinde gerekçe giriniz..."></textarea>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-3">
+                            <label>Sayım Tarihi <span class="required">*</span></label>
+                            <input type="datetime-local" class="form-control" id="countDate"
+                                   value="2025-12-15T14:30">
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Sayımı Yapan (Depo Müdürü)</label>
+                            <input type="text" class="form-control" id="countedBy"
+                                   value="Hasan Kara" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="form-actions">
+                    <button class="btn btn-outline" id="cancelButton">İptal</button>
+                    <button class="btn btn-secondary" id="saveDraftButton">Taslak Kaydet</button>
+                    <button class="btn btn-primary" id="submitCountButton">
+                        ✅ Sayımı Onayla ve Stoku Düzelt
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Database Operations -->
+        <div class="dev-note success">
+            <h4>✅ Veritabanı Yapısı - Tekli Malzeme Sayımı</h4>
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Tablo</th>
+                        <th>Alan</th>
+                        <th>Açıklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td rowspan="8"><strong>INV_CountCorrection</strong></td>
+                        <td>CorrectionDocId</td>
+                        <td>Düzeltme doküman numarası (PK, Auto-increment)</td>
+                    </tr>
+                    <tr>
+                        <td>CorrectionDocTitle</td>
+                        <td>Düzeltme doküman başlığı</td>
+                    </tr>
+                    <tr>
+                        <td>CorrectionType</td>
+                        <td>Düzeltme tipi (spot_count, recount, discrepancy, emergency)</td>
+                    </tr>
+                    <tr>
+                        <td>MaterialNo</td>
+                        <td>Malzeme numarası (FK -> MAT_Material)</td>
+                    </tr>
+                    <tr>
+                        <td>StockRecordId</td>
+                        <td>Stok kayıt ID (FK -> INV_Stock)</td>
+                    </tr>
+                    <tr>
+                        <td>SystemQty</td>
+                        <td>Sistem stok miktarı (sayım öncesi)</td>
+                    </tr>
+                    <tr>
+                        <td>CountingValue</td>
+                        <td>Fiziksel sayım değeri (depo müdürü tarafından girilir)</td>
+                    </tr>
+                    <tr>
+                        <td>Difference, Reason, CountedBy, CountDate</td>
+                        <td>Fark, gerekçe, sayımı yapan, tarih</td>
+                    </tr>
+                    <tr>
+                        <td><strong>INV_Stock</strong></td>
+                        <td>Quantity</td>
+                        <td>Sayım onaylandığında CountingValue ile güncellenir</td>
+                    </tr>
+                    <tr>
+                        <td><strong>INV_StockTransaction</strong></td>
+                        <td>TransactionType</td>
+                        <td>'IC_ADJUST' tipinde işlem kaydı (fark için +/-)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="dev-note">
+            <h4>📊 CVCD Pattern - Single Material Counting</h4>
+            <p><strong>Create-View-Create-Detail Pattern Açıklaması:</strong></p>
+            <ul>
+                <li><strong>Step 1 (View):</strong> Malzeme arama ve seçme ekranı</li>
+                <li><strong>Step 2 (Create-Detail):</strong> Seçilen malzeme için sayım formu</li>
+                <li><strong>Data Flow:</strong> Seçilen malzemenin stok bilgileri otomatik yüklenir</li>
+                <li><strong>Calculation:</strong> Fark = CountingValue - SystemQty (otomatik hesaplanır)</li>
+                <li><strong>Validation:</strong> Fark varsa gerekçe zorunlu</li>
+            </ul>
+        </div>
+
+        <div class="dev-note warning">
+            <h4>⚠️ İş Kuralları ve Validasyonlar</h4>
+            <ul>
+                <li><strong>Malzeme Seçimi:</strong> Sadece stok kaydı olan malzemeler seçilebilir</li>
+                <li><strong>Fark Kontrolü:</strong> Fark tespit edilirse gerekçe zorunludur</li>
+                <li><strong>Yetki:</strong> Sadece Depo Müdürü sayım yapabilir (role check)</li>
+                <li><strong>Onay Kuralı:</strong> Belirli tutarın üzerindeki farklar (örn: 10,000 TL) Finans onayı gerektirir</li>
+                <li><strong>Stok Kilidi:</strong> Sayım sırasında malzeme için işlem yapılamaz (pending count flag)</li>
+                <li><strong>Audit Trail:</strong> Tüm sayım işlemleri log tablosuna kaydedilir</li>
+                <li><strong>Notification:</strong> Büyük farklar için ilgili departmanlara bildirim gönderilir</li>
+            </ul>
+        </div>
+
+        <div class="dev-note info">
+            <h4>🔄 Backend API Endpoints</h4>
+            <ul>
+                <li><strong>POST /api/inventory/single-count/search:</strong> Malzeme arama</li>
+                <li><strong>GET /api/inventory/single-count/material/{id}:</strong> Malzeme detay ve stok bilgisi</li>
+                <li><strong>POST /api/inventory/single-count/submit:</strong> Sayım kaydetme ve stok düzeltme</li>
+                <li><strong>POST /api/inventory/single-count/draft:</strong> Taslak kaydetme</li>
+            </ul>
+        </div>
+    </main>
+
+    <style>
+        /* Autocomplete Styles */
+        .autocomplete-wrapper {
+            position: relative;
+            width: 100%;
+        }
+        .autocomplete-input {
+            width: 100%;
+        }
+        .autocomplete-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+        }
+        .autocomplete-results.show {
+            display: block;
+        }
+        .autocomplete-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.15s;
+        }
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+        .autocomplete-item:hover,
+        .autocomplete-item.selected {
+            background-color: #f0f7ff;
+        }
+        .autocomplete-item .material-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .autocomplete-item .material-number {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+        .autocomplete-item .material-desc {
+            font-size: 12px;
+            color: #666;
+            margin-top: 2px;
+        }
+        .autocomplete-item .stock-info {
+            text-align: right;
+            font-size: 12px;
+        }
+        .autocomplete-item .stock-qty {
+            font-weight: 600;
+            color: #28a745;
+        }
+        .autocomplete-item .stock-location {
+            color: #666;
+            margin-top: 2px;
+        }
+        .autocomplete-no-results {
+            padding: 15px;
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+        .form-hint {
+            font-size: 11px;
+            color: #888;
+            margin-top: 4px;
+            display: block;
+        }
+
+        .info-section {
+            margin-bottom: 20px;
+        }
+        .info-section h4 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #333;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 8px;
+        }
+        .form-control-static {
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            min-height: 38px;
+            display: flex;
+            align-items: center;
+        }
+        .badge {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .badge-success {
+            background: #28a745;
+            color: white;
+        }
+        .badge-warning {
+            background: #ffc107;
+            color: #000;
+        }
+        .badge-danger {
+            background: #dc3545;
+            color: white;
+        }
+        #countingSection .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+
+    <script>
+        // Sample material data for search - with all Data Structure fields
+        const materialDatabase = [
+            {
+                materialNo: 'MAT-2024-0156',
+                materialTitle: 'SKF 6208-2RS Rulman',
+                stockRecordId: 'STK-0156-001',
+                storage: 'Merkez Depo',
+                location: 'A-12',
+                bin: 'Raf-05',
+                stockQty: 45,
+                uom: 'Adet',
+                currency: 'TRY',
+                unitValue: 125.50,
+                unitValueEUR: 3.50,
+                totalValue: 5647.50,
+                costId: 'CC-MAINT-001',
+                costingDate: '2025-12-01',
+                openMR: 3,
+                openSRM: 1,
+                openPO: 2,
+                goodsMovementId: null,
+                confirmedBy: null,
+                confirmedDate: null
+            },
+            {
+                materialNo: 'MAT-2024-0089',
+                materialTitle: 'Tork Somunu M12x1.5',
+                stockRecordId: 'STK-0089-001',
+                storage: 'Merkez Depo',
+                location: 'B-08',
+                bin: 'Kutu-23',
+                stockQty: 320,
+                uom: 'Adet',
+                currency: 'TRY',
+                unitValue: 3.75,
+                unitValueEUR: 0.10,
+                totalValue: 1200.00,
+                costId: 'CC-PROD-002',
+                costingDate: '2025-11-15',
+                openMR: 0,
+                openSRM: 2,
+                openPO: 0,
+                goodsMovementId: 'GM-2025-00456',
+                confirmedBy: 'Ahmet Yılmaz',
+                confirmedDate: '2025-12-10'
+            },
+            {
+                materialNo: 'MAT-2024-0234',
+                materialTitle: 'Hidrolik Yağ ISO VG 46 - 20L',
+                stockRecordId: 'STK-0234-001',
+                storage: 'Hat 1 Deposu',
+                location: 'C-15',
+                bin: 'Zemin-02',
+                stockQty: 12,
+                uom: 'Bidon',
+                currency: 'TRY',
+                unitValue: 850.00,
+                unitValueEUR: 23.60,
+                totalValue: 10200.00,
+                costId: 'CC-MAINT-001',
+                costingDate: '2025-12-05',
+                openMR: 1,
+                openSRM: 0,
+                openPO: 1,
+                goodsMovementId: null,
+                confirmedBy: null,
+                confirmedDate: null
+            },
+            {
+                materialNo: 'MAT-2024-0345',
+                materialTitle: 'V-Kayış A-68',
+                stockRecordId: 'STK-0345-001',
+                storage: 'Merkez Depo',
+                location: 'A-05',
+                bin: 'Raf-12',
+                stockQty: 85,
+                uom: 'Adet',
+                currency: 'TRY',
+                unitValue: 45.00,
+                unitValueEUR: 1.25,
+                totalValue: 3825.00,
+                costId: 'CC-MAINT-001',
+                costingDate: '2025-12-08',
+                openMR: 2,
+                openSRM: 0,
+                openPO: 1,
+                goodsMovementId: null,
+                confirmedBy: null,
+                confirmedDate: null
+            },
+            {
+                materialNo: 'MAT-2024-0456',
+                materialTitle: 'Elektrik Motoru 5.5kW',
+                stockRecordId: 'STK-0456-001',
+                storage: 'Hat 1 Deposu',
+                location: 'B-03',
+                bin: 'Zemin-05',
+                stockQty: 3,
+                uom: 'Adet',
+                currency: 'TRY',
+                unitValue: 8500.00,
+                unitValueEUR: 236.00,
+                totalValue: 25500.00,
+                costId: 'CC-MAINT-002',
+                costingDate: '2025-11-20',
+                openMR: 0,
+                openSRM: 1,
+                openPO: 0,
+                goodsMovementId: null,
+                confirmedBy: null,
+                confirmedDate: null
+            },
+            {
+                materialNo: 'MAT-2024-0567',
+                materialTitle: 'Pnömatik Silindir 32x100',
+                stockRecordId: 'STK-0567-001',
+                storage: 'Hat 2 Deposu',
+                location: 'A-02',
+                bin: 'Raf-08',
+                stockQty: 15,
+                uom: 'Adet',
+                currency: 'TRY',
+                unitValue: 320.00,
+                unitValueEUR: 8.90,
+                totalValue: 4800.00,
+                costId: 'CC-PROD-001',
+                costingDate: '2025-12-10',
+                openMR: 1,
+                openSRM: 0,
+                openPO: 2,
+                goodsMovementId: null,
+                confirmedBy: null,
+                confirmedDate: null
+            },
+            {
+                materialNo: 'MAT-2024-0678',
+                materialTitle: 'Kontaktör 25A 3P',
+                stockRecordId: 'STK-0678-001',
+                storage: 'Hat 2 Deposu',
+                location: 'C-01',
+                bin: 'Kutu-15',
+                stockQty: 28,
+                uom: 'Adet',
+                currency: 'TRY',
+                unitValue: 185.00,
+                unitValueEUR: 5.15,
+                totalValue: 5180.00,
+                costId: 'CC-ELEC-001',
+                costingDate: '2025-12-12',
+                openMR: 0,
+                openSRM: 0,
+                openPO: 0,
+                goodsMovementId: 'GM-2025-00789',
+                confirmedBy: 'Mehmet Demir',
+                confirmedDate: '2025-12-14'
+            },
+            {
+                materialNo: 'MAT-2024-0789',
+                materialTitle: 'Sızdırmazlık Contası DN100',
+                stockRecordId: 'STK-0789-001',
+                storage: 'Merkez Depo',
+                location: 'C-08',
+                bin: 'Raf-22',
+                stockQty: 150,
+                uom: 'Adet',
+                currency: 'TRY',
+                unitValue: 28.50,
+                unitValueEUR: 0.79,
+                totalValue: 4275.00,
+                costId: 'CC-MAINT-001',
+                costingDate: '2025-12-05',
+                openMR: 5,
+                openSRM: 1,
+                openPO: 0,
+                goodsMovementId: null,
+                confirmedBy: null,
+                confirmedDate: null
+            }
+        ];
+
+        let selectedMaterial = null;
+
+        // Autocomplete elements
+        const materialInput = document.getElementById('materialSearch');
+        const materialResults = document.getElementById('materialResults');
+        const warehouseFilter = document.getElementById('warehouseFilter');
+        const locationFilter = document.getElementById('locationFilter');
+
+        // Warehouse mapping
+        const warehouseMap = {
+            'central': 'Merkez Depo',
+            'line1': 'Hat 1 Deposu',
+            'line2': 'Hat 2 Deposu'
+        };
+
+        // Dynamic search on input
+        materialInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+
+            if (query.length < 2) {
+                materialResults.classList.remove('show');
+                return;
+            }
+
+            performSearch(query);
+        });
+
+        // Also filter when dropdown changes
+        warehouseFilter.addEventListener('change', function() {
+            const query = materialInput.value.toLowerCase().trim();
+            if (query.length >= 2) {
+                performSearch(query);
+            }
+        });
+
+        locationFilter.addEventListener('change', function() {
+            const query = materialInput.value.toLowerCase().trim();
+            if (query.length >= 2) {
+                performSearch(query);
+            }
+        });
+
+        // Perform search and show results
+        function performSearch(query) {
+            let results = materialDatabase;
+
+            // Apply text search
+            if (query) {
+                results = results.filter(m =>
+                    m.materialNo.toLowerCase().includes(query) ||
+                    m.materialTitle.toLowerCase().includes(query)
+                );
+            }
+
+            // Apply warehouse filter
+            const selectedWarehouse = warehouseFilter.value;
+            if (selectedWarehouse) {
+                results = results.filter(m => m.storage === warehouseMap[selectedWarehouse]);
+            }
+
+            // Apply location filter
+            const selectedLocation = locationFilter.value;
+            if (selectedLocation) {
+                results = results.filter(m => m.location.startsWith(selectedLocation));
+            }
+
+            // Display results
+            if (results.length === 0) {
+                materialResults.innerHTML = '<div class="autocomplete-no-results">Sonuç bulunamadı</div>';
+            } else {
+                materialResults.innerHTML = results.map(m => `
+                    <div class="autocomplete-item" data-material='${JSON.stringify(m)}'>
+                        <div class="material-info">
+                            <span class="material-number">${m.materialNo}</span>
+                            <span class="material-desc">${m.materialTitle}</span>
+                        </div>
+                        <div class="stock-info">
+                            <div class="stock-qty">${m.stockQty} ${m.uom}</div>
+                            <div class="stock-location">${m.storage} - ${m.location}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            materialResults.classList.add('show');
+        }
+
+        // Handle item selection from dropdown
+        materialResults.addEventListener('click', function(e) {
+            const item = e.target.closest('.autocomplete-item');
+            if (item) {
+                const material = JSON.parse(item.dataset.material);
+                selectMaterialFromDropdown(material);
+            }
+        });
+
+        // Close results when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.autocomplete-wrapper')) {
+                materialResults.classList.remove('show');
+            }
+        });
+
+        // Select material from dropdown and load into form
+        function selectMaterialFromDropdown(material) {
+            materialInput.value = material.materialNo + ' - ' + material.materialTitle;
+            materialResults.classList.remove('show');
+            loadMaterialForCounting(material);
+        }
+
+        // Load material into counting form
+        function loadMaterialForCounting(material) {
+            selectedMaterial = material;
+
+            // Populate material info
+            document.getElementById('displayMaterialNo').textContent = material.materialNo;
+            document.getElementById('displayMaterialTitle').textContent = material.materialTitle;
+            document.getElementById('displayStockRecordId').textContent = material.stockRecordId;
+            document.getElementById('displayStorage').textContent = material.storage;
+            document.getElementById('displayLocation').textContent = material.location;
+            document.getElementById('displayBin').textContent = material.bin;
+            document.getElementById('displayStockQty').textContent = material.stockQty + ' ' + material.uom;
+            document.getElementById('displayUoM').textContent = material.uom;
+            document.getElementById('displayCurrency').textContent = material.currency;
+            document.getElementById('displayUnitValue').textContent = material.unitValue.toLocaleString('tr-TR') + ' TRY';
+            document.getElementById('displayUnitValueEUR').textContent = material.unitValueEUR.toFixed(2) + ' EUR';
+            document.getElementById('displayTotalValue').textContent = material.totalValue.toLocaleString('tr-TR') + ' TRY';
+            document.getElementById('displayCostId').textContent = material.costId;
+            document.getElementById('displayCostingDate').textContent = material.costingDate || '-';
+            document.getElementById('displayOpenMR').textContent = material.openMR;
+            document.getElementById('displayOpenSRM').textContent = material.openSRM;
+            document.getElementById('displayOpenPO').textContent = material.openPO;
+            document.getElementById('displayGoodsMovementId').textContent = material.goodsMovementId || 'Yeni oluşturulacak';
+            document.getElementById('displayConfirmedBy').textContent = material.confirmedBy ? (material.confirmedBy + ' - ' + material.confirmedDate) : 'Henüz onaylanmadı';
+
+            // Auto-generate correction doc title
+            const today = new Date().toLocaleDateString('tr-TR');
+            document.getElementById('correctionDocTitle').value =
+                `Tekli Sayım - ${material.storage} - ${material.materialTitle} (${today})`;
+
+            // Show counting section, hide search
+            document.getElementById('searchSection').style.display = 'none';
+            document.getElementById('countingSection').style.display = 'block';
+
+            // Scroll to counting section
+            document.getElementById('countingSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Back to search button
+        document.getElementById('backToSearch').addEventListener('click', function() {
+            if (confirm('Sayım formundan çıkmak istediğinize emin misiniz?\n\nGirilen veriler kaybolacak.')) {
+                document.getElementById('searchSection').style.display = 'block';
+                document.getElementById('countingSection').style.display = 'none';
+                resetCountingForm();
+                document.getElementById('searchSection').scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+
+        // Calculate difference when counting value changes
+        document.getElementById('countingValue').addEventListener('input', function() {
+            const countingValue = parseFloat(this.value) || 0;
+            const systemQty = selectedMaterial ? selectedMaterial.stockQty : 0;
+            const difference = countingValue - systemQty;
+            const unitValue = selectedMaterial ? selectedMaterial.unitValue : 0;
+            const unitValueEUR = selectedMaterial ? selectedMaterial.unitValueEUR : 0;
+            const differenceValue = difference * unitValue;
+            const differenceValueEUR = difference * unitValueEUR;
+
+            // Update difference fields
+            document.getElementById('difference').value = difference.toFixed(2);
+            document.getElementById('differenceValue').value =
+                differenceValue.toLocaleString('tr-TR') + ' TRY';
+            document.getElementById('differenceValueEUR').value =
+                differenceValueEUR.toFixed(2) + ' EUR';
+
+            // Update status badge
+            const statusDiv = document.getElementById('differenceStatus');
+            const reasonRequired = document.getElementById('reasonRequired');
+
+            if (difference === 0) {
+                statusDiv.innerHTML = '<span class="badge badge-success">✅ Fark Yok</span>';
+                reasonRequired.style.display = 'none';
+            } else if (difference > 0) {
+                statusDiv.innerHTML = `<span class="badge badge-warning">⬆️ Fazla: +${difference.toFixed(2)}</span>`;
+                reasonRequired.style.display = 'inline';
+            } else {
+                statusDiv.innerHTML = `<span class="badge badge-danger">⬇️ Eksik: ${difference.toFixed(2)}</span>`;
+                reasonRequired.style.display = 'inline';
+            }
+        });
+
+        // Submit count button
+        document.getElementById('submitCountButton').addEventListener('click', function() {
+            if (!validateCountingForm()) {
+                return;
+            }
+
+            const countingValue = parseFloat(document.getElementById('countingValue').value);
+            const systemQty = selectedMaterial.stockQty;
+            const difference = countingValue - systemQty;
+            const correctionDocTitle = document.getElementById('correctionDocTitle').value;
+            const correctionType = document.getElementById('correctionType').value;
+            const reason = document.getElementById('countReason').value;
+
+            let message = `Sayım onaylanacak ve stok düzeltmesi yapılacak!\n\n`;
+            message += `Malzeme: ${selectedMaterial.materialNo} - ${selectedMaterial.materialTitle}\n`;
+            message += `Depo/Lokasyon: ${selectedMaterial.storage} - ${selectedMaterial.location} - ${selectedMaterial.bin}\n\n`;
+            message += `Sistem Stok: ${systemQty} ${selectedMaterial.uom}\n`;
+            message += `Sayım Değeri: ${countingValue} ${selectedMaterial.uom}\n`;
+            message += `Fark: ${difference.toFixed(2)} ${selectedMaterial.uom}\n\n`;
+
+            if (difference !== 0) {
+                const differenceValue = difference * selectedMaterial.unitValue;
+                message += `Parasal Fark: ${differenceValue.toLocaleString('tr-TR')} ${selectedMaterial.currency}\n`;
+                message += `Gerekçe: ${reason}\n\n`;
+            }
+
+            message += `Devam etmek istiyor musunuz?`;
+
+            if (confirm(message)) {
+                // Simulate API call
+                setTimeout(() => {
+                    alert(`✅ Sayım başarıyla kaydedildi!\n\nDüzeltme Doküman No: ${document.getElementById('correctionDocId').value}\n\nStok güncellendi:\n${systemQty} → ${countingValue} ${selectedMaterial.uom}`);
+
+                    // Reset and go back to search
+                    document.getElementById('searchSection').style.display = 'block';
+                    document.getElementById('countingSection').style.display = 'none';
+                    resetCountingForm();
+                    document.getElementById('searchSection').scrollIntoView({ behavior: 'smooth' });
+                }, 500);
+            }
+        });
+
+        // Save draft button
+        document.getElementById('saveDraftButton').addEventListener('click', function() {
+            const correctionDocId = document.getElementById('correctionDocId').value;
+
+            if (confirm('Sayım taslak olarak kaydedilecek.\n\nDaha sonra devam edebilirsiniz.\n\nDevam etmek istiyor musunuz?')) {
+                alert(`💾 Taslak kaydedildi!\n\nDoküman No: ${correctionDocId}\n\nDaha sonra "Sayım İşlemleri" ekranından devam edebilirsiniz.`);
+
+                // Reset and go back to search
+                document.getElementById('searchSection').style.display = 'block';
+                document.getElementById('countingSection').style.display = 'none';
+                resetCountingForm();
+            }
+        });
+
+        // Cancel button
+        document.getElementById('cancelButton').addEventListener('click', function() {
+            if (confirm('Sayım iptal edilecek!\n\nGirilen veriler kaybolacak.\n\nDevam etmek istiyor musunuz?')) {
+                document.getElementById('searchSection').style.display = 'block';
+                document.getElementById('countingSection').style.display = 'none';
+                resetCountingForm();
+                document.getElementById('searchSection').scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+
+        // Form validation
+        function validateCountingForm() {
+            const correctionDocTitle = document.getElementById('correctionDocTitle').value.trim();
+            const correctionType = document.getElementById('correctionType').value;
+            const countingValue = document.getElementById('countingValue').value;
+            const difference = parseFloat(document.getElementById('difference').value) || 0;
+            const reason = document.getElementById('countReason').value.trim();
+
+            if (!correctionDocTitle) {
+                alert('⚠️ Lütfen düzeltme doküman başlığı giriniz.');
+                document.getElementById('correctionDocTitle').focus();
+                return false;
+            }
+
+            if (!correctionType) {
+                alert('⚠️ Lütfen düzeltme tipini seçiniz.');
+                document.getElementById('correctionType').focus();
+                return false;
+            }
+
+            if (!countingValue || countingValue === '') {
+                alert('⚠️ Lütfen sayım değerini giriniz.');
+                document.getElementById('countingValue').focus();
+                return false;
+            }
+
+            if (difference !== 0 && !reason) {
+                alert('⚠️ Fark tespit edildiği için gerekçe girmeniz zorunludur.');
+                document.getElementById('countReason').focus();
+                return false;
+            }
+
+            return true;
+        }
+
+        // Reset counting form
+        function resetCountingForm() {
+            selectedMaterial = null;
+            document.getElementById('correctionDocTitle').value = '';
+            document.getElementById('correctionType').value = '';
+            document.getElementById('countingValue').value = '';
+            document.getElementById('difference').value = '';
+            document.getElementById('differenceValue').value = '';
+            document.getElementById('countReason').value = '';
+            document.getElementById('differenceStatus').innerHTML = '<span class="badge badge-secondary">Sayım bekleniyor</span>';
+            document.getElementById('reasonRequired').style.display = 'none';
+
+            // Generate new correction doc ID
+            const newDocId = 'IC-SMC-2025-' + String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+            document.getElementById('correctionDocId').value = newDocId;
+        }
+
+        // Handle keyboard navigation in autocomplete
+        materialInput.addEventListener('keydown', function(e) {
+            const items = materialResults.querySelectorAll('.autocomplete-item');
+            const selected = materialResults.querySelector('.autocomplete-item.selected');
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (!selected && items.length > 0) {
+                    items[0].classList.add('selected');
+                } else if (selected && selected.nextElementSibling) {
+                    selected.classList.remove('selected');
+                    selected.nextElementSibling.classList.add('selected');
+                    selected.nextElementSibling.scrollIntoView({ block: 'nearest' });
+                }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (selected && selected.previousElementSibling) {
+                    selected.classList.remove('selected');
+                    selected.previousElementSibling.classList.add('selected');
+                    selected.previousElementSibling.scrollIntoView({ block: 'nearest' });
+                }
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (selected) {
+                    const material = JSON.parse(selected.dataset.material);
+                    selectMaterialFromDropdown(material);
+                } else if (items.length === 1) {
+                    // Auto-select if only one result
+                    const material = JSON.parse(items[0].dataset.material);
+                    selectMaterialFromDropdown(material);
+                }
+            } else if (e.key === 'Escape') {
+                materialResults.classList.remove('show');
+            }
+        });
+
+        // Initialize correction doc ID
+        window.addEventListener('load', function() {
+            const newDocId = 'IC-SMC-2025-' + String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+            document.getElementById('correctionDocId').value = newDocId;
+        });
+    </script>
+</body>
+</html>

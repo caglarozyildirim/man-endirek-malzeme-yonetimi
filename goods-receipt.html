@@ -1,0 +1,2159 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mal Kabul - IMMA</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- ============================================
+         NAVBAR - Top Navigation (Maximo Style)
+         ============================================ -->
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">M</div>
+                <div class="brand-text">
+                    <span class="brand-name">IMMA</span>
+                    <span class="brand-subtitle">Endirek Malzeme Yönetimi</span>
+                </div>
+            </a>
+            <ul class="navbar-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="material-list.html" class="nav-link">
+                        <span class="nav-icon">📦</span>
+                        Ana Veriler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-list.html" class="dropdown-item">Malzeme Listesi</a>
+                        <a href="supplier-list.html" class="dropdown-item">Tedarikçi Listesi</a>
+                        <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
+                        <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
+                        <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="mrp.html" class="nav-link">
+                        <span class="nav-icon">📈</span>
+                        MRP
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="srm-list.html" class="nav-link active">
+                        <span class="nav-icon">🛒</span>
+                        Satınalma
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="srm-list.html" class="dropdown-item">Talep Listesi</a>
+                        <a href="goods-receipt.html" class="dropdown-item active">Mal Kabul</a>
+                        <a href="po-list.html" class="dropdown-item">Satınalma Siparişleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="budget-management.html" class="nav-link">
+                        <span class="nav-icon">💰</span>
+                        Bütçe
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="budget-management.html" class="dropdown-item">Bütçe Yönetimi</a>
+                        <a href="budget-preference.html" class="dropdown-item">Bütçe Tercihleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="material-request-list.html" class="nav-link">
+                        <span class="nav-icon">📋</span>
+                        Talepler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-request-list.html" class="dropdown-item">Talep Listesi</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="transfer-list.html" class="nav-link">
+                        <span class="nav-icon">🏭</span>
+                        Stok
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
+                        <a href="warehouse-transfer.html" class="dropdown-item">Depo Transferi</a>
+                        <a href="transfer-list.html" class="dropdown-item">Transfer Listesi</a>
+                        <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
+                        <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
+                        <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+            </ul>
+            <div class="navbar-user">
+                <span class="user-name">Ahmet Yılmaz</span>
+                <div class="user-avatar">AY</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ============================================
+         MAIN CONTENT - Goods Receipt Page
+         ============================================ -->
+    <main class="modern-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title" id="pageTitle">Mal Kabul İşlemleri</h1>
+                <p class="page-subtitle">Satınalma > Mal Kabul</p>
+            </div>
+            <div class="page-actions">
+                <button class="btn btn-outline" id="grHistoryBtn">📋 Mal Kabul Geçmişi</button>
+                <button class="btn btn-warning" id="returnMaterialBtn">↩️ Malzeme İade</button>
+                <button class="btn btn-warning" id="returnPackingBtn">📦 Ambalaj İade</button>
+            </div>
+        </div>
+
+        <!-- Transaction Type Selection -->
+        <div class="card" id="transactionTypeCard">
+            <div class="card-header">
+                <h3>İşlem Tipi Seçimi</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-row">
+                    <div class="form-group col-4">
+                        <label>Hareket Tipi <span class="required">*</span></label>
+                        <select class="form-control" id="transactionType" required>
+                            <option value="">Seçiniz...</option>
+                            <option value="101">101 - Mal Kabul (Standart)</option>
+                            <option value="102">102 - İptal (Rollback)</option>
+                            <option value="122">122 - Malzeme İade</option>
+                            <option value="161">161 - Ambalaj İade</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-4">
+                        <label>Hareket Tipi Açıklama</label>
+                        <input type="text" class="form-control" id="transactionTypeTitle" readonly>
+                    </div>
+                    <div class="form-group col-4">
+                        <label>&nbsp;</label>
+                        <div class="dev-note info" style="margin: 0; padding: 10px;">
+                            <small><strong>101:</strong> Standart mal kabul | <strong>102:</strong> Önceki GR iptal | <strong>122:</strong> Malzeme iade | <strong>161:</strong> Ambalaj iade</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================
+             SECTION 1: OPEN ORDERS - Search/Filter & List
+             ============================================ -->
+        <div class="card" id="openOrdersSection">
+            <div class="card-header">
+                <h3>Açık Siparişleri Ara / Filtrele</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-row">
+                    <div class="form-group col-3">
+                        <label>Arama</label>
+                        <input type="text" class="form-control" id="searchBox" placeholder="Sipariş, malzeme veya tedarikçi ara...">
+                    </div>
+                    <div class="form-group col-2">
+                        <label>Sipariş No</label>
+                        <input type="text" class="form-control" id="filterOrderNo" placeholder="4500012345">
+                    </div>
+                    <div class="form-group col-2">
+                        <label>Kalem No</label>
+                        <input type="text" class="form-control" id="filterItemNo" placeholder="10">
+                    </div>
+                    <div class="form-group col-2">
+                        <label>Malzeme No</label>
+                        <input type="text" class="form-control" id="filterMaterialNo" placeholder="01.00002-0001">
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Malzeme Adı</label>
+                        <input type="text" class="form-control" id="filterMaterialTitle" placeholder="Rulman">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-2">
+                        <label>Tedarikçi No</label>
+                        <input type="text" class="form-control" id="filterSupplierNo" placeholder="1000045678">
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Tedarikçi Adı</label>
+                        <input type="text" class="form-control" id="filterSupplierTitle" placeholder="ABC Endüstriyel">
+                    </div>
+                    <div class="form-group col-2">
+                        <label>Birim</label>
+                        <select class="form-control" id="filterUOM">
+                            <option value="">Tümü</option>
+                            <option>AD</option>
+                            <option>KG</option>
+                            <option>LT</option>
+                            <option>MT</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-2">
+                        <label>&nbsp;</label>
+                        <button class="btn btn-primary btn-block" id="searchBtn">🔍 Ara</button>
+                    </div>
+                    <div class="form-group col-2">
+                        <label>&nbsp;</label>
+                        <button class="btn btn-outline btn-block" id="clearFilterBtn">Filtreleri Temizle</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Open PO Items List -->
+        <div class="card" id="openItemsListCard">
+            <div class="card-header">
+                <h3>Mal Kabul Bekleyen Sipariş Kalemleri</h3>
+                <div class="card-header-actions">
+                    <label style="margin-right: 15px; display: inline-flex; align-items: center;">
+                        <input type="checkbox" id="selectAllItems" style="margin-right: 5px;">
+                        Tümünü Seç
+                    </label>
+                    <span class="status-badge status-active" id="openItemsCount">3 Açık Kalem</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <table class="table" style="font-size: 12px;">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;">Seç</th>
+                            <th style="width: 50px;">Hariç</th>
+                            <th>Sipariş No</th>
+                            <th>Kalem</th>
+                            <th>Malzeme No</th>
+                            <th>Malzeme Adı</th>
+                            <th>Ted. Malz. No</th>
+                            <th>Ted. Malz. Adı</th>
+                            <th>Tedarikçi No</th>
+                            <th>Tedarikçi Adı</th>
+                            <th>Birim</th>
+                            <th>Sipariş Mik.</th>
+                            <th>Açık Mik.</th>
+                            <th>Birim Fiyat</th>
+                            <th>Para Birimi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="openItemsTable">
+                        <tr class="table-row-clickable" data-po-item="1">
+                            <td><input type="checkbox" class="item-select" name="selectedItems" value="1"></td>
+                            <td><input type="checkbox" class="item-exclude" data-item="1"></td>
+                            <td>4500012345</td>
+                            <td>10</td>
+                            <td>01.00002-0001</td>
+                            <td>Rulman 6205-2RS SKF</td>
+                            <td>SKF-6205-2RS</td>
+                            <td>Rulman 6205 2RS</td>
+                            <td>1000045678</td>
+                            <td>ABC Endüstriyel Malzeme A.Ş.</td>
+                            <td>AD</td>
+                            <td>100</td>
+                            <td><strong>100</strong></td>
+                            <td>125.50</td>
+                            <td>EUR</td>
+                        </tr>
+                        <tr class="table-row-clickable" data-po-item="2">
+                            <td><input type="checkbox" class="item-select" name="selectedItems" value="2"></td>
+                            <td><input type="checkbox" class="item-exclude" data-item="2"></td>
+                            <td>4500012345</td>
+                            <td>20</td>
+                            <td>01.00015-0003</td>
+                            <td>Hidrolik Yag ISO 46</td>
+                            <td>HYD-ISO46-200</td>
+                            <td>Hidrolik Yag ISO 46</td>
+                            <td>1000045678</td>
+                            <td>ABC Endüstriyel Malzeme A.Ş.</td>
+                            <td>LT</td>
+                            <td>200</td>
+                            <td><strong>200</strong></td>
+                            <td>45.00</td>
+                            <td>EUR</td>
+                        </tr>
+                        <tr class="table-row-clickable" data-po-item="3">
+                            <td><input type="checkbox" class="item-select" name="selectedItems" value="3"></td>
+                            <td><input type="checkbox" class="item-exclude" data-item="3"></td>
+                            <td>4500012346</td>
+                            <td>10</td>
+                            <td>01.00028-0001</td>
+                            <td>Elektrik Motoru 5.5kW</td>
+                            <td>MOT-5500W-380</td>
+                            <td>Electric Motor 5.5kW</td>
+                            <td>1000045679</td>
+                            <td>XYZ Elektrik San. Tic. Ltd.</td>
+                            <td>AD</td>
+                            <td>5</td>
+                            <td><strong>5</strong></td>
+                            <td>1850.00</td>
+                            <td>EUR</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="dev-note info" style="margin-top: 15px;">
+                    <p><strong>Çoklu Seçim:</strong> Birden fazla kalem seçerek tek bir mal kabul belgesi ile toplu işlem yapabilirsiniz. "Hariç" işaretli kalemler işleme dahil edilmez.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================
+             SECTION 2: RECEIPT FORM - Appears When Item Selected
+             ============================================ -->
+        <div class="card" id="receiptFormSection" style="display: none;">
+            <div class="card-header">
+                <h3>Mal Kabul Formu</h3>
+                <div class="card-header-actions">
+                    <button class="btn btn-outline btn-sm" id="closeFormBtn">✕ Kapat</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Document Header Information - Screen Designs 13 GR -->
+                <div class="form-row">
+                    <div class="form-group col-3">
+                        <label>Mal Kabul No (GR ID)</label>
+                        <input type="text" class="form-control" id="grId" readonly style="background-color: #e8f5e9; font-weight: bold;">
+                        <small class="form-text text-muted">Sistem otomatik oluşturur</small>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Giriş Tarihi (Entry Date)</label>
+                        <input type="datetime-local" class="form-control" id="entryDate" readonly>
+                        <small class="form-text text-muted">Sistem zamanı</small>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>SRM No</label>
+                        <input type="text" class="form-control" id="srmNo" readonly>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Hareket Tipi</label>
+                        <input type="text" class="form-control" id="formTransactionType" value="101 - Mal Kabul" readonly>
+                    </div>
+                </div>
+
+                <!-- Invoice and Delivery Note (At least one mandatory) - Screen Designs 13 GR -->
+                <div class="form-row" style="background-color: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <div class="form-group col-3">
+                        <label>Fatura No <span class="required-or">*</span></label>
+                        <input type="text" class="form-control" id="invoiceNumber" placeholder="Fatura numarası">
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Fatura Tarihi (Invoice Doc. Date)</label>
+                        <input type="date" class="form-control" id="invoiceDate">
+                    </div>
+                    <div class="form-group col-3">
+                        <label>İrsaliye No <span class="required-or">*</span></label>
+                        <input type="text" class="form-control" id="deliveryNoteNumber" placeholder="İrsaliye numarası">
+                    </div>
+                    <div class="form-group col-3">
+                        <label>İrsaliye Tarihi (Del. Note Date)</label>
+                        <input type="date" class="form-control" id="deliveryNoteDate">
+                    </div>
+                    <div class="col-12">
+                        <small class="text-warning"><strong>Not:</strong> Fatura No veya İrsaliye No'dan en az biri zorunludur.</small>
+                    </div>
+                </div>
+
+                <!-- PO and Material Info (from selected item - all readonly) -->
+                <div class="form-row">
+                    <div class="form-group col-2">
+                        <label>Sipariş No (PO Number)</label>
+                        <input type="text" class="form-control" id="formPoNumber" readonly>
+                    </div>
+                    <div class="form-group col-1">
+                        <label>Kalem</label>
+                        <input type="text" class="form-control" id="formItemNo" readonly>
+                    </div>
+                    <div class="form-group col-2">
+                        <label>Malzeme No</label>
+                        <input type="text" class="form-control" id="formMaterialNo" readonly>
+                    </div>
+                    <div class="form-group col-4">
+                        <label>Malzeme Adı</label>
+                        <input type="text" class="form-control" id="formMaterialTitle" readonly>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Birim (UoM)</label>
+                        <input type="text" class="form-control" id="formUOM" readonly>
+                    </div>
+                </div>
+
+                <!-- Supplier Info (all readonly) -->
+                <div class="form-row">
+                    <div class="form-group col-2">
+                        <label>Tedarikçi No (SAP)</label>
+                        <input type="text" class="form-control" id="formSupplierNo" readonly>
+                    </div>
+                    <div class="form-group col-4">
+                        <label>Tedarikçi Adı</label>
+                        <input type="text" class="form-control" id="formSupplierTitle" readonly>
+                    </div>
+                    <div class="form-group col-2">
+                        <label>Ted. Malz. No</label>
+                        <input type="text" class="form-control" id="formSupplierMaterialNo" readonly>
+                    </div>
+                    <div class="form-group col-4">
+                        <label>Ted. Malz. Adı</label>
+                        <input type="text" class="form-control" id="formSupplierMaterialTitle" readonly>
+                    </div>
+                </div>
+
+                <!-- Quantity Information - Screen Designs 13 GR -->
+                <div class="form-row" style="background-color: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <div class="form-group col-2">
+                        <label>Sipariş Miktarı</label>
+                        <input type="number" class="form-control" id="formOrderQty" readonly>
+                    </div>
+                    <div class="form-group col-2">
+                        <label>Açık Miktar</label>
+                        <input type="number" class="form-control" id="formOpenQty" readonly style="font-weight: bold; color: #1565c0;">
+                    </div>
+                    <div class="form-group col-2">
+                        <label>Teslim Miktarı (Receipt Qty) <span class="required">*</span></label>
+                        <input type="number" class="form-control" id="receivedQty" min="0" step="0.001" required style="font-weight: bold; font-size: 16px; border: 2px solid #4caf50;">
+                    </div>
+                    <div class="form-group col-2">
+                        <label>Birim/Paket (Unit in Pack)</label>
+                        <input type="number" class="form-control" id="unitPerPackage" min="1" value="1">
+                    </div>
+                    <div class="form-group col-2">
+                        <label>Etiket Adedi (Label Qty)</label>
+                        <input type="number" class="form-control" id="labelQty" readonly style="background-color: #e8f5e9; font-weight: bold;">
+                        <small class="form-text text-muted">Hesaplanan</small>
+                    </div>
+                    <div class="form-group col-2">
+                        <label>Birim Fiyat (Unit Price)</label>
+                        <input type="text" class="form-control" id="formUnitPrice" readonly>
+                    </div>
+                </div>
+
+                <!-- Cost Information - Screen Designs 13 GR / Data Structure Cost table -->
+                <div class="form-row" style="background-color: #f3e5f5; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <div class="form-group col-2">
+                        <label>Cost ID</label>
+                        <input type="text" class="form-control" id="costId" readonly placeholder="Otomatik">
+                        <small class="form-text text-muted">Sistem oluşturur</small>
+                    </div>
+                    <div class="form-group col-2">
+                        <label>Euro Birim Fiyat</label>
+                        <input type="number" class="form-control" id="euroUnitCost" step="0.01" readonly>
+                    </div>
+                    <div class="form-group col-2">
+                        <label>TRY Birim Fiyat</label>
+                        <input type="number" class="form-control" id="tryUnitCost" step="0.01" readonly style="background-color: #e8f5e9; font-weight: bold;">
+                        <small class="form-text text-muted">EUR × Kur</small>
+                    </div>
+                    <div class="form-group col-2">
+                        <label>Maliyet Tarihi (Cost Date)</label>
+                        <input type="date" class="form-control" id="costDate">
+                    </div>
+                    <div class="form-group col-2">
+                        <label>Toplam EUR</label>
+                        <input type="number" class="form-control" id="euroTotalCost" step="0.01" readonly>
+                    </div>
+                    <div class="form-group col-2">
+                        <label>Toplam TRY</label>
+                        <input type="number" class="form-control" id="tryTotalCost" step="0.01" readonly style="background-color: #e8f5e9; font-weight: bold;">
+                    </div>
+                    <div class="col-12">
+                        <small class="text-info"><strong>FIFO Maliyet:</strong> TRY = EUR × Güncel Kur (SAP_ExchangeRate tablosundan)</small>
+                    </div>
+                </div>
+
+                <!-- Storage Location (Warehouse/Location/Bin) - Screen Designs 13 GR -->
+                <div class="form-row">
+                    <div class="form-group col-3">
+                        <label>Depo (Storage) <span class="required">*</span></label>
+                        <select class="form-control" id="warehouse" required>
+                            <option value="">Seçiniz...</option>
+                            <option value="MERKEZ">MERKEZ</option>
+                            <option value="HAT1">HAT1</option>
+                            <option value="HAT2">HAT2</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Lokasyon (Location) <span class="required">*</span></label>
+                        <select class="form-control" id="location" required>
+                            <option value="">Seçiniz...</option>
+                            <option value="Alt Raf">Alt Raf</option>
+                            <option value="Ust Raf">Ust Raf</option>
+                            <option value="Kimyasal">Kimyasal</option>
+                            <option value="Agir Parca">Agir Parca</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Raf (Bin) <span class="required">*</span></label>
+                        <input type="text" class="form-control" id="bin" placeholder="A01-R02-K05" required>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>&nbsp;</label>
+                        <div class="form-check" style="margin-top: 10px;">
+                            <input type="checkbox" class="form-check-input" id="orderClosed">
+                            <label class="form-check-label" for="orderClosed">
+                                <strong>Siparişi Kapat</strong> (Eksik teslimat)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stock Record IDs - Screen Designs 13 GR (section b) -->
+                <div class="form-row">
+                    <div class="form-group col-3">
+                        <label>Stok Kayıt ID (Stock Record Id)</label>
+                        <input type="text" class="form-control" id="stockRecordId" readonly placeholder="Otomatik">
+                        <small class="form-text text-muted">Sistem oluşturur</small>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Önceki Stok Kayıt ID (Prev. Stock Rec.)</label>
+                        <input type="text" class="form-control" id="prevStockRecordId" readonly>
+                        <small class="form-text text-muted">Rollback için</small>
+                    </div>
+                    <div class="form-group col-6">
+                        <label>Notlar</label>
+                        <textarea class="form-control" id="receiptNotes" rows="2" placeholder="Mal kabul ile ilgili notlar..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="form-actions" style="margin-top: 20px;">
+                    <button class="btn btn-primary btn-lg" id="saveReceiptBtn">
+                        ✓ Mal Kabul Yap
+                    </button>
+                    <button class="btn btn-secondary" id="printLabelBtn">
+                        🏷️ Etiket Yazdır
+                    </button>
+                    <button class="btn btn-outline" id="cancelReceiptBtn">
+                        İptal
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================
+             SECTION 3: ROLLBACK FORM - For Transaction Type 102
+             ============================================ -->
+        <div class="card" id="rollbackFormSection" style="display: none;">
+            <div class="card-header">
+                <h3>Mal Kabul İptal (Rollback) Formu</h3>
+                <div class="card-header-actions">
+                    <button class="btn btn-outline btn-sm" id="closeRollbackBtn">✕ Kapat</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="dev-note warning" style="margin-bottom: 20px;">
+                    <h4>⚠️ İptal İşlemi Hakkında</h4>
+                    <p>Bu işlem seçilen mal kabul kaydını iptal eder. Stok ve maliyet kayıtları ters işlem ile düzeltilir.</p>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-4">
+                        <label>İptal Edilecek GR No <span class="required">*</span></label>
+                        <input type="text" class="form-control" id="rollbackGrNo" placeholder="GR-2025-000XXX">
+                    </div>
+                    <div class="form-group col-4">
+                        <label>&nbsp;</label>
+                        <button class="btn btn-primary btn-block" id="searchGrBtn">🔍 GR Bul</button>
+                    </div>
+                </div>
+
+                <!-- GR Details (populated after search) -->
+                <div id="rollbackGrDetails" style="display: none;">
+                    <div class="form-row">
+                        <div class="form-group col-3">
+                            <label>Önceki GR ID</label>
+                            <input type="text" class="form-control" id="prevGrId" readonly>
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Önceki Stok Kayıt ID</label>
+                            <input type="text" class="form-control" id="prevStockRecordId" readonly>
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Sipariş No</label>
+                            <input type="text" class="form-control" id="rollbackPoNo" readonly>
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Malzeme No</label>
+                            <input type="text" class="form-control" id="rollbackMaterialNo" readonly>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-3">
+                            <label>Kabul Edilen Miktar</label>
+                            <input type="number" class="form-control" id="rollbackQty" readonly>
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Birim</label>
+                            <input type="text" class="form-control" id="rollbackUom" readonly>
+                        </div>
+                        <div class="form-group col-6">
+                            <label>İptal Nedeni <span class="required">*</span></label>
+                            <textarea class="form-control" id="rollbackReason" rows="2" placeholder="İptal nedenini açıklayın..." required></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-actions" style="margin-top: 20px;">
+                        <button class="btn btn-danger btn-lg" id="executeRollbackBtn">
+                            ⚠️ İptal İşlemini Uygula
+                        </button>
+                        <button class="btn btn-outline" id="cancelRollbackBtn">
+                            Vazgeç
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================
+             SECTION 4: RETURN FORM - For Transaction Type 122/161
+             ============================================ -->
+        <div class="card" id="returnFormSection" style="display: none;">
+            <div class="card-header">
+                <h3 id="returnFormTitle">İade Formu</h3>
+                <div class="card-header-actions">
+                    <button class="btn btn-outline btn-sm" id="closeReturnBtn">✕ Kapat</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Step 1: GR Seçimi -->
+                <div class="dev-note info" style="margin-bottom: 20px;">
+                    <p><strong>Adım 1:</strong> İade edilecek malzemenin orijinal Mal Kabul (GR) kaydını listeden seçin.</p>
+                </div>
+
+                <div class="form-row" style="background-color: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <div class="form-group col-3">
+                        <label>İade No</label>
+                        <input type="text" class="form-control" id="returnId" readonly style="background-color: #ffebee; font-weight: bold;">
+                        <small class="form-text text-muted">Sistem otomatik oluşturur</small>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>İade Tarihi <span class="required">*</span></label>
+                        <input type="date" class="form-control" id="returnDate" required>
+                    </div>
+                    <div class="form-group col-6">
+                        <label>Orijinal GR Kaydı <span class="required">*</span></label>
+                        <select class="form-control" id="originalGrNo" style="font-size: 13px; font-weight: bold;">
+                            <option value="">-- GR Seçiniz --</option>
+                        </select>
+                        <small class="form-text text-muted">Listeden bir GR seçin - seçim yapıldığında detaylar otomatik yüklenir</small>
+                    </div>
+                </div>
+
+                <!-- Step 2-6: Original GR Details (Hidden until GR found) -->
+                <div id="returnGrDetails" style="display: none;">
+                    <div class="dev-note success" style="margin-bottom: 20px;">
+                        <p><strong>✓ GR Bulundu!</strong> Aşağıdaki bilgileri kontrol edin ve iade detaylarını girin.</p>
+                    </div>
+
+                    <!-- GR Header Info (readonly) -->
+                    <div class="form-row" style="background-color: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <div class="form-group col-3">
+                            <label>Orijinal GR ID</label>
+                            <input type="text" class="form-control" id="returnOriginalGrId" readonly>
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Orijinal GR Tarihi</label>
+                            <input type="text" class="form-control" id="returnOriginalGrDate" readonly>
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Sipariş No (PO)</label>
+                            <input type="text" class="form-control" id="returnPoNo" readonly>
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Kalem No</label>
+                            <input type="text" class="form-control" id="returnItemNo" readonly>
+                        </div>
+                    </div>
+
+                    <!-- Material Info (readonly) -->
+                    <div class="form-row">
+                        <div class="form-group col-3">
+                            <label>Malzeme No</label>
+                            <input type="text" class="form-control" id="returnMaterialNo" readonly>
+                        </div>
+                        <div class="form-group col-5">
+                            <label>Malzeme Adı</label>
+                            <input type="text" class="form-control" id="returnMaterialTitle" readonly>
+                        </div>
+                        <div class="form-group col-4">
+                            <label>Tedarikçi</label>
+                            <input type="text" class="form-control" id="returnSupplier" readonly>
+                        </div>
+                    </div>
+
+                    <!-- Quantity Info -->
+                    <div class="form-row" style="background-color: #f3e5f5; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <div class="form-group col-2">
+                            <label>GR Kabul Mik.</label>
+                            <input type="number" class="form-control" id="returnGrQty" readonly style="font-weight: bold;">
+                            <small class="form-text text-muted">Orijinal kabul</small>
+                        </div>
+                        <div class="form-group col-2">
+                            <label>Mevcut Stok</label>
+                            <input type="number" class="form-control" id="returnCurrentStock" readonly style="background-color: #e8f5e9; font-weight: bold;">
+                        </div>
+                        <div class="form-group col-2">
+                            <label>İade Miktarı <span class="required">*</span></label>
+                            <input type="number" class="form-control" id="returnQty" min="0.01" step="0.01" required style="font-size: 16px; border: 2px solid #ff9800; font-weight: bold;">
+                        </div>
+                        <div class="form-group col-2">
+                            <label>Birim</label>
+                            <input type="text" class="form-control" id="returnUom" readonly>
+                        </div>
+                        <div class="form-group col-2">
+                            <label>EUR Birim Fiyat</label>
+                            <input type="text" class="form-control" id="returnEurPrice" readonly>
+                        </div>
+                        <div class="form-group col-2">
+                            <label>İade Tutarı (EUR)</label>
+                            <input type="text" class="form-control" id="returnTotalEur" readonly style="background-color: #ffebee; font-weight: bold;">
+                        </div>
+                    </div>
+
+                    <!-- Location Info (readonly from original GR) -->
+                    <div class="form-row">
+                        <div class="form-group col-3">
+                            <label>Depo</label>
+                            <input type="text" class="form-control" id="returnWarehouse" readonly>
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Lokasyon</label>
+                            <input type="text" class="form-control" id="returnLocation" readonly>
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Raf</label>
+                            <input type="text" class="form-control" id="returnBin" readonly>
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Stok Kayıt ID</label>
+                            <input type="text" class="form-control" id="returnStockRecordId" readonly>
+                        </div>
+                    </div>
+
+                    <!-- Return Reason -->
+                    <div class="form-row" style="background-color: #fff8e1; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <div class="form-group col-4">
+                            <label>İade Nedeni <span class="required">*</span></label>
+                            <select class="form-control" id="returnReasonType" required style="font-weight: bold;">
+                                <option value="">Seçiniz...</option>
+                                <option value="DEFECTIVE">Arızalı/Hatalı Malzeme</option>
+                                <option value="WRONG_MATERIAL">Yanlış Malzeme</option>
+                                <option value="OVER_DELIVERY">Fazla Teslimat</option>
+                                <option value="QUALITY_ISSUE">Kalite Sorunu</option>
+                                <option value="PACKING_RETURN">Ambalaj İadesi</option>
+                                <option value="OTHER">Diğer</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-8">
+                            <label>İade Açıklaması</label>
+                            <textarea class="form-control" id="returnDescription" rows="2" placeholder="İade ile ilgili detaylı açıklama..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="form-actions" style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+                        <button class="btn btn-warning btn-lg" id="executeReturnBtn">
+                            ↩️ İade İşlemini Uygula
+                        </button>
+                        <button class="btn btn-outline" id="cancelReturnBtn">
+                            Vazgeç
+                        </button>
+                    </div>
+                </div>
+
+                <!-- No GR Found Message -->
+                <div id="returnGrNotFound" style="display: none;">
+                    <div class="dev-note warning">
+                        <h4>⚠️ GR Bulunamadı</h4>
+                        <p>Girdiğiniz GR numarası sistemde bulunamadı. Lütfen doğru GR numarasını girin.</p>
+                        <p><strong>Örnek format:</strong> GR-2025-000001, GR-2025-000002</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================
+             SECTION 5: MULTIPLE ITEMS RECEIPT TABLE
+             ============================================ -->
+        <div class="card" id="multipleItemsSection" style="display: none;">
+            <div class="card-header">
+                <h3>Toplu Mal Kabul - Seçilen Kalemler</h3>
+                <div class="card-header-actions">
+                    <span class="status-badge status-warning" id="selectedItemsCount">0 Kalem Seçili</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Scrollable Table Container -->
+                <div class="table-responsive-wrapper">
+                    <table class="table batch-receipt-table">
+                        <thead>
+                            <tr>
+                                <th class="sticky-col col-po">Sipariş No</th>
+                                <th class="col-item">Kalem</th>
+                                <th class="col-material">Malzeme No</th>
+                                <th class="col-material-name">Malzeme Adı</th>
+                                <th class="col-qty">Açık Mik.</th>
+                                <th class="col-qty-input">Teslim Mik.</th>
+                                <th class="col-unit">Birim</th>
+                                <th class="col-pack">Birim/Paket</th>
+                                <th class="col-label">Etiket Ad.</th>
+                                <th class="col-price">EUR Fiyat</th>
+                                <th class="col-price">TRY Fiyat</th>
+                                <th class="col-location">Depo</th>
+                                <th class="col-location">Lokasyon</th>
+                                <th class="col-location">Raf</th>
+                                <th class="col-close">Kapat</th>
+                            </tr>
+                        </thead>
+                        <tbody id="multipleItemsTable">
+                            <!-- Dynamically populated -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Scroll Indicator -->
+                <div class="scroll-indicator">
+                    <span>← Kaydırın →</span>
+                </div>
+
+                <!-- Common fields for batch receipt -->
+                <div class="form-row" style="background-color: #fff3e0; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                    <div class="form-group col-3">
+                        <label>Fatura No <span class="required-or">*</span></label>
+                        <input type="text" class="form-control" id="batchInvoiceNumber">
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Fatura Tarihi</label>
+                        <input type="date" class="form-control" id="batchInvoiceDate">
+                    </div>
+                    <div class="form-group col-3">
+                        <label>İrsaliye No <span class="required-or">*</span></label>
+                        <input type="text" class="form-control" id="batchDeliveryNoteNumber">
+                    </div>
+                    <div class="form-group col-3">
+                        <label>İrsaliye Tarihi</label>
+                        <input type="date" class="form-control" id="batchDeliveryNoteDate">
+                    </div>
+                </div>
+
+                <div class="form-actions" style="margin-top: 20px;">
+                    <button class="btn btn-primary btn-lg" id="saveBatchReceiptBtn">
+                        ✓ Toplu Mal Kabul Yap
+                    </button>
+                    <button class="btn btn-secondary" id="printBatchLabelsBtn">
+                        🏷️ Tüm Etiketleri Yazdır
+                    </button>
+                    <button class="btn btn-outline" id="cancelBatchReceiptBtn">
+                        İptal
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Developer Notes -->
+        <div class="dev-note success">
+            <h4>Mal Kabul Kayıt İşlemleri - Screen Designs 13 GR</h4>
+            <p><strong>API Endpoint:</strong> POST /api/goods-receipts</p>
+            <p><strong>Zorunlu Alanlar:</strong></p>
+            <ul>
+                <li>Fatura No VEYA İrsaliye No (en az biri zorunlu)</li>
+                <li>Giriş Tarihi (Entry Date) - sistem otomatik</li>
+                <li>Teslim Alınan Miktar (Receipt Qty)</li>
+                <li>Depo/Lokasyon/Raf (Storage/Location/Bin)</li>
+            </ul>
+            <p><strong>Hesaplanan Alanlar:</strong></p>
+            <ul>
+                <li>TRY Birim Fiyat = EUR × Güncel Kur (SAP_ExchangeRate)</li>
+                <li>Etiket Adedi = ceil(Teslim Mik. / Birim/Paket)</li>
+            </ul>
+        </div>
+
+        <div class="dev-note">
+            <h4>Hareket Tipleri (Material Movement)</h4>
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Kod</th>
+                        <th>Açıklama</th>
+                        <th>Stok Etkisi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>101</td>
+                        <td>Mal Kabul (Standart GR)</td>
+                        <td>+ Artış</td>
+                    </tr>
+                    <tr>
+                        <td>102</td>
+                        <td>Mal Kabul İptal (Rollback)</td>
+                        <td>- Azalış</td>
+                    </tr>
+                    <tr>
+                        <td>122</td>
+                        <td>Malzeme İade (Tedarikçiye)</td>
+                        <td>- Azalış</td>
+                    </tr>
+                    <tr>
+                        <td>161</td>
+                        <td>Ambalaj İade</td>
+                        <td>- Azalış</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <style>
+        .required { color: #dc3545; font-weight: bold; }
+        .required-or { color: #ff9800; font-weight: bold; }
+        .form-control[readonly] { background-color: #f5f5f5; }
+        .form-control:disabled { background-color: #f5f5f5; cursor: not-allowed; }
+        .text-warning { color: #ff9800; }
+        .text-info { color: #2196f3; }
+        .form-check { display: flex; align-items: center; }
+        .form-check-input { margin-right: 8px; width: 18px; height: 18px; }
+        .item-exclude:checked + td,
+        tr:has(.item-exclude:checked) {
+            opacity: 0.5;
+            text-decoration: line-through;
+        }
+
+        /* ========================================
+           BATCH RECEIPT TABLE RESPONSIVE STYLES
+           ======================================== */
+        .table-responsive-wrapper {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-width: 100%;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+        }
+
+        .table-responsive-wrapper::-webkit-scrollbar {
+            height: 10px;
+        }
+
+        .table-responsive-wrapper::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 5px;
+        }
+
+        .table-responsive-wrapper::-webkit-scrollbar-thumb {
+            background: #007bff;
+            border-radius: 5px;
+        }
+
+        .table-responsive-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #0056b3;
+        }
+
+        .batch-receipt-table {
+            min-width: 1400px;
+            font-size: 12px;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 0;
+        }
+
+        .batch-receipt-table thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .batch-receipt-table th {
+            background: linear-gradient(135deg, #1976d2, #1565c0);
+            color: white;
+            font-weight: 600;
+            padding: 12px 8px;
+            text-align: center;
+            white-space: nowrap;
+            border-bottom: 2px solid #0d47a1;
+            position: sticky;
+            top: 0;
+        }
+
+        .batch-receipt-table td {
+            padding: 10px 8px;
+            text-align: center;
+            vertical-align: middle;
+            border-bottom: 1px solid #e0e0e0;
+            background: #fff;
+        }
+
+        .batch-receipt-table tbody tr:hover td {
+            background: #e3f2fd;
+        }
+
+        .batch-receipt-table tbody tr:nth-child(even) td {
+            background: #fafafa;
+        }
+
+        .batch-receipt-table tbody tr:nth-child(even):hover td {
+            background: #e3f2fd;
+        }
+
+        /* Sticky First Column */
+        .batch-receipt-table .sticky-col {
+            position: sticky;
+            left: 0;
+            z-index: 5;
+            background: linear-gradient(135deg, #1976d2, #1565c0) !important;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+
+        .batch-receipt-table td:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 4;
+            background: #fff;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            font-weight: 600;
+            color: #1976d2;
+        }
+
+        .batch-receipt-table tbody tr:hover td:first-child {
+            background: #e3f2fd;
+        }
+
+        .batch-receipt-table tbody tr:nth-child(even) td:first-child {
+            background: #fafafa;
+        }
+
+        .batch-receipt-table tbody tr:nth-child(even):hover td:first-child {
+            background: #e3f2fd;
+        }
+
+        /* Column Widths */
+        .col-po { min-width: 110px; }
+        .col-item { min-width: 60px; }
+        .col-material { min-width: 130px; }
+        .col-material-name { min-width: 180px; text-align: left !important; }
+        .col-qty { min-width: 80px; }
+        .col-qty-input { min-width: 100px; }
+        .col-unit { min-width: 60px; }
+        .col-pack { min-width: 90px; }
+        .col-label { min-width: 90px; }
+        .col-price { min-width: 100px; }
+        .col-location { min-width: 100px; }
+        .col-close { min-width: 80px; }
+
+        /* Input Styling in Table */
+        .batch-receipt-table input[type="number"] {
+            width: 80px;
+            padding: 6px 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .batch-receipt-table input[type="number"]:focus {
+            border-color: #1976d2;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+        }
+
+        .batch-receipt-table select {
+            width: 100%;
+            padding: 6px 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 11px;
+            background: #fff;
+        }
+
+        .batch-receipt-table select:focus {
+            border-color: #1976d2;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+        }
+
+        .batch-receipt-table input[type="text"] {
+            width: 90px;
+            padding: 6px 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .batch-receipt-table input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        /* Scroll Indicator */
+        .scroll-indicator {
+            text-align: center;
+            padding: 8px;
+            background: linear-gradient(90deg, transparent, #e3f2fd, transparent);
+            color: #1976d2;
+            font-size: 12px;
+            font-weight: 500;
+            animation: pulse 2s infinite;
+            transition: opacity 0.3s ease;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        /* Left align material columns */
+        .batch-receipt-table td:nth-child(3),
+        .batch-receipt-table td:nth-child(4) {
+            text-align: left;
+        }
+
+        /* Material name wrapping */
+        .batch-receipt-table td:nth-child(4) {
+            max-width: 200px;
+            white-space: normal;
+            word-wrap: break-word;
+        }
+    </style>
+
+    <script>
+        // Mock data for open PO items
+        const mockOpenItems = [
+            {
+                id: 1,
+                poNumber: '4500012345',
+                itemNo: '10',
+                materialNo: '01.00002-0001',
+                materialTitle: 'Rulman 6205-2RS SKF',
+                supplierMaterialNo: 'SKF-6205-2RS',
+                supplierMaterialTitle: 'Rulman 6205 2RS',
+                supplierNo: '1000045678',
+                supplierTitle: 'ABC Endüstriyel Malzeme A.Ş.',
+                uom: 'AD',
+                orderQty: 100,
+                openQty: 100,
+                unitPrice: 125.50,
+                currency: 'EUR',
+                srmNo: 'SRM-2025-001234'
+            },
+            {
+                id: 2,
+                poNumber: '4500012345',
+                itemNo: '20',
+                materialNo: '01.00015-0003',
+                materialTitle: 'Hidrolik Yag ISO 46',
+                supplierMaterialNo: 'HYD-ISO46-200',
+                supplierMaterialTitle: 'Hidrolik Yag ISO 46',
+                supplierNo: '1000045678',
+                supplierTitle: 'ABC Endüstriyel Malzeme A.Ş.',
+                uom: 'LT',
+                orderQty: 200,
+                openQty: 200,
+                unitPrice: 45.00,
+                currency: 'EUR',
+                srmNo: 'SRM-2025-001234'
+            },
+            {
+                id: 3,
+                poNumber: '4500012346',
+                itemNo: '10',
+                materialNo: '01.00028-0001',
+                materialTitle: 'Elektrik Motoru 5.5kW',
+                supplierMaterialNo: 'MOT-5500W-380',
+                supplierMaterialTitle: 'Electric Motor 5.5kW',
+                supplierNo: '1000045679',
+                supplierTitle: 'XYZ Elektrik San. Tic. Ltd.',
+                uom: 'AD',
+                orderQty: 5,
+                openQty: 5,
+                unitPrice: 1850.00,
+                currency: 'EUR',
+                srmNo: 'SRM-2025-001456'
+            }
+        ];
+
+        // Mock GR history for rollback/return - Extended with full details
+        const mockGrHistory = {
+            'GR-2025-000001': {
+                grId: 'GR-2025-000001',
+                grDate: '10.12.2025',
+                poNumber: '4500012340',
+                itemNo: '10',
+                materialNo: '01.00002-0001',
+                materialTitle: 'Rulman 6205-2RS SKF',
+                supplierNo: '1000045678',
+                supplierTitle: 'ABC Endüstriyel Malzeme A.Ş.',
+                grQty: 50,
+                currentStock: 45,
+                uom: 'AD',
+                eurPrice: 125.50,
+                warehouse: 'MERKEZ',
+                location: 'Alt Raf',
+                bin: 'A01-R02-K05',
+                stockRecordId: 'STK-2025-000001'
+            },
+            'GR-2025-000002': {
+                grId: 'GR-2025-000002',
+                grDate: '12.12.2025',
+                poNumber: '4500012341',
+                itemNo: '20',
+                materialNo: '01.00015-0003',
+                materialTitle: 'Hidrolik Yag ISO 46',
+                supplierNo: '1000045678',
+                supplierTitle: 'ABC Endüstriyel Malzeme A.Ş.',
+                grQty: 100,
+                currentStock: 85,
+                uom: 'LT',
+                eurPrice: 45.00,
+                warehouse: 'MERKEZ',
+                location: 'Kimyasal',
+                bin: 'K01-R01-K01',
+                stockRecordId: 'STK-2025-000002'
+            },
+            'GR-2025-000003': {
+                grId: 'GR-2025-000003',
+                grDate: '14.12.2025',
+                poNumber: '4500012346',
+                itemNo: '10',
+                materialNo: '01.00028-0001',
+                materialTitle: 'Elektrik Motoru 5.5kW',
+                supplierNo: '1000045679',
+                supplierTitle: 'XYZ Elektrik San. Tic. Ltd.',
+                grQty: 5,
+                currentStock: 5,
+                uom: 'AD',
+                eurPrice: 1850.00,
+                warehouse: 'HAT1',
+                location: 'Agir Parca',
+                bin: 'H01-R03-K01',
+                stockRecordId: 'STK-2025-000003'
+            },
+            'GR-2025-000004': {
+                grId: 'GR-2025-000004',
+                grDate: '15.12.2025',
+                poNumber: '4500012350',
+                itemNo: '10',
+                materialNo: '01.00050-0001',
+                materialTitle: 'Ambalaj Kutusu 40x30x20',
+                supplierNo: '1000045680',
+                supplierTitle: 'Ambalaj Sanayi A.Ş.',
+                grQty: 500,
+                currentStock: 480,
+                uom: 'AD',
+                eurPrice: 2.50,
+                warehouse: 'MERKEZ',
+                location: 'Alt Raf',
+                bin: 'A05-R01-K01',
+                stockRecordId: 'STK-2025-000004',
+                isPacking: true
+            }
+        };
+
+        let selectedItems = [];
+        let currentExchangeRate = 38.50; // Default EUR/TRY
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePage();
+        });
+
+        function initializePage() {
+            // Set default dates - Screen Designs 13 GR
+            const now = new Date();
+            const today = now.toISOString().split('T')[0];
+
+            // Entry date is system timestamp (readonly)
+            document.getElementById('entryDate').value = now.toISOString().slice(0, 16);
+            document.getElementById('costDate').value = today;
+            document.getElementById('returnDate').value = today;
+
+            // Generate GR ID - system auto-generated
+            document.getElementById('grId').value = 'GR-2025-' + String(Math.floor(Math.random() * 1000000)).padStart(6, '0');
+            document.getElementById('returnId').value = 'RET-2025-' + String(Math.floor(Math.random() * 1000000)).padStart(6, '0');
+
+            setupEventListeners();
+        }
+
+        function setupEventListeners() {
+            // Transaction type change
+            document.getElementById('transactionType').addEventListener('change', handleTransactionTypeChange);
+
+            // Search functionality
+            document.getElementById('searchBtn').addEventListener('click', applyFilters);
+            document.getElementById('clearFilterBtn').addEventListener('click', clearFilters);
+
+            // Enter tuşu ile arama yapma
+            const filterInputs = [
+                'searchBox', 'filterOrderNo', 'filterItemNo', 'filterMaterialNo',
+                'filterMaterialTitle', 'filterSupplierNo', 'filterSupplierTitle'
+            ];
+            filterInputs.forEach(inputId => {
+                document.getElementById(inputId).addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        applyFilters();
+                    }
+                });
+            });
+
+            // Birim seçimi değiştiğinde otomatik filtrele
+            document.getElementById('filterUOM').addEventListener('change', applyFilters);
+
+            // Select all checkbox
+            document.getElementById('selectAllItems').addEventListener('change', function() {
+                const checkboxes = document.querySelectorAll('.item-select');
+                checkboxes.forEach(cb => {
+                    cb.checked = this.checked;
+                });
+                updateSelectedItems();
+            });
+
+            // Individual item selection
+            document.querySelectorAll('.item-select').forEach(cb => {
+                cb.addEventListener('change', updateSelectedItems);
+            });
+
+            // Exclude checkboxes
+            document.querySelectorAll('.item-exclude').forEach(cb => {
+                cb.addEventListener('change', function() {
+                    const row = this.closest('tr');
+                    if (this.checked) {
+                        row.style.opacity = '0.5';
+                        row.style.textDecoration = 'line-through';
+                        row.querySelector('.item-select').checked = false;
+                        row.querySelector('.item-select').disabled = true;
+                    } else {
+                        row.style.opacity = '1';
+                        row.style.textDecoration = 'none';
+                        row.querySelector('.item-select').disabled = false;
+                    }
+                    updateSelectedItems();
+                });
+            });
+
+            // Row click selection
+            document.querySelectorAll('.table-row-clickable').forEach(row => {
+                row.addEventListener('click', function(e) {
+                    if (e.target.type !== 'checkbox') {
+                        const cb = this.querySelector('.item-select');
+                        if (!cb.disabled) {
+                            cb.checked = !cb.checked;
+                            updateSelectedItems();
+                        }
+                    }
+                });
+            });
+
+            // Cost and quantity calculations - Screen Designs 13 GR
+            document.getElementById('receivedQty').addEventListener('input', function() {
+                calculateCosts();
+                calculateLabelQty();
+            });
+            document.getElementById('unitPerPackage').addEventListener('input', calculateLabelQty);
+
+            // Form buttons
+            document.getElementById('closeFormBtn').addEventListener('click', closeReceiptForm);
+            document.getElementById('saveReceiptBtn').addEventListener('click', saveReceipt);
+            document.getElementById('printLabelBtn').addEventListener('click', printLabels);
+            document.getElementById('cancelReceiptBtn').addEventListener('click', cancelReceipt);
+
+            // Rollback buttons
+            document.getElementById('closeRollbackBtn').addEventListener('click', closeRollbackForm);
+            document.getElementById('searchGrBtn').addEventListener('click', searchGrForRollback);
+            document.getElementById('executeRollbackBtn').addEventListener('click', executeRollback);
+            document.getElementById('cancelRollbackBtn').addEventListener('click', closeRollbackForm);
+
+            // Return buttons
+            document.getElementById('closeReturnBtn').addEventListener('click', closeReturnForm);
+            document.getElementById('executeReturnBtn').addEventListener('click', executeReturn);
+            document.getElementById('cancelReturnBtn').addEventListener('click', closeReturnForm);
+
+            // Return GR dropdown change - auto load details
+            document.getElementById('originalGrNo').addEventListener('change', function() {
+                if (this.value) {
+                    loadGrDetailsForReturn(this.value);
+                } else {
+                    document.getElementById('returnGrDetails').style.display = 'none';
+                    document.getElementById('returnGrNotFound').style.display = 'none';
+                }
+            });
+
+            // Return quantity change - calculate total
+            document.getElementById('returnQty').addEventListener('input', calculateReturnTotal);
+
+            // Batch buttons
+            document.getElementById('saveBatchReceiptBtn').addEventListener('click', saveBatchReceipt);
+            document.getElementById('printBatchLabelsBtn').addEventListener('click', printBatchLabels);
+            document.getElementById('cancelBatchReceiptBtn').addEventListener('click', cancelBatchReceipt);
+
+            // Header buttons
+            document.getElementById('grHistoryBtn').addEventListener('click', function() {
+                alert('📋 Mal Kabul Geçmişi sayfasına yönlendirilecek.\n\n(gr-history.html)');
+            });
+            document.getElementById('returnMaterialBtn').addEventListener('click', function() {
+                document.getElementById('transactionType').value = '122';
+                handleTransactionTypeChange();
+            });
+            document.getElementById('returnPackingBtn').addEventListener('click', function() {
+                document.getElementById('transactionType').value = '161';
+                handleTransactionTypeChange();
+            });
+        }
+
+        // Handle transaction type change
+        function handleTransactionTypeChange() {
+            const type = document.getElementById('transactionType').value;
+            const typeDescriptions = {
+                '101': 'Standart Mal Kabul',
+                '102': 'Mal Kabul İptal (Rollback)',
+                '122': 'Malzeme İade (Tedarikçiye)',
+                '161': 'Satın Alınan Ambalaj İade'
+            };
+
+            document.getElementById('transactionTypeTitle').value = typeDescriptions[type] || '';
+
+            // Hide all form sections
+            document.getElementById('openOrdersSection').style.display = 'none';
+            document.getElementById('openItemsListCard').style.display = 'none';
+            document.getElementById('receiptFormSection').style.display = 'none';
+            document.getElementById('rollbackFormSection').style.display = 'none';
+            document.getElementById('returnFormSection').style.display = 'none';
+            document.getElementById('multipleItemsSection').style.display = 'none';
+
+            switch(type) {
+                case '101':
+                    // Standard GR - show open orders and list
+                    document.getElementById('openOrdersSection').style.display = 'block';
+                    document.getElementById('openItemsListCard').style.display = 'block';
+                    break;
+                case '102':
+                    // Rollback - show rollback form
+                    document.getElementById('rollbackFormSection').style.display = 'block';
+                    break;
+                case '122':
+                    // Material Return
+                    document.getElementById('returnFormTitle').textContent = 'Malzeme İade Formu';
+                    document.getElementById('returnFormSection').style.display = 'block';
+                    populateGrDropdown(false); // false = material only (not packing)
+                    break;
+                case '161':
+                    // Packing Material Return
+                    document.getElementById('returnFormTitle').textContent = 'Ambalaj İade Formu';
+                    document.getElementById('returnFormSection').style.display = 'block';
+                    populateGrDropdown(true); // true = packing only
+                    break;
+                default:
+                    // Show default sections
+                    document.getElementById('openOrdersSection').style.display = 'block';
+                    document.getElementById('openItemsListCard').style.display = 'block';
+            }
+        }
+
+        // Populate GR dropdown based on transaction type
+        function populateGrDropdown(packingOnly) {
+            const dropdown = document.getElementById('originalGrNo');
+            dropdown.innerHTML = '<option value="">-- GR Seçiniz --</option>';
+
+            // Filter GR records
+            Object.values(mockGrHistory).forEach(gr => {
+                // For packing (161), show only packing GRs
+                // For material (122), show only non-packing GRs
+                if (packingOnly && !gr.isPacking) return;
+                if (!packingOnly && gr.isPacking) return;
+
+                const option = document.createElement('option');
+                option.value = gr.grId;
+                option.textContent = `${gr.grId} | ${gr.materialNo} - ${gr.materialTitle} | Stok: ${gr.currentStock} ${gr.uom}`;
+                dropdown.appendChild(option);
+            });
+
+            // Reset form state
+            document.getElementById('returnGrDetails').style.display = 'none';
+            document.getElementById('returnGrNotFound').style.display = 'none';
+        }
+
+        // Update selected items
+        function updateSelectedItems() {
+            const checkboxes = document.querySelectorAll('.item-select:checked');
+            selectedItems = [];
+
+            checkboxes.forEach(cb => {
+                const itemId = parseInt(cb.value);
+                const item = mockOpenItems.find(i => i.id === itemId);
+                if (item) {
+                    selectedItems.push(item);
+                }
+            });
+
+            document.getElementById('selectedItemsCount').textContent = selectedItems.length + ' Kalem Seçili';
+
+            if (selectedItems.length === 0) {
+                document.getElementById('receiptFormSection').style.display = 'none';
+                document.getElementById('multipleItemsSection').style.display = 'none';
+            } else if (selectedItems.length === 1) {
+                // Single item - show regular form
+                document.getElementById('multipleItemsSection').style.display = 'none';
+                showReceiptForm(selectedItems[0]);
+            } else {
+                // Multiple items - show batch form
+                document.getElementById('receiptFormSection').style.display = 'none';
+                showMultipleItemsForm();
+            }
+        }
+
+        // Show receipt form for single item
+        function showReceiptForm(item) {
+            document.getElementById('receiptFormSection').style.display = 'block';
+            document.getElementById('receiptFormSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            // Set Entry Date to current datetime (readonly - system timestamp)
+            const now = new Date();
+            document.getElementById('entryDate').value = now.toISOString().slice(0, 16);
+
+            // Populate readonly fields from selected PO item
+            document.getElementById('srmNo').value = item.srmNo;
+            document.getElementById('formPoNumber').value = item.poNumber;
+            document.getElementById('formItemNo').value = item.itemNo;
+            document.getElementById('formMaterialNo').value = item.materialNo;
+            document.getElementById('formMaterialTitle').value = item.materialTitle;
+            document.getElementById('formUOM').value = item.uom;
+            document.getElementById('formSupplierNo').value = item.supplierNo;
+            document.getElementById('formSupplierTitle').value = item.supplierTitle;
+            document.getElementById('formSupplierMaterialNo').value = item.supplierMaterialNo;
+            document.getElementById('formSupplierMaterialTitle').value = item.supplierMaterialTitle;
+            document.getElementById('formOrderQty').value = item.orderQty;
+            document.getElementById('formOpenQty').value = item.openQty;
+            document.getElementById('formUnitPrice').value = item.unitPrice.toFixed(2) + ' ' + item.currency;
+            document.getElementById('euroUnitCost').value = item.unitPrice;
+
+            // Pre-fill receipt quantity with open quantity
+            document.getElementById('receivedQty').value = item.openQty;
+
+            // Set cost date to today
+            document.getElementById('costDate').value = new Date().toISOString().split('T')[0];
+
+            // Clear editable location fields
+            document.getElementById('warehouse').value = '';
+            document.getElementById('location').value = '';
+            document.getElementById('bin').value = '';
+            document.getElementById('receiptNotes').value = '';
+            document.getElementById('orderClosed').checked = false;
+
+            // Clear document fields
+            document.getElementById('invoiceNumber').value = '';
+            document.getElementById('invoiceDate').value = '';
+            document.getElementById('deliveryNoteNumber').value = '';
+            document.getElementById('deliveryNoteDate').value = '';
+
+            // Calculate costs and label quantity
+            calculateCosts();
+            calculateLabelQty();
+        }
+
+        // Show multiple items form
+        function showMultipleItemsForm() {
+            document.getElementById('multipleItemsSection').style.display = 'block';
+            document.getElementById('multipleItemsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            // Reset scroll indicator visibility
+            const scrollIndicator = document.querySelector('.scroll-indicator');
+            if (scrollIndicator) {
+                scrollIndicator.style.display = 'block';
+                scrollIndicator.style.opacity = '1';
+            }
+
+            // Re-attach scroll event listener to hide indicator after scroll
+            const tableWrapper = document.querySelector('.table-responsive-wrapper');
+            if (tableWrapper && scrollIndicator) {
+                const hideIndicator = function() {
+                    scrollIndicator.style.opacity = '0';
+                    setTimeout(() => {
+                        scrollIndicator.style.display = 'none';
+                    }, 300);
+                    tableWrapper.removeEventListener('scroll', hideIndicator);
+                };
+                tableWrapper.addEventListener('scroll', hideIndicator);
+            }
+
+            const tbody = document.getElementById('multipleItemsTable');
+            tbody.innerHTML = '';
+
+            selectedItems.forEach((item, index) => {
+                const row = document.createElement('tr');
+                // Calculate initial label qty (default unit per package = 1)
+                const initialLabelQty = Math.ceil(item.openQty / 1);
+                row.innerHTML = `
+                    <td>${item.poNumber}</td>
+                    <td>${item.itemNo}</td>
+                    <td>${item.materialNo}</td>
+                    <td>${item.materialTitle}</td>
+                    <td>${item.openQty}</td>
+                    <td><input type="number" class="form-control batch-qty" data-index="${index}" value="${item.openQty}" min="0" step="0.01"></td>
+                    <td>${item.uom}</td>
+                    <td><input type="number" class="form-control batch-unit-pack" data-index="${index}" value="1" min="1" step="1"></td>
+                    <td><input type="number" class="form-control batch-label-qty" data-index="${index}" value="${initialLabelQty}" readonly style="background-color: #e8f5e9; font-weight: bold;"></td>
+                    <td>${item.unitPrice.toFixed(2)}</td>
+                    <td class="batch-try-cost">${(item.unitPrice * currentExchangeRate).toFixed(2)}</td>
+                    <td>
+                        <select class="form-control batch-warehouse" data-index="${index}">
+                            <option value="">...</option>
+                            <option value="MERKEZ">MERKEZ</option>
+                            <option value="HAT1">HAT1</option>
+                            <option value="HAT2">HAT2</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="form-control batch-location" data-index="${index}">
+                            <option value="">...</option>
+                            <option value="Alt Raf">Alt Raf</option>
+                            <option value="Ust Raf">Ust Raf</option>
+                            <option value="Kimyasal">Kimyasal</option>
+                        </select>
+                    </td>
+                    <td><input type="text" class="form-control batch-bin" data-index="${index}" placeholder="A01-R02"></td>
+                    <td><input type="checkbox" class="batch-close" data-index="${index}"></td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // Add event listeners for label quantity calculation
+            document.querySelectorAll('.batch-qty, .batch-unit-pack').forEach(input => {
+                input.addEventListener('input', function() {
+                    const idx = this.getAttribute('data-index');
+                    const qtyInput = document.querySelector(`.batch-qty[data-index="${idx}"]`);
+                    const unitPackInput = document.querySelector(`.batch-unit-pack[data-index="${idx}"]`);
+                    const labelQtyInput = document.querySelector(`.batch-label-qty[data-index="${idx}"]`);
+
+                    const qty = parseFloat(qtyInput.value) || 0;
+                    const unitPack = parseInt(unitPackInput.value) || 1;
+                    const labelQty = Math.ceil(qty / unitPack);
+                    labelQtyInput.value = labelQty;
+                });
+            });
+        }
+
+        // Calculate costs - TRY = EUR × Exchange Rate (from SAP_ExchangeRate table)
+        function calculateCosts() {
+            const qty = parseFloat(document.getElementById('receivedQty').value) || 0;
+            const euroPrice = parseFloat(document.getElementById('euroUnitCost').value) || 0;
+            // Exchange rate comes from system (SAP_ExchangeRate table)
+            const rate = currentExchangeRate;
+
+            const tryPrice = euroPrice * rate;
+            const euroTotal = euroPrice * qty;
+            const tryTotal = tryPrice * qty;
+
+            document.getElementById('tryUnitCost').value = tryPrice.toFixed(2);
+            document.getElementById('euroTotalCost').value = euroTotal.toFixed(2);
+            document.getElementById('tryTotalCost').value = tryTotal.toFixed(2);
+        }
+
+        // Calculate label quantity - Screen Designs 13 GR
+        // Label Qty = ceil(Receipt Qty / Unit in Package)
+        function calculateLabelQty() {
+            const unitPerPackage = parseInt(document.getElementById('unitPerPackage').value) || 1;
+            const receivedQty = parseFloat(document.getElementById('receivedQty').value) || 0;
+
+            // Label qty = ceil(received qty / unit per package)
+            const labelQty = Math.ceil(receivedQty / unitPerPackage);
+            document.getElementById('labelQty').value = labelQty;
+        }
+
+        // Validate receipt form - Screen Designs 13 GR
+        function validateReceiptForm() {
+            const invoiceNo = document.getElementById('invoiceNumber').value.trim();
+            const deliveryNo = document.getElementById('deliveryNoteNumber').value.trim();
+            const receivedQty = parseFloat(document.getElementById('receivedQty').value);
+            const warehouse = document.getElementById('warehouse').value;
+            const location = document.getElementById('location').value;
+            const bin = document.getElementById('bin').value;
+            const notes = document.getElementById('receiptNotes').value;
+
+            // At least one of invoice or delivery note required
+            if (!invoiceNo && !deliveryNo) {
+                alert('⚠️ Fatura No veya İrsaliye No\'dan en az biri zorunludur.');
+                return false;
+            }
+
+            if (!receivedQty || receivedQty <= 0) {
+                alert('⚠️ Lütfen geçerli bir teslim alınan miktar girin.');
+                return false;
+            }
+
+            if (selectedItems.length > 0 && receivedQty > selectedItems[0].openQty) {
+                alert('⚠️ Teslim alınan miktar açık miktardan (' + selectedItems[0].openQty + ') fazla olamaz.');
+                return false;
+            }
+
+            if (!warehouse || !location || !bin) {
+                alert('⚠️ Depo, lokasyon ve raf bilgileri zorunludur.');
+                return false;
+            }
+
+            return true;
+        }
+
+        // Save receipt
+        function saveReceipt() {
+            if (!validateReceiptForm()) return;
+
+            const grNumber = document.getElementById('grId').value;
+            const item = selectedItems[0];
+
+            if (confirm('Mal kabul işlemi kaydedilecek!\n\n' +
+                'Mal Kabul No: ' + grNumber + '\n' +
+                'Sipariş No: ' + item.poNumber + '\n' +
+                'Malzeme: ' + item.materialNo + '\n' +
+                'Miktar: ' + document.getElementById('receivedQty').value + ' ' + item.uom + '\n' +
+                'TRY Maliyet: ' + document.getElementById('tryTotalCost').value + ' TL\n\n' +
+                'Devam etmek istiyor musunuz?')) {
+
+                alert('✅ Mal kabul başarıyla kaydedildi!\n\n' +
+                    'Mal Kabul No: ' + grNumber + '\n' +
+                    'Stok güncellendi.\n' +
+                    'FIFO maliyet kaydı oluşturuldu.\n' +
+                    'Denetim kaydı oluşturuldu.\n\n' +
+                    'API: POST /api/goods-receipts');
+
+                resetForm();
+            }
+        }
+
+        // Save batch receipt
+        function saveBatchReceipt() {
+            const invoiceNo = document.getElementById('batchInvoiceNumber').value.trim();
+            const deliveryNo = document.getElementById('batchDeliveryNoteNumber').value.trim();
+
+            if (!invoiceNo && !deliveryNo) {
+                alert('⚠️ Fatura No veya İrsaliye No\'dan en az biri zorunludur.');
+                return;
+            }
+
+            // Validate all items
+            let valid = true;
+            document.querySelectorAll('.batch-warehouse').forEach(select => {
+                if (!select.value) valid = false;
+            });
+            document.querySelectorAll('.batch-location').forEach(select => {
+                if (!select.value) valid = false;
+            });
+            document.querySelectorAll('.batch-bin').forEach(input => {
+                if (!input.value.trim()) valid = false;
+            });
+
+            if (!valid) {
+                alert('⚠️ Tüm kalemler için Depo, Lokasyon ve Raf bilgileri zorunludur.');
+                return;
+            }
+
+            if (confirm('Toplu mal kabul işlemi kaydedilecek!\n\n' +
+                'Toplam ' + selectedItems.length + ' kalem işlenecek.\n\n' +
+                'Devam etmek istiyor musunuz?')) {
+
+                alert('✅ Toplu mal kabul başarıyla kaydedildi!\n\n' +
+                    selectedItems.length + ' kalem işlendi.\n' +
+                    'Stoklar güncellendi.\n' +
+                    'FIFO maliyet kayıtları oluşturuldu.\n\n' +
+                    'API: POST /api/goods-receipts/batch');
+
+                resetForm();
+            }
+        }
+
+        // Print labels
+        function printLabels() {
+            const labelQty = document.getElementById('labelQty').value;
+            const materialNo = document.getElementById('formMaterialNo').value;
+            const warehouse = document.getElementById('warehouse').value;
+            const location = document.getElementById('location').value;
+            const bin = document.getElementById('bin').value;
+
+            if (!warehouse || !location || !bin) {
+                alert('⚠️ Etiket yazdırmak için önce depo, lokasyon ve raf bilgilerini girin.');
+                return;
+            }
+
+            alert('🏷️ Etiket yazdırma başlatıldı!\n\n' +
+                'Etiket Adedi: ' + labelQty + '\n' +
+                'Malzeme No: ' + materialNo + '\n' +
+                'Lokasyon: ' + warehouse + '/' + location + '/' + bin + '\n\n' +
+                '(Zebra etiket yazıcı entegrasyonu)');
+        }
+
+        // Print batch labels
+        function printBatchLabels() {
+            alert('🏷️ Toplu etiket yazdırma başlatıldı!\n\n' +
+                'Toplam ' + selectedItems.length + ' malzeme için etiket hazırlanıyor.\n\n' +
+                '(Zebra etiket yazıcı entegrasyonu)');
+        }
+
+        // Cancel receipt
+        function cancelReceipt() {
+            if (confirm('Mal kabul formu iptal edilecek. Girilen bilgiler kaybolacak.\n\nDevam etmek istiyor musunuz?')) {
+                closeReceiptForm();
+            }
+        }
+
+        // Cancel batch receipt
+        function cancelBatchReceipt() {
+            if (confirm('Toplu mal kabul formu iptal edilecek.\n\nDevam etmek istiyor musunuz?')) {
+                document.getElementById('multipleItemsSection').style.display = 'none';
+                document.querySelectorAll('.item-select').forEach(cb => cb.checked = false);
+                selectedItems = [];
+                updateSelectedItems();
+            }
+        }
+
+        // Close receipt form
+        function closeReceiptForm() {
+            document.getElementById('receiptFormSection').style.display = 'none';
+            document.querySelectorAll('.item-select').forEach(cb => cb.checked = false);
+            selectedItems = [];
+        }
+
+        // Search GR for rollback
+        function searchGrForRollback() {
+            const grNo = document.getElementById('rollbackGrNo').value.trim();
+            if (!grNo) {
+                alert('⚠️ Lütfen iptal edilecek GR numarasını girin.');
+                return;
+            }
+
+            const gr = mockGrHistory[grNo];
+            if (!gr) {
+                alert('⚠️ GR bulunamadı: ' + grNo);
+                return;
+            }
+
+            document.getElementById('prevGrId').value = gr.grId;
+            document.getElementById('prevStockRecordId').value = gr.stockRecordId;
+            document.getElementById('rollbackPoNo').value = gr.poNumber;
+            document.getElementById('rollbackMaterialNo').value = gr.materialNo;
+            document.getElementById('rollbackQty').value = gr.qty;
+            document.getElementById('rollbackUom').value = gr.uom;
+            document.getElementById('rollbackGrDetails').style.display = 'block';
+        }
+
+        // Execute rollback
+        function executeRollback() {
+            const reason = document.getElementById('rollbackReason').value.trim();
+            if (!reason) {
+                alert('⚠️ İptal nedeni zorunludur.');
+                return;
+            }
+
+            if (confirm('⚠️ DİKKAT: Bu işlem geri alınamaz!\n\n' +
+                'GR No: ' + document.getElementById('rollbackGrNo').value + '\n' +
+                'Miktar: ' + document.getElementById('rollbackQty').value + ' ' + document.getElementById('rollbackUom').value + '\n\n' +
+                'Stok ve maliyet kayıtları ters işlem ile düzeltilecek.\n\n' +
+                'Devam etmek istiyor musunuz?')) {
+
+                alert('✅ Mal kabul iptal işlemi başarıyla tamamlandı!\n\n' +
+                    'Hareket Tipi: 102 - Rollback\n' +
+                    'Stok azaltıldı.\n' +
+                    'Maliyet kaydı ters işlem ile düzeltildi.\n' +
+                    'Sipariş kalemi tekrar açık duruma getirildi.\n\n' +
+                    'API: POST /api/goods-receipts/rollback');
+
+                closeRollbackForm();
+            }
+        }
+
+        // Close rollback form
+        function closeRollbackForm() {
+            document.getElementById('rollbackGrNo').value = '';
+            document.getElementById('rollbackGrDetails').style.display = 'none';
+            document.getElementById('rollbackReason').value = '';
+            document.getElementById('transactionType').value = '101';
+            handleTransactionTypeChange();
+        }
+
+        // Load GR details for return - Called when dropdown selection changes
+        function loadGrDetailsForReturn(grNo) {
+            const gr = mockGrHistory[grNo];
+
+            // Hide both sections first
+            document.getElementById('returnGrDetails').style.display = 'none';
+            document.getElementById('returnGrNotFound').style.display = 'none';
+
+            if (!gr) {
+                // Show not found message
+                document.getElementById('returnGrNotFound').style.display = 'block';
+                return;
+            }
+
+            // Populate all fields from GR data
+            // Step 2: GR Header Info
+            document.getElementById('returnOriginalGrId').value = gr.grId;
+            document.getElementById('returnOriginalGrDate').value = gr.grDate;
+            document.getElementById('returnPoNo').value = gr.poNumber;
+            document.getElementById('returnItemNo').value = gr.itemNo;
+
+            // Step 3: Material Info
+            document.getElementById('returnMaterialNo').value = gr.materialNo;
+            document.getElementById('returnMaterialTitle').value = gr.materialTitle;
+            document.getElementById('returnSupplier').value = gr.supplierTitle;
+
+            // Step 4: Quantity Info
+            document.getElementById('returnGrQty').value = gr.grQty;
+            document.getElementById('returnCurrentStock').value = gr.currentStock;
+            document.getElementById('returnQty').value = '';
+            document.getElementById('returnQty').max = gr.currentStock;
+            document.getElementById('returnUom').value = gr.uom;
+            document.getElementById('returnEurPrice').value = gr.eurPrice.toFixed(2);
+            document.getElementById('returnTotalEur').value = '0.00';
+
+            // Step 5: Location Info
+            document.getElementById('returnWarehouse').value = gr.warehouse;
+            document.getElementById('returnLocation').value = gr.location;
+            document.getElementById('returnBin').value = gr.bin;
+            document.getElementById('returnStockRecordId').value = gr.stockRecordId;
+
+            // Step 6: Clear reason fields
+            document.getElementById('returnReasonType').value = '';
+            document.getElementById('returnDescription').value = '';
+
+            // Pre-select packing return reason for 161
+            if (transactionType === '161') {
+                document.getElementById('returnReasonType').value = 'PACKING_RETURN';
+            }
+
+            // Show the details section
+            document.getElementById('returnGrDetails').style.display = 'block';
+
+            // Scroll to form
+            document.getElementById('returnGrDetails').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // Calculate return total when quantity changes
+        function calculateReturnTotal() {
+            const qty = parseFloat(document.getElementById('returnQty').value) || 0;
+            const eurPrice = parseFloat(document.getElementById('returnEurPrice').value) || 0;
+            const total = qty * eurPrice;
+            document.getElementById('returnTotalEur').value = total.toFixed(2);
+        }
+
+        // Execute return - Full implementation with validation
+        function executeReturn() {
+            const returnQty = parseFloat(document.getElementById('returnQty').value);
+            const currentStock = parseFloat(document.getElementById('returnCurrentStock').value);
+            const reasonType = document.getElementById('returnReasonType').value;
+            const returnDate = document.getElementById('returnDate').value;
+
+            // Validation
+            if (!returnDate) {
+                alert('⚠️ İade tarihi zorunludur.');
+                document.getElementById('returnDate').focus();
+                return;
+            }
+
+            if (!returnQty || returnQty <= 0) {
+                alert('⚠️ Geçerli bir iade miktarı girin.');
+                document.getElementById('returnQty').focus();
+                return;
+            }
+
+            if (returnQty > currentStock) {
+                alert('⚠️ İade miktarı mevcut stoktan (' + currentStock + ') fazla olamaz.');
+                document.getElementById('returnQty').focus();
+                return;
+            }
+
+            if (!reasonType) {
+                alert('⚠️ İade nedeni seçiniz.');
+                document.getElementById('returnReasonType').focus();
+                return;
+            }
+
+            const transactionType = document.getElementById('transactionType').value;
+            const typeName = transactionType === '122' ? 'Malzeme İade' : 'Ambalaj İade';
+            const returnId = document.getElementById('returnId').value;
+            const originalGrId = document.getElementById('returnOriginalGrId').value;
+            const materialNo = document.getElementById('returnMaterialNo').value;
+            const materialTitle = document.getElementById('returnMaterialTitle').value;
+            const uom = document.getElementById('returnUom').value;
+            const totalEur = document.getElementById('returnTotalEur').value;
+            const warehouse = document.getElementById('returnWarehouse').value;
+            const location = document.getElementById('returnLocation').value;
+            const bin = document.getElementById('returnBin').value;
+
+            const confirmMsg = `${typeName} işlemi kaydedilecek!\n\n` +
+                `═══════════════════════════════════\n` +
+                `İade No: ${returnId}\n` +
+                `Orijinal GR: ${originalGrId}\n` +
+                `Hareket Tipi: ${transactionType}\n` +
+                `═══════════════════════════════════\n` +
+                `Malzeme: ${materialNo}\n` +
+                `${materialTitle}\n` +
+                `═══════════════════════════════════\n` +
+                `İade Miktarı: ${returnQty} ${uom}\n` +
+                `İade Tutarı: ${totalEur} EUR\n` +
+                `Lokasyon: ${warehouse}/${location}/${bin}\n` +
+                `═══════════════════════════════════\n\n` +
+                `⚠️ UYARI: Stok ${returnQty} ${uom} AZALTILACAK!\n\n` +
+                `Devam etmek istiyor musunuz?`;
+
+            if (confirm(confirmMsg)) {
+                const successMsg = `✅ ${typeName} işlemi başarıyla tamamlandı!\n\n` +
+                    `═══════════════════════════════════\n` +
+                    `İade No: ${returnId}\n` +
+                    `Hareket Tipi: ${transactionType} - ${typeName}\n` +
+                    `═══════════════════════════════════\n` +
+                    `✓ Stok kaydı güncellendi (${currentStock} → ${currentStock - returnQty} ${uom})\n` +
+                    `✓ Material Movement kaydı oluşturuldu\n` +
+                    `✓ Maliyet kaydı güncellendi (-${totalEur} EUR)\n` +
+                    `✓ Audit trail oluşturuldu\n` +
+                    `═══════════════════════════════════\n\n` +
+                    `API: POST /api/goods-receipts/return`;
+
+                alert(successMsg);
+                closeReturnForm();
+            }
+        }
+
+        // Close return form - Reset all fields
+        function closeReturnForm() {
+            // Reset search field
+            document.getElementById('originalGrNo').value = '';
+
+            // Hide detail sections
+            document.getElementById('returnGrDetails').style.display = 'none';
+            document.getElementById('returnGrNotFound').style.display = 'none';
+
+            // Reset all form fields
+            document.getElementById('returnOriginalGrId').value = '';
+            document.getElementById('returnOriginalGrDate').value = '';
+            document.getElementById('returnPoNo').value = '';
+            document.getElementById('returnItemNo').value = '';
+            document.getElementById('returnMaterialNo').value = '';
+            document.getElementById('returnMaterialTitle').value = '';
+            document.getElementById('returnSupplier').value = '';
+            document.getElementById('returnGrQty').value = '';
+            document.getElementById('returnCurrentStock').value = '';
+            document.getElementById('returnQty').value = '';
+            document.getElementById('returnUom').value = '';
+            document.getElementById('returnEurPrice').value = '';
+            document.getElementById('returnTotalEur').value = '';
+            document.getElementById('returnWarehouse').value = '';
+            document.getElementById('returnLocation').value = '';
+            document.getElementById('returnBin').value = '';
+            document.getElementById('returnStockRecordId').value = '';
+            document.getElementById('returnReasonType').value = '';
+            document.getElementById('returnDescription').value = '';
+
+            // Generate new return ID
+            document.getElementById('returnId').value = 'RET-2025-' + String(Math.floor(Math.random() * 1000000)).padStart(6, '0');
+
+            // Reset to default transaction type
+            document.getElementById('transactionType').value = '101';
+            handleTransactionTypeChange();
+        }
+
+        // Apply filters
+        function applyFilters() {
+            const searchBox = document.getElementById('searchBox').value.toLowerCase().trim();
+            const orderNo = document.getElementById('filterOrderNo').value.toLowerCase().trim();
+            const itemNo = document.getElementById('filterItemNo').value.toLowerCase().trim();
+            const materialNo = document.getElementById('filterMaterialNo').value.toLowerCase().trim();
+            const materialTitle = document.getElementById('filterMaterialTitle').value.toLowerCase().trim();
+            const supplierNo = document.getElementById('filterSupplierNo').value.toLowerCase().trim();
+            const supplierTitle = document.getElementById('filterSupplierTitle').value.toLowerCase().trim();
+            const uom = document.getElementById('filterUOM').value;
+
+            const rows = document.querySelectorAll('#openItemsTable tr');
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length === 0) return;
+
+                // Güncel sütun indeksleri (0-indexed):
+                // 0: Seç, 1: Hariç, 2: Sipariş No, 3: Kalem, 4: Malzeme No, 5: Malzeme Adı
+                // 6: Ted. Malz. No, 7: Ted. Malz. Adı, 8: Tedarikçi No, 9: Tedarikçi Adı, 10: Birim
+                const rowOrderNo = cells[2].textContent.toLowerCase();
+                const rowItemNo = cells[3].textContent.toLowerCase();
+                const rowMaterialNo = cells[4].textContent.toLowerCase();
+                const rowMaterialTitle = cells[5].textContent.toLowerCase();
+                const rowSupplierNo = cells[8].textContent.toLowerCase();
+                const rowSupplierTitle = cells[9].textContent.toLowerCase();
+                const rowUom = cells[10].textContent;
+
+                let visible = true;
+
+                // Genel arama kutusu - tüm önemli alanlarda ara
+                if (searchBox && !(
+                    rowOrderNo.includes(searchBox) ||
+                    rowMaterialNo.includes(searchBox) ||
+                    rowMaterialTitle.includes(searchBox) ||
+                    rowSupplierNo.includes(searchBox) ||
+                    rowSupplierTitle.includes(searchBox)
+                )) {
+                    visible = false;
+                }
+
+                // Spesifik filtreler
+                if (orderNo && !rowOrderNo.includes(orderNo)) visible = false;
+                if (itemNo && !rowItemNo.includes(itemNo)) visible = false;
+                if (materialNo && !rowMaterialNo.includes(materialNo)) visible = false;
+                if (materialTitle && !rowMaterialTitle.includes(materialTitle)) visible = false;
+                if (supplierNo && !rowSupplierNo.includes(supplierNo)) visible = false;
+                if (supplierTitle && !rowSupplierTitle.includes(supplierTitle)) visible = false;
+                if (uom && rowUom !== uom) visible = false;
+
+                row.style.display = visible ? '' : 'none';
+                if (visible) visibleCount++;
+            });
+
+            document.getElementById('openItemsCount').textContent = visibleCount + ' Açık Kalem';
+        }
+
+        // Clear filters
+        function clearFilters() {
+            document.getElementById('searchBox').value = '';
+            document.getElementById('filterOrderNo').value = '';
+            document.getElementById('filterItemNo').value = '';
+            document.getElementById('filterMaterialNo').value = '';
+            document.getElementById('filterMaterialTitle').value = '';
+            document.getElementById('filterSupplierNo').value = '';
+            document.getElementById('filterSupplierTitle').value = '';
+            document.getElementById('filterUOM').value = '';
+
+            const rows = document.querySelectorAll('#openItemsTable tr');
+            rows.forEach(row => {
+                row.style.display = '';
+            });
+
+            document.getElementById('openItemsCount').textContent = rows.length + ' Açık Kalem';
+        }
+
+        // Reset form
+        function resetForm() {
+            document.getElementById('receiptFormSection').style.display = 'none';
+            document.getElementById('multipleItemsSection').style.display = 'none';
+            document.querySelectorAll('.item-select').forEach(cb => cb.checked = false);
+            document.getElementById('selectAllItems').checked = false;
+            selectedItems = [];
+
+            // Generate new GR ID
+            document.getElementById('grId').value = 'GR-2025-' + String(Math.floor(Math.random() * 1000000)).padStart(6, '0');
+
+            // Clear document fields
+            document.getElementById('invoiceNumber').value = '';
+            document.getElementById('invoiceDate').value = '';
+            document.getElementById('deliveryNoteNumber').value = '';
+            document.getElementById('deliveryNoteDate').value = '';
+            document.getElementById('batchInvoiceNumber').value = '';
+            document.getElementById('batchInvoiceDate').value = '';
+            document.getElementById('batchDeliveryNoteNumber').value = '';
+            document.getElementById('batchDeliveryNoteDate').value = '';
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Initialize with default transaction type
+        document.getElementById('transactionType').value = '101';
+        handleTransactionTypeChange();
+    </script>
+</body>
+</html>

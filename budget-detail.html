@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bütçe Detay - IMMA</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- NAVBAR - Top Navigation (Maximo Style) -->
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">M</div>
+                <div class="brand-text">
+                    <span class="brand-name">IMMA</span>
+                    <span class="brand-subtitle">Endirek Malzeme Yönetimi</span>
+                </div>
+            </a>
+            <ul class="navbar-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="material-list.html" class="nav-link">
+                        <span class="nav-icon">📦</span>
+                        Ana Veriler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-list.html" class="dropdown-item">Malzeme Listesi</a>
+                        <a href="supplier-list.html" class="dropdown-item">Tedarikçi Listesi</a>
+                        <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
+                        <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
+                        <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="mrp.html" class="nav-link">
+                        <span class="nav-icon">📈</span>
+                        MRP
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="srm-list.html" class="nav-link">
+                        <span class="nav-icon">🛒</span>
+                        Satınalma
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="srm-list.html" class="dropdown-item">Talep Listesi</a>
+                        <a href="goods-receipt.html" class="dropdown-item">Mal Kabul</a>
+                        <a href="po-list.html" class="dropdown-item">Satınalma Siparişleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="budget-management.html" class="nav-link active">
+                        <span class="nav-icon">💰</span>
+                        Bütçe
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="budget-management.html" class="dropdown-item active">Bütçe Yönetimi</a>
+                        <a href="budget-preference.html" class="dropdown-item">Bütçe Tercihleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="material-request-list.html" class="nav-link">
+                        <span class="nav-icon">📋</span>
+                        Talepler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-request-list.html" class="dropdown-item">Talep Listesi</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="transfer-list.html" class="nav-link">
+                        <span class="nav-icon">🏭</span>
+                        Stok
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
+                        <a href="warehouse-transfer.html" class="dropdown-item">Depo Transferi</a>
+                        <a href="transfer-list.html" class="dropdown-item">Transfer Listesi</a>
+                        <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
+                        <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
+                        <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+            </ul>
+            <div class="navbar-user">
+                <span class="user-name">Ahmet Yılmaz</span>
+                <div class="user-avatar">AY</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="modern-container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title" id="pageTitle">Bütçe Detay</h1>
+                <p class="page-subtitle">Bütçe > Bütçe Yönetimi > <span id="breadcrumbAction">Görüntüle</span></p>
+            </div>
+            <div class="page-actions">
+                <a href="budget-management.html" class="btn btn-outline">← Listeye Dön</a>
+                <button class="btn btn-primary" id="editModeBtn" style="display: none;">Düzenle</button>
+            </div>
+        </div>
+
+        <!-- Budget Form -->
+        <div class="card">
+            <div class="card-header">
+                <h3 id="formTitle">Bütçe Bilgileri</h3>
+            </div>
+            <div class="card-body">
+                <form id="budgetForm">
+                    <div class="form-row">
+                        <div class="form-group col-3">
+                            <label>Budget Id</label>
+                            <input type="text" class="form-control" id="budgetId" readonly>
+                        </div>
+                        <div class="form-group col-2">
+                            <label>Year <span class="required">*</span></label>
+                            <select class="form-control" id="budgetYear" required>
+                                <option value="2024">2024</option>
+                                <option value="2025" selected>2025</option>
+                                <option value="2026">2026</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-2">
+                            <label>Month</label>
+                            <select class="form-control" id="budgetMonth">
+                                <option value="">Tümü</option>
+                                <option value="1">Ocak</option>
+                                <option value="2">Şubat</option>
+                                <option value="3">Mart</option>
+                                <option value="4">Nisan</option>
+                                <option value="5">Mayıs</option>
+                                <option value="6">Haziran</option>
+                                <option value="7">Temmuz</option>
+                                <option value="8">Ağustos</option>
+                                <option value="9">Eylül</option>
+                                <option value="10">Ekim</option>
+                                <option value="11">Kasım</option>
+                                <option value="12">Aralık</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-2">
+                            <label>Week</label>
+                            <select class="form-control" id="budgetWeek">
+                                <option value="">Tümü</option>
+                                <option value="1">Hafta 1</option>
+                                <option value="2">Hafta 2</option>
+                                <option value="3">Hafta 3</option>
+                                <option value="4">Hafta 4</option>
+                                <option value="5">Hafta 5</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Department <span class="required">*</span></label>
+                            <select class="form-control" id="budgetDepartment" required>
+                                <option value="">Seçiniz...</option>
+                                <option value="BAKIM">Bakım</option>
+                                <option value="URETIM">Üretim</option>
+                                <option value="KALITE">Kalite</option>
+                                <option value="LOJISTIK">Lojistik</option>
+                                <option value="ARASTIRMA">Araştırma</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-3">
+                            <label>Value <span class="required">*</span></label>
+                            <input type="number" class="form-control" id="budgetValue" required>
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Consumed Value</label>
+                            <input type="number" class="form-control" id="consumedValue" readonly>
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Open Value</label>
+                            <input type="number" class="form-control" id="openValue" readonly>
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Responsible SL</label>
+                            <input type="text" class="form-control" id="responsibleSL">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-3">
+                            <label>Budget Closed</label>
+                            <div style="padding-top: 8px;">
+                                <input type="checkbox" id="budgetClosed" style="width: auto; margin-right: 8px;">
+                                <label for="budgetClosed" style="display: inline; font-weight: normal;">Kapalı</label>
+                            </div>
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Last Change By</label>
+                            <input type="text" class="form-control" id="lastChangeBy" readonly>
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Last Change Date/Time</label>
+                            <input type="text" class="form-control" id="lastChangeDateTime" readonly>
+                        </div>
+                    </div>
+
+                    <h4 style="margin-top: 20px; margin-bottom: 15px;">Aylık Bütçe Dağılımı</h4>
+                    <div style="overflow-x: auto;">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Oca</th>
+                                    <th>Şub</th>
+                                    <th>Mar</th>
+                                    <th>Nis</th>
+                                    <th>May</th>
+                                    <th>Haz</th>
+                                    <th>Tem</th>
+                                    <th>Ağu</th>
+                                    <th>Eyl</th>
+                                    <th>Eki</th>
+                                    <th>Kas</th>
+                                    <th>Ara</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr id="monthlyRow">
+                                    <td><input type="number" class="form-control form-control-sm monthly-amount" data-month="1"></td>
+                                    <td><input type="number" class="form-control form-control-sm monthly-amount" data-month="2"></td>
+                                    <td><input type="number" class="form-control form-control-sm monthly-amount" data-month="3"></td>
+                                    <td><input type="number" class="form-control form-control-sm monthly-amount" data-month="4"></td>
+                                    <td><input type="number" class="form-control form-control-sm monthly-amount" data-month="5"></td>
+                                    <td><input type="number" class="form-control form-control-sm monthly-amount" data-month="6"></td>
+                                    <td><input type="number" class="form-control form-control-sm monthly-amount" data-month="7"></td>
+                                    <td><input type="number" class="form-control form-control-sm monthly-amount" data-month="8"></td>
+                                    <td><input type="number" class="form-control form-control-sm monthly-amount" data-month="9"></td>
+                                    <td><input type="number" class="form-control form-control-sm monthly-amount" data-month="10"></td>
+                                    <td><input type="number" class="form-control form-control-sm monthly-amount" data-month="11"></td>
+                                    <td><input type="number" class="form-control form-control-sm monthly-amount" data-month="12"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style="margin-top: 10px;" id="monthlyActions">
+                        <button type="button" class="btn btn-secondary btn-sm" id="distributeEvenlyBtn">Eşit Dağıt</button>
+                        <span style="margin-left: 15px; font-size: 13px;">Toplam: <strong id="monthlyTotal">0</strong></span>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="form-actions" style="margin-top: 30px;" id="formActions">
+                        <a href="budget-management.html" class="btn btn-outline">İptal</a>
+                        <button type="submit" class="btn btn-primary" id="saveBtn">Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Database Schema Info -->
+        <div class="dev-note success">
+            <h4>Veritabanı Yapısı (Data Structure IMMA.xlsx)</h4>
+            <p><strong>Budget Tablosu:</strong> Budget Id, Year, Month, Week, Value, Consumed value, Open Value, Department, Budget Closed check, responsible SL</p>
+        </div>
+    </main>
+
+    <style>
+        .required {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .form-control-sm {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+        .form-control[readonly] {
+            background-color: #f5f5f5;
+        }
+        .form-control:disabled {
+            background-color: #f5f5f5;
+            cursor: not-allowed;
+        }
+    </style>
+
+    <script>
+        // Sample budget data (backend'den gelecek)
+        const budgets = {
+            'BUD-2025-001': {
+                budgetId: '12345678',
+                year: '2025',
+                month: '',
+                week: '',
+                department: 'URETIM',
+                value: 500000,
+                consumedValue: 375000,
+                openValue: 125000,
+                responsibleSL: 'Mehmet Demir',
+                closed: false,
+                lastChangeBy: 'Yasin Taşdelen - FIPC',
+                lastChangeDateTime: '17.09.2025 17:18',
+                monthly: [45000, 40000, 42000, 38000, 40000, 35000, 38000, 42000, 45000, 48000, 42000, 45000]
+            },
+            'BUD-2025-002': {
+                budgetId: '12345679',
+                year: '2025',
+                month: '',
+                week: '',
+                department: 'BAKIM',
+                value: 300000,
+                consumedValue: 294000,
+                openValue: 6000,
+                responsibleSL: 'Ali Yılmaz',
+                closed: false,
+                lastChangeBy: 'Yasin Taşdelen - FIPC',
+                lastChangeDateTime: '17.09.2025 17:18',
+                monthly: [25000, 24000, 26000, 23000, 25000, 22000, 24000, 26000, 28000, 30000, 24000, 23000]
+            },
+            'BUD-2025-003': {
+                budgetId: '12345680',
+                year: '2025',
+                month: '',
+                week: '',
+                department: 'KALITE',
+                value: 150000,
+                consumedValue: 94500,
+                openValue: 55500,
+                responsibleSL: 'Ayşe Kaya',
+                closed: false,
+                lastChangeBy: 'Yasin Taşdelen - FIPC',
+                lastChangeDateTime: '17.09.2025 17:18',
+                monthly: [12500, 12000, 13000, 11500, 12500, 11000, 12000, 13000, 13500, 14000, 12000, 13000]
+            },
+            'BUD-2025-004': {
+                budgetId: '12345681',
+                year: '2025',
+                month: '',
+                week: '',
+                department: 'LOJISTIK',
+                value: 2000000,
+                consumedValue: 1600000,
+                openValue: 400000,
+                responsibleSL: 'Fatma Öz',
+                closed: false,
+                lastChangeBy: 'Yasin Taşdelen - FIPC',
+                lastChangeDateTime: '17.09.2025 17:18',
+                monthly: [180000, 160000, 170000, 155000, 165000, 150000, 160000, 170000, 180000, 190000, 165000, 155000]
+            },
+            'BUD-2025-005': {
+                budgetId: '12345682',
+                year: '2025',
+                month: '',
+                week: '',
+                department: 'ARASTIRMA',
+                value: 50000,
+                consumedValue: 52000,
+                openValue: -2000,
+                responsibleSL: 'Kemal Aydın',
+                closed: true,
+                lastChangeBy: 'Yasin Taşdelen - FIPC',
+                lastChangeDateTime: '17.09.2025 17:18',
+                monthly: [4500, 4000, 4200, 3800, 4000, 3500, 3800, 4200, 4500, 4800, 4200, 4500]
+            }
+        };
+
+        // URL parametrelerini al
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                mode: params.get('mode') || 'view',
+                id: params.get('id') || null
+            };
+        }
+
+        // Sayfa moduna göre ayarla
+        function initializePage() {
+            const { mode, id } = getUrlParams();
+            const formElements = document.querySelectorAll('#budgetForm input:not([type="checkbox"]), #budgetForm select');
+            const monthlyInputs = document.querySelectorAll('.monthly-amount');
+
+            switch(mode) {
+                case 'view':
+                    document.getElementById('pageTitle').textContent = 'Bütçe Görüntüle';
+                    document.getElementById('breadcrumbAction').textContent = 'Görüntüle';
+                    document.getElementById('formTitle').textContent = 'Bütçe Bilgileri (Salt Okunur)';
+                    document.getElementById('editModeBtn').style.display = 'inline-block';
+                    document.getElementById('formActions').style.display = 'none';
+                    document.getElementById('monthlyActions').style.display = 'none';
+
+                    // Tüm alanları readonly yap
+                    formElements.forEach(el => {
+                        el.disabled = true;
+                    });
+                    document.getElementById('budgetClosed').disabled = true;
+                    monthlyInputs.forEach(input => {
+                        input.disabled = true;
+                    });
+
+                    // Düzenle butonuna tıklayınca edit moduna geç
+                    document.getElementById('editModeBtn').addEventListener('click', function() {
+                        window.location.href = `budget-detail.html?mode=edit&id=${id}`;
+                    });
+
+                    if (id && budgets[id]) {
+                        loadBudgetData(budgets[id]);
+                    }
+                    break;
+
+                case 'edit':
+                    document.getElementById('pageTitle').textContent = 'Bütçe Düzenle';
+                    document.getElementById('breadcrumbAction').textContent = 'Düzenle';
+                    document.getElementById('formTitle').textContent = 'Bütçe Düzenleme';
+                    document.getElementById('editModeBtn').style.display = 'none';
+                    document.getElementById('formActions').style.display = 'flex';
+                    document.getElementById('monthlyActions').style.display = 'block';
+
+                    // Alanları aktif yap (readonly olanlar hariç)
+                    formElements.forEach(el => {
+                        if (!el.hasAttribute('readonly')) {
+                            el.disabled = false;
+                        }
+                    });
+                    document.getElementById('budgetClosed').disabled = false;
+                    monthlyInputs.forEach(input => {
+                        input.disabled = false;
+                    });
+
+                    if (id && budgets[id]) {
+                        loadBudgetData(budgets[id]);
+                    }
+                    break;
+
+                case 'create':
+                    document.getElementById('pageTitle').textContent = 'Yeni Bütçe Oluştur';
+                    document.getElementById('breadcrumbAction').textContent = 'Yeni';
+                    document.getElementById('formTitle').textContent = 'Yeni Bütçe';
+                    document.getElementById('editModeBtn').style.display = 'none';
+                    document.getElementById('formActions').style.display = 'flex';
+                    document.getElementById('monthlyActions').style.display = 'block';
+
+                    // Yeni ID oluştur
+                    const newId = 'BUD-2025-' + String(Math.floor(Math.random() * 900) + 100);
+                    document.getElementById('budgetId').value = newId;
+
+                    // Alanları aktif yap
+                    formElements.forEach(el => {
+                        if (!el.hasAttribute('readonly')) {
+                            el.disabled = false;
+                        }
+                    });
+                    document.getElementById('budgetClosed').disabled = false;
+                    monthlyInputs.forEach(input => {
+                        input.disabled = false;
+                    });
+                    break;
+            }
+        }
+
+        // Bütçe verilerini forma yükle
+        function loadBudgetData(budget) {
+            document.getElementById('budgetId').value = budget.budgetId;
+            document.getElementById('budgetYear').value = budget.year;
+            document.getElementById('budgetMonth').value = budget.month || '';
+            document.getElementById('budgetWeek').value = budget.week || '';
+            document.getElementById('budgetDepartment').value = budget.department;
+            document.getElementById('budgetValue').value = budget.value;
+            document.getElementById('consumedValue').value = budget.consumedValue;
+            document.getElementById('openValue').value = budget.openValue;
+            document.getElementById('responsibleSL').value = budget.responsibleSL || '';
+            document.getElementById('budgetClosed').checked = budget.closed;
+            document.getElementById('lastChangeBy').value = budget.lastChangeBy || '';
+            document.getElementById('lastChangeDateTime').value = budget.lastChangeDateTime || '';
+
+            // Aylık dağılımı yükle
+            const monthlyInputs = document.querySelectorAll('.monthly-amount');
+            monthlyInputs.forEach((input, index) => {
+                input.value = budget.monthly[index] || '';
+            });
+
+            calculateMonthlyTotal();
+        }
+
+        // Aylık toplamı hesapla
+        function calculateMonthlyTotal() {
+            let total = 0;
+            document.querySelectorAll('.monthly-amount').forEach(input => {
+                total += parseFloat(input.value) || 0;
+            });
+            document.getElementById('monthlyTotal').textContent = total.toLocaleString();
+        }
+
+        // Aylık değişiklikleri dinle
+        document.querySelectorAll('.monthly-amount').forEach(input => {
+            input.addEventListener('input', calculateMonthlyTotal);
+        });
+
+        // Eşit dağıt butonu
+        document.getElementById('distributeEvenlyBtn').addEventListener('click', function() {
+            const totalValue = parseFloat(document.getElementById('budgetValue').value) || 0;
+            const monthlyAmount = Math.round(totalValue / 12);
+
+            document.querySelectorAll('.monthly-amount').forEach(input => {
+                input.value = monthlyAmount;
+            });
+
+            calculateMonthlyTotal();
+        });
+
+        // Form submit
+        document.getElementById('budgetForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const { mode, id } = getUrlParams();
+            const budgetData = {
+                budgetId: document.getElementById('budgetId').value,
+                year: document.getElementById('budgetYear').value,
+                month: document.getElementById('budgetMonth').value,
+                week: document.getElementById('budgetWeek').value,
+                department: document.getElementById('budgetDepartment').value,
+                value: document.getElementById('budgetValue').value,
+                responsibleSL: document.getElementById('responsibleSL').value,
+                closed: document.getElementById('budgetClosed').checked,
+                monthly: []
+            };
+
+            document.querySelectorAll('.monthly-amount').forEach(input => {
+                budgetData.monthly.push(parseFloat(input.value) || 0);
+            });
+
+            if (!budgetData.value || !budgetData.department) {
+                alert('Lütfen tüm zorunlu alanları doldurun!');
+                return;
+            }
+
+            const action = mode === 'create' ? 'oluşturuldu' : 'güncellendi';
+            alert(`Bütçe ${action}!\n\nBudget Id: ${budgetData.budgetId}\nYear: ${budgetData.year}\nDepartment: ${budgetData.department}\nValue: ${budgetData.value}\n\n(Backend entegrasyonu ile çalışacak)`);
+
+            // Liste sayfasına dön
+            window.location.href = 'budget-management.html';
+        });
+
+        // Sayfa yüklendiğinde başlat
+        document.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+</body>
+</html>

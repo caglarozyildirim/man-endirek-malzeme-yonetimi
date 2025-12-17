@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bütçe Tercih Detay - IMMA</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- NAVBAR - Top Navigation (Maximo Style) -->
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">M</div>
+                <div class="brand-text">
+                    <span class="brand-name">IMMA</span>
+                    <span class="brand-subtitle">Endirek Malzeme Yönetimi</span>
+                </div>
+            </a>
+            <ul class="navbar-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="material-list.html" class="nav-link">
+                        <span class="nav-icon">📦</span>
+                        Ana Veriler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-list.html" class="dropdown-item">Malzeme Listesi</a>
+                        <a href="supplier-list.html" class="dropdown-item">Tedarikçi Listesi</a>
+                        <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
+                        <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
+                        <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="mrp.html" class="nav-link">
+                        <span class="nav-icon">📈</span>
+                        MRP
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="srm-list.html" class="nav-link">
+                        <span class="nav-icon">🛒</span>
+                        Satınalma
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="srm-list.html" class="dropdown-item">Talep Listesi</a>
+                        <a href="goods-receipt.html" class="dropdown-item">Mal Kabul</a>
+                        <a href="po-list.html" class="dropdown-item">Satınalma Siparişleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="budget-management.html" class="nav-link active">
+                        <span class="nav-icon">💰</span>
+                        Bütçe
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="budget-management.html" class="dropdown-item">Bütçe Yönetimi</a>
+                        <a href="budget-preference.html" class="dropdown-item active">Bütçe Tercihleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="material-request-list.html" class="nav-link">
+                        <span class="nav-icon">📋</span>
+                        Talepler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-request-list.html" class="dropdown-item">Talep Listesi</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="transfer-list.html" class="nav-link">
+                        <span class="nav-icon">🏭</span>
+                        Stok
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
+                        <a href="warehouse-transfer.html" class="dropdown-item">Depo Transferi</a>
+                        <a href="transfer-list.html" class="dropdown-item">Transfer Listesi</a>
+                        <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
+                        <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
+                        <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+            </ul>
+            <div class="navbar-user">
+                <span class="user-name">Ahmet Yılmaz</span>
+                <div class="user-avatar">AY</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="modern-container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title" id="pageTitle">Bütçe Tercih Detay</h1>
+                <p class="page-subtitle">Bütçe > Bütçe Tercihleri > <span id="breadcrumbAction">Görüntüle</span></p>
+            </div>
+            <div class="page-actions">
+                <a href="budget-preference.html" class="btn btn-outline">← Listeye Dön</a>
+                <button class="btn btn-primary" id="editModeBtn" style="display: none;">Düzenle</button>
+            </div>
+        </div>
+
+        <!-- Preference Form -->
+        <div class="card">
+            <div class="card-header">
+                <h3 id="formTitle">Bütçe Tercih Bilgileri</h3>
+            </div>
+            <div class="card-body">
+                <form id="preferenceForm">
+                    <div class="form-row">
+                        <div class="form-group col-4">
+                            <label>Budget Preference Id</label>
+                            <input type="text" class="form-control" id="preferenceId" readonly>
+                            <small class="form-text">Otomatik oluşturulur</small>
+                        </div>
+                        <div class="form-group col-4">
+                            <label>Budget Approval Request Type <span class="required">*</span></label>
+                            <select class="form-control" id="approvalRequestType" required>
+                                <option value="">Seçiniz...</option>
+                                <option value="AUTO">Otomatik Onay</option>
+                                <option value="MANUAL">Manuel Onay</option>
+                                <option value="HYBRID">Hibrit (Miktar Bazlı)</option>
+                                <option value="MULTI_LEVEL">Çok Seviyeli Onay</option>
+                            </select>
+                            <small class="form-text">Onay sürecinin tipi</small>
+                        </div>
+                        <div class="form-group col-4">
+                            <label>Department Code <span class="required">*</span></label>
+                            <select class="form-control" id="departmentCode" required>
+                                <option value="">Seçiniz...</option>
+                                <option value="BAKIM">BAKIM - Bakım Departmanı</option>
+                                <option value="URETIM">URETIM - Üretim Departmanı</option>
+                                <option value="KALITE">KALITE - Kalite Kontrol</option>
+                                <option value="LOJISTIK">LOJISTIK - Lojistik</option>
+                                <option value="ARASTIRMA">ARASTIRMA - Ar-Ge</option>
+                            </select>
+                            <small class="form-text">Tercih uygulanacak departman</small>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-4" id="thresholdGroup">
+                            <label>Eşik Değer (EUR)</label>
+                            <input type="number" class="form-control" id="thresholdValue">
+                            <small class="form-text">Hibrit tip için limit değeri</small>
+                        </div>
+                        <div class="form-group col-4">
+                            <label>Aktif Durum</label>
+                            <select class="form-control" id="activeStatus">
+                                <option value="ACTIVE" selected>Aktif</option>
+                                <option value="INACTIVE">Pasif</option>
+                            </select>
+                            <small class="form-text">Tercih durumu</small>
+                        </div>
+                        <div class="form-group col-4">
+                            <label>Geçerlilik Başlangıç</label>
+                            <input type="date" class="form-control" id="validFrom" value="2025-01-01">
+                            <small class="form-text">Tercih başlangıç tarihi</small>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="form-actions" style="margin-top: 30px;" id="formActions">
+                        <a href="budget-preference.html" class="btn btn-outline">İptal</a>
+                        <button type="submit" class="btn btn-primary" id="saveBtn">Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Info Note -->
+        <div class="dev-note info">
+            <h4>Bütçe Onay Talep Tipleri</h4>
+            <ul>
+                <li><strong>Otomatik Onay (AUTO):</strong> Belirlenen eşik değerin altındaki tüm talepler otomatik onaylanır</li>
+                <li><strong>Manuel Onay (MANUAL):</strong> Tüm talepler departman yöneticisi onayına gider</li>
+                <li><strong>Hibrit (HYBRID):</strong> Eşik değere göre otomatik veya manuel onay yapılır</li>
+                <li><strong>Çok Seviyeli Onay (MULTI_LEVEL):</strong> Miktar arttıkça birden fazla seviye onay gerekir</li>
+            </ul>
+        </div>
+
+        <!-- Database Schema -->
+        <div class="dev-note success">
+            <h4>Veritabanı Yapısı (Data Structure IMMA.xlsx)</h4>
+            <p><strong>Budget Preference Tablosu:</strong> Budget Preference Id, Budget Approval request Type, Department code</p>
+        </div>
+    </main>
+
+    <style>
+        .required {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .form-text {
+            display: block;
+            margin-top: 4px;
+            font-size: 11px;
+            color: #6c757d;
+        }
+        .form-control[readonly] {
+            background-color: #f5f5f5;
+        }
+        .form-control:disabled {
+            background-color: #f5f5f5;
+            cursor: not-allowed;
+        }
+    </style>
+
+    <script>
+        // Sample data (backend'den gelecek)
+        const budgetPreferences = {
+            'BP-2025-001': {
+                id: 'BP-2025-001',
+                departmentCode: 'BAKIM',
+                departmentName: 'Bakım Departmanı',
+                approvalType: 'HYBRID',
+                thresholdValue: 5000,
+                status: 'ACTIVE',
+                validFrom: '2025-01-01'
+            },
+            'BP-2025-002': {
+                id: 'BP-2025-002',
+                departmentCode: 'URETIM',
+                departmentName: 'Üretim Departmanı',
+                approvalType: 'AUTO',
+                thresholdValue: 3000,
+                status: 'ACTIVE',
+                validFrom: '2025-01-01'
+            },
+            'BP-2025-003': {
+                id: 'BP-2025-003',
+                departmentCode: 'KALITE',
+                departmentName: 'Kalite Kontrol',
+                approvalType: 'MANUAL',
+                thresholdValue: null,
+                status: 'ACTIVE',
+                validFrom: '2025-01-01'
+            },
+            'BP-2025-004': {
+                id: 'BP-2025-004',
+                departmentCode: 'LOJISTIK',
+                departmentName: 'Lojistik',
+                approvalType: 'MULTI_LEVEL',
+                thresholdValue: 10000,
+                status: 'ACTIVE',
+                validFrom: '2025-01-01'
+            },
+            'BP-2024-099': {
+                id: 'BP-2024-099',
+                departmentCode: 'ARASTIRMA',
+                departmentName: 'Ar-Ge',
+                approvalType: 'HYBRID',
+                thresholdValue: 7500,
+                status: 'INACTIVE',
+                validFrom: '2024-01-01'
+            }
+        };
+
+        // URL parametrelerini al
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                mode: params.get('mode') || 'view',
+                id: params.get('id') || null
+            };
+        }
+
+        // Sayfa moduna göre ayarla
+        function initializePage() {
+            const { mode, id } = getUrlParams();
+            const formElements = document.querySelectorAll('#preferenceForm input:not([type="checkbox"]), #preferenceForm select');
+
+            switch(mode) {
+                case 'view':
+                    document.getElementById('pageTitle').textContent = 'Bütçe Tercih Görüntüle';
+                    document.getElementById('breadcrumbAction').textContent = 'Görüntüle';
+                    document.getElementById('formTitle').textContent = 'Bütçe Tercih Bilgileri (Salt Okunur)';
+                    document.getElementById('editModeBtn').style.display = 'inline-block';
+                    document.getElementById('formActions').style.display = 'none';
+
+                    // Tüm alanları disabled yap
+                    formElements.forEach(el => {
+                        el.disabled = true;
+                    });
+
+                    // Düzenle butonuna tıklayınca edit moduna geç
+                    document.getElementById('editModeBtn').addEventListener('click', function() {
+                        window.location.href = `budget-preference-detail.html?mode=edit&id=${id}`;
+                    });
+
+                    if (id && budgetPreferences[id]) {
+                        loadPreferenceData(budgetPreferences[id]);
+                    }
+                    break;
+
+                case 'edit':
+                    document.getElementById('pageTitle').textContent = 'Bütçe Tercih Düzenle';
+                    document.getElementById('breadcrumbAction').textContent = 'Düzenle';
+                    document.getElementById('formTitle').textContent = 'Bütçe Tercih Düzenleme';
+                    document.getElementById('editModeBtn').style.display = 'none';
+                    document.getElementById('formActions').style.display = 'flex';
+
+                    // Alanları aktif yap (readonly olanlar hariç)
+                    formElements.forEach(el => {
+                        if (!el.hasAttribute('readonly')) {
+                            el.disabled = false;
+                        }
+                    });
+
+                    if (id && budgetPreferences[id]) {
+                        loadPreferenceData(budgetPreferences[id]);
+                    }
+                    break;
+
+                case 'create':
+                    document.getElementById('pageTitle').textContent = 'Yeni Bütçe Tercihi Oluştur';
+                    document.getElementById('breadcrumbAction').textContent = 'Yeni';
+                    document.getElementById('formTitle').textContent = 'Yeni Bütçe Tercihi';
+                    document.getElementById('editModeBtn').style.display = 'none';
+                    document.getElementById('formActions').style.display = 'flex';
+
+                    // Yeni ID oluştur
+                    const newId = 'BP-2025-' + String(Math.floor(Math.random() * 900) + 100);
+                    document.getElementById('preferenceId').value = newId;
+
+                    // Alanları aktif yap
+                    formElements.forEach(el => {
+                        if (!el.hasAttribute('readonly')) {
+                            el.disabled = false;
+                        }
+                    });
+                    break;
+            }
+
+            updateThresholdVisibility();
+        }
+
+        // Tercih verilerini forma yükle
+        function loadPreferenceData(preference) {
+            document.getElementById('preferenceId').value = preference.id;
+            document.getElementById('approvalRequestType').value = preference.approvalType;
+            document.getElementById('departmentCode').value = preference.departmentCode;
+            document.getElementById('thresholdValue').value = preference.thresholdValue || '';
+            document.getElementById('activeStatus').value = preference.status;
+            document.getElementById('validFrom').value = preference.validFrom;
+
+            updateThresholdVisibility();
+        }
+
+        // Eşik değer alanı görünürlüğü
+        function updateThresholdVisibility() {
+            const thresholdGroup = document.getElementById('thresholdGroup');
+            const approvalType = document.getElementById('approvalRequestType').value;
+
+            if (approvalType === 'HYBRID' || approvalType === 'MULTI_LEVEL') {
+                thresholdGroup.style.opacity = '1';
+                document.getElementById('thresholdValue').required = true;
+            } else {
+                thresholdGroup.style.opacity = '0.5';
+                document.getElementById('thresholdValue').required = false;
+            }
+        }
+
+        document.getElementById('approvalRequestType').addEventListener('change', updateThresholdVisibility);
+
+        // Form submit
+        document.getElementById('preferenceForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const { mode } = getUrlParams();
+            const preferenceData = {
+                id: document.getElementById('preferenceId').value,
+                approvalType: document.getElementById('approvalRequestType').value,
+                departmentCode: document.getElementById('departmentCode').value,
+                thresholdValue: document.getElementById('thresholdValue').value,
+                status: document.getElementById('activeStatus').value,
+                validFrom: document.getElementById('validFrom').value
+            };
+
+            if (!preferenceData.approvalType || !preferenceData.departmentCode) {
+                alert('Lütfen zorunlu alanları doldurun!\n\n- Bütçe Onay Talep Tipi\n- Departman Kodu');
+                return;
+            }
+
+            const action = mode === 'create' ? 'oluşturuldu' : 'güncellendi';
+            alert(`Bütçe Tercihi ${action}!\n\nTercih ID: ${preferenceData.id}\nDepartman: ${preferenceData.departmentCode}\nOnay Tipi: ${preferenceData.approvalType}\n\n(Backend entegrasyonu ile çalışacak)`);
+
+            // Liste sayfasına dön
+            window.location.href = 'budget-preference.html';
+        });
+
+        // Sayfa yüklendiğinde başlat
+        document.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+</body>
+</html>

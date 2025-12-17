@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transfer Detay - IMMA</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">M</div>
+                <div class="brand-text">
+                    <span class="brand-name">IMMA</span>
+                    <span class="brand-subtitle">Endirek Malzeme Yönetimi</span>
+                </div>
+            </a>
+            <ul class="navbar-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="material-list.html" class="nav-link">
+                        <span class="nav-icon">📦</span>
+                        Ana Veriler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-list.html" class="dropdown-item">Malzeme Listesi</a>
+                        <a href="supplier-list.html" class="dropdown-item">Tedarikçi Listesi</a>
+                        <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
+                        <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
+                        <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="mrp.html" class="nav-link">
+                        <span class="nav-icon">📈</span>
+                        MRP
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="srm-list.html" class="nav-link">
+                        <span class="nav-icon">🛒</span>
+                        Satınalma
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="srm-list.html" class="dropdown-item">Talep Listesi</a>
+                        <a href="goods-receipt.html" class="dropdown-item">Mal Kabul</a>
+                        <a href="po-list.html" class="dropdown-item">Satınalma Siparişleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="budget-management.html" class="nav-link">
+                        <span class="nav-icon">💰</span>
+                        Bütçe
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="budget-management.html" class="dropdown-item">Bütçe Yönetimi</a>
+                        <a href="budget-preference.html" class="dropdown-item">Bütçe Tercihleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="material-request-list.html" class="nav-link">
+                        <span class="nav-icon">📋</span>
+                        Talepler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-request-list.html" class="dropdown-item">Talep Listesi</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="transfer-list.html" class="nav-link active">
+                        <span class="nav-icon">🏭</span>
+                        Stok
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
+                        <a href="warehouse-transfer.html" class="dropdown-item">Depo Transferi</a>
+                        <a href="transfer-list.html" class="dropdown-item active">Transfer Listesi</a>
+                        <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
+                        <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
+                        <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+            </ul>
+            <div class="navbar-user">
+                <span class="user-name">Ahmet Yılmaz</span>
+                <div class="user-avatar">AY</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="modern-container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Transfer Detayı</h1>
+                <p class="page-subtitle">Stok > Depo Transferi > <span id="transferId">-</span></p>
+            </div>
+            <div class="page-actions">
+                <a href="warehouse-transfer.html" class="btn btn-outline">← Geri Dön</a>
+            </div>
+        </div>
+
+        <!-- Transfer Details -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Transfer Bilgileri</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Transfer ID:</label>
+                        <span id="displayTransferId">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Durum:</label>
+                        <span id="displayStatus">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Tarih:</label>
+                        <span id="displayDate">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Malzeme No:</label>
+                        <span id="displayMaterialNo">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Malzeme Açıklaması:</label>
+                        <span id="displayMaterialDesc">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Miktar:</label>
+                        <span id="displayQuantity">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Hareket Tipi ID:</label>
+                        <span id="displayMovementTypeId">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Hareket Tipi Açıklaması:</label>
+                        <span id="displayMovementTypeTitle">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Source/Target Info -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Kaynak ve Hedef Bilgileri</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-row" style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 20px;">
+                    <!-- SOURCE -->
+                    <div style="padding: 15px; border: 2px solid #dc3545; border-radius: 8px; background-color: #fff5f5;">
+                        <h4 style="color: #dc3545; margin-bottom: 15px;">Kaynak</h4>
+                        <div class="info-item">
+                            <label>Depo:</label>
+                            <span id="displaySourceWarehouse">-</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Lokasyon:</label>
+                            <span id="displaySourceLocation">-</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Bin:</label>
+                            <span id="displaySourceBin">-</span>
+                        </div>
+                    </div>
+
+                    <!-- ARROW -->
+                    <div style="display: flex; align-items: center; justify-content: center; font-size: 2em; color: #007bff;">
+                        →
+                    </div>
+
+                    <!-- TARGET -->
+                    <div style="padding: 15px; border: 2px solid #28a745; border-radius: 8px; background-color: #f0fff4;">
+                        <h4 style="color: #28a745; margin-bottom: 15px;">Hedef</h4>
+                        <div class="info-item">
+                            <label>Depo:</label>
+                            <span id="displayTargetWarehouse">-</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Lokasyon:</label>
+                            <span id="displayTargetLocation">-</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Bin:</label>
+                            <span id="displayTargetBin">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stock Record Info -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Stok Kayıt Bilgileri</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Stock Record Id:</label>
+                        <span id="displayStockRecordId">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Previous Stock Record Id:</label>
+                        <span id="displayPrevStockRecordId">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Goods Receipt Id:</label>
+                        <span id="displayGoodsReceiptId">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Cost Id:</label>
+                        <span id="displayCostId">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <style>
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .info-item label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 600;
+        }
+        .info-item span {
+            font-size: 14px;
+            color: #333;
+        }
+    </style>
+
+    <script>
+        // Sample transfer data
+        const transfers = {
+            'TRF-2025-000123': {
+                id: 'TRF-2025-000123',
+                materialNo: '01.00002-0001',
+                materialDesc: 'Rulman 6205-2RS',
+                quantity: '25 AD',
+                movementTypeId: 'MVT-TWW-001',
+                movementTypeTitle: 'Transfer Within Warehouse - Standard',
+                date: '2025-12-14',
+                status: 'Tamamlandı',
+                statusClass: 'status-active',
+                sourceWarehouse: 'MAIN01',
+                sourceLocation: 'A-01-03',
+                sourceBin: 'SHELF-A-003',
+                targetWarehouse: 'MAIN01',
+                targetLocation: 'B-02-05',
+                targetBin: 'SHELF-B-010',
+                stockRecordId: 'STK-2025-001235',
+                prevStockRecordId: 'STK-2025-001234',
+                goodsReceiptId: 'GR-2025-000456',
+                costId: 'COST-MAINT-001'
+            },
+            'TRF-2025-000122': {
+                id: 'TRF-2025-000122',
+                materialNo: '02.00004-0001',
+                materialDesc: 'Sensör Endüktif M12',
+                quantity: '10 AD',
+                movementTypeId: 'MVT-TWW-001',
+                movementTypeTitle: 'Transfer Within Warehouse - Standard',
+                date: '2025-12-13',
+                status: 'Tamamlandı',
+                statusClass: 'status-active',
+                sourceWarehouse: 'MAIN01',
+                sourceLocation: 'C-03-01',
+                sourceBin: 'SHELF-C-001',
+                targetWarehouse: 'MAIN01',
+                targetLocation: 'C-03-02',
+                targetBin: 'SHELF-C-015',
+                stockRecordId: 'STK-2025-001230',
+                prevStockRecordId: 'STK-2025-001220',
+                goodsReceiptId: 'GR-2025-000400',
+                costId: 'COST-PROD-002'
+            },
+            'TRF-2025-000121': {
+                id: 'TRF-2025-000121',
+                materialNo: '01.00005-0001',
+                materialDesc: 'Güvenlik Eldiveni',
+                quantity: '50 AD',
+                movementTypeId: 'MVT-TWW-002',
+                movementTypeTitle: 'Transfer Within Warehouse - Urgent',
+                date: '2025-12-12',
+                status: 'Tamamlandı',
+                statusClass: 'status-active',
+                sourceWarehouse: 'MAIN01',
+                sourceLocation: 'D-01-01',
+                sourceBin: 'BIN-D-100',
+                targetWarehouse: 'MAIN01',
+                targetLocation: 'D-02-01',
+                targetBin: 'BIN-D-200',
+                stockRecordId: 'STK-2025-001225',
+                prevStockRecordId: 'STK-2025-001210',
+                goodsReceiptId: 'GR-2025-000350',
+                costId: 'COST-SAFE-001'
+            },
+            'TRF-2025-000120': {
+                id: 'TRF-2025-000120',
+                materialNo: '03.00001-0001',
+                materialDesc: 'Elektrik Kablosu 3x1.5',
+                quantity: '100 M',
+                movementTypeId: 'MVT-TWW-001',
+                movementTypeTitle: 'Transfer Within Warehouse - Standard',
+                date: '2025-12-11',
+                status: 'Beklemede',
+                statusClass: 'status-pending',
+                sourceWarehouse: 'MAIN01',
+                sourceLocation: 'E-05-03',
+                sourceBin: 'ROLL-E-050',
+                targetWarehouse: 'MAIN01',
+                targetLocation: 'E-06-01',
+                targetBin: 'ROLL-E-070',
+                stockRecordId: 'STK-2025-001220',
+                prevStockRecordId: 'STK-2025-001200',
+                goodsReceiptId: 'GR-2025-000300',
+                costId: 'COST-ELEC-001'
+            }
+        };
+
+        // Get URL parameters
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                id: params.get('id') || null
+            };
+        }
+
+        // Initialize page
+        function initializePage() {
+            const { id } = getUrlParams();
+
+            if (id && transfers[id]) {
+                loadTransferData(transfers[id]);
+            } else {
+                alert('Transfer kaydı bulunamadı!');
+                window.location.href = 'warehouse-transfer.html';
+            }
+        }
+
+        // Load transfer data
+        function loadTransferData(transfer) {
+            document.getElementById('transferId').textContent = transfer.id;
+            document.getElementById('displayTransferId').textContent = transfer.id;
+            document.getElementById('displayStatus').innerHTML = `<span class="status-badge ${transfer.statusClass}">${transfer.status}</span>`;
+            document.getElementById('displayDate').textContent = transfer.date;
+            document.getElementById('displayMaterialNo').textContent = transfer.materialNo;
+            document.getElementById('displayMaterialDesc').textContent = transfer.materialDesc;
+            document.getElementById('displayQuantity').textContent = transfer.quantity;
+            document.getElementById('displayMovementTypeId').textContent = transfer.movementTypeId;
+            document.getElementById('displayMovementTypeTitle').textContent = transfer.movementTypeTitle;
+
+            document.getElementById('displaySourceWarehouse').textContent = transfer.sourceWarehouse;
+            document.getElementById('displaySourceLocation').textContent = transfer.sourceLocation;
+            document.getElementById('displaySourceBin').textContent = transfer.sourceBin;
+
+            document.getElementById('displayTargetWarehouse').textContent = transfer.targetWarehouse;
+            document.getElementById('displayTargetLocation').textContent = transfer.targetLocation;
+            document.getElementById('displayTargetBin').textContent = transfer.targetBin;
+
+            document.getElementById('displayStockRecordId').textContent = transfer.stockRecordId;
+            document.getElementById('displayPrevStockRecordId').textContent = transfer.prevStockRecordId;
+            document.getElementById('displayGoodsReceiptId').textContent = transfer.goodsReceiptId;
+            document.getElementById('displayCostId').textContent = transfer.costId;
+        }
+
+        // Initialize on DOM ready
+        document.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+</body>
+</html>

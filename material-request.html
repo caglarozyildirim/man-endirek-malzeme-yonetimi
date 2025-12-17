@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Malzeme Talebi - IMMA</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        /* Status badges */
+        .status-badge.beklemede {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .status-badge.onaylandi {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status-badge.teslim {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+        .status-badge.reddedildi {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .status-badge.iptal {
+            background-color: #e2e3e5;
+            color: #383d41;
+        }
+        /* Alert styles */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .alert-info {
+            background-color: #e7f3ff;
+            border: 1px solid #b6d4fe;
+            color: #084298;
+        }
+        /* View mode styles */
+        .view-mode input:disabled,
+        .view-mode select:disabled,
+        .view-mode textarea:disabled {
+            background-color: #f8f9fa !important;
+            cursor: not-allowed;
+        }
+        /* Priority badges */
+        .priority-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .priority-badge.low {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        .priority-badge.normal {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .priority-badge.high {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .priority-badge.critical {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        /* Delivery location checkboxes */
+        .delivery-locations {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+        .delivery-location-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- NAVBAR - Top Navigation (Maximo Style) -->
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">M</div>
+                <div class="brand-text">
+                    <span class="brand-name">IMMA</span>
+                    <span class="brand-subtitle">Endirek Malzeme Yönetimi</span>
+                </div>
+            </a>
+            <ul class="navbar-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="material-list.html" class="nav-link">
+                        <span class="nav-icon">📦</span>
+                        Ana Veriler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-list.html" class="dropdown-item">Malzeme Listesi</a>
+                        <a href="supplier-list.html" class="dropdown-item">Tedarikçi Listesi</a>
+                        <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
+                        <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
+                        <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="mrp.html" class="nav-link">
+                        <span class="nav-icon">📈</span>
+                        MRP
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="srm-list.html" class="nav-link">
+                        <span class="nav-icon">🛒</span>
+                        Satınalma
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="srm-list.html" class="dropdown-item">Talep Listesi</a>
+                        <a href="goods-receipt.html" class="dropdown-item">Mal Kabul</a>
+                        <a href="po-list.html" class="dropdown-item">Satınalma Siparişleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="budget-management.html" class="nav-link">
+                        <span class="nav-icon">💰</span>
+                        Bütçe
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="budget-management.html" class="dropdown-item">Bütçe Yönetimi</a>
+                        <a href="budget-preference.html" class="dropdown-item">Bütçe Tercihleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="material-request-list.html" class="nav-link active">
+                        <span class="nav-icon">📋</span>
+                        Talepler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-request-list.html" class="dropdown-item active">Talep Listesi</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="transfer-list.html" class="nav-link">
+                        <span class="nav-icon">🏭</span>
+                        Stok
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
+                        <a href="warehouse-transfer.html" class="dropdown-item">Depo Transferi</a>
+                        <a href="transfer-list.html" class="dropdown-item">Transfer Listesi</a>
+                        <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
+                        <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
+                        <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+            </ul>
+            <div class="navbar-user">
+                <span class="user-name">Ahmet Yılmaz</span>
+                <div class="user-avatar">AY</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="modern-container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title" id="pageTitle">Yeni Malzeme Talebi</h1>
+                <p class="page-subtitle" id="pageSubtitle">Talepler > Yeni Malzeme Talebi</p>
+            </div>
+            <div class="page-actions">
+                <span id="statusBadge" style="display: none;"></span>
+            </div>
+        </div>
+
+        <!-- View Mode Notice -->
+        <div class="alert alert-info" id="viewModeNotice" style="display: none;">
+            <strong>Görüntüleme Modu:</strong> Bu talep salt okunur modda görüntülenmektedir.
+            <span id="viewModeReason"></span>
+        </div>
+
+        <!-- Developer Notes - Main -->
+        <div class="dev-note info">
+            <h4>Ekran Bilgisi: 16 MR - Material Requests</h4>
+            <p><strong>URL Modes:</strong></p>
+            <ul>
+                <li><strong>?mode=create</strong> - Yeni talep oluşturma (default)</li>
+                <li><strong>?id=xxx&mode=edit</strong> - Talep düzenleme</li>
+                <li><strong>?id=xxx&mode=view</strong> - Talep görüntüleme (read-only)</li>
+            </ul>
+            <p><strong>Fonksiyonlar:</strong></p>
+            <ul>
+                <li>1) Malzeme Talebi Oluşturma (Create)</li>
+                <li>2) Talep Görüntüleme (View)</li>
+                <li>3) Talep Düzenleme (Edit - taslak durumundayken)</li>
+                <li>4) Haftalık talep yönetimi</li>
+                <li>5) Bütçe kontrolü ve rezervasyonu</li>
+                <li>6) Teslimat lokasyonu yönetimi (5 sabit + diğer)</li>
+            </ul>
+        </div>
+
+        <!-- Request Form Section -->
+        <div id="requestFormSection">
+            <!-- Request Header -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Talep Başlığı</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-row">
+                        <div class="form-group col-3">
+                            <label>Talep Numarası</label>
+                            <input type="text" class="form-control" id="requestNumber" value="MR-2025-001234" readonly>
+                            <small class="form-hint">Otomatik oluşturulur</small>
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Oluşturma Tarihi</label>
+                            <input type="datetime-local" class="form-control" id="creationDateTime" value="2025-12-15T09:30" readonly>
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Seçili Hafta Numarası <span class="required">*</span></label>
+                            <select class="form-control" id="weekNumber">
+                                <option value="">Seçiniz...</option>
+                                <option value="50">50. Hafta (9-15 Aralık)</option>
+                                <option value="51" selected>51. Hafta (16-22 Aralık)</option>
+                                <option value="52">52. Hafta (23-29 Aralık)</option>
+                                <option value="1">1. Hafta 2026 (30 Ara - 5 Oca)</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Haftanın İlk Günü</label>
+                            <input type="date" class="form-control" id="weekFirstDay" value="2025-12-16" readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-4">
+                            <label>Bölüm Lideri (SL)</label>
+                            <input type="text" class="form-control" id="slUser" value="Mehmet Yılmaz - Bakım Bölümü" readonly>
+                        </div>
+                        <div class="form-group col-4">
+                            <label>Oluşturan</label>
+                            <input type="text" class="form-control" id="createdBy" value="Ali Yıldız - Bakım Teknisyeni" readonly>
+                        </div>
+                        <div class="form-group col-4">
+                            <label>Talep Edilen Kişi</label>
+                            <input type="text" class="form-control" id="createdFor" value="Ali Yıldız" readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-4">
+                            <label>Talep Eden Departman <span class="required">*</span></label>
+                            <select class="form-control" id="requestingDepartment">
+                                <option value="">Seçiniz...</option>
+                                <option value="BAKIM" selected>Bakım - Mekanik</option>
+                                <option value="URETIM">Üretim</option>
+                                <option value="KALITE">Kalite</option>
+                                <option value="LOJISTIK">Lojistik</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-4">
+                            <label>Masraf Merkezi Kodu <span class="required">*</span></label>
+                            <select class="form-control" id="costCenterCode">
+                                <option value="">Seçiniz...</option>
+                                <option value="CC-001">CC-001</option>
+                                <option value="CC-002" selected>CC-002</option>
+                                <option value="CC-003">CC-003</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-4">
+                            <label>Masraf Merkezi Adı</label>
+                            <input type="text" class="form-control" id="costCenterTitle" value="Bakım Bölümü" readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Talep Açıklaması <span class="required">*</span></label>
+                        <textarea class="form-control" id="requestDescription" rows="2" placeholder="Talep sebebini ve detaylarını açıklayın...">Boyahane hattındaki konveyör sistemi için planlı bakım. Motor rulmanları değişimi ve yağ filtresi yenilenmesi gerekiyor.</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Toplam Euro Değeri</label>
+                        <input type="text" class="form-control" id="totalEuroValue" value="1.250,00 EUR" readonly>
+                        <small class="form-hint">Otomatik hesaplanır</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delivery Locations -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Teslimat Lokasyonları</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label>Teslimat Yerleri <span class="required">*</span></label>
+                        <div class="delivery-locations">
+                            <div class="delivery-location-item">
+                                <input type="checkbox" id="loc1" name="deliveryLocation" value="1">
+                                <label for="loc1">Lokasyon 1 - Ana Depo</label>
+                            </div>
+                            <div class="delivery-location-item">
+                                <input type="checkbox" id="loc2" name="deliveryLocation" value="2" checked>
+                                <label for="loc2">Lokasyon 2 - Boyahane</label>
+                            </div>
+                            <div class="delivery-location-item">
+                                <input type="checkbox" id="loc3" name="deliveryLocation" value="3">
+                                <label for="loc3">Lokasyon 3 - Montaj Hattı</label>
+                            </div>
+                            <div class="delivery-location-item">
+                                <input type="checkbox" id="loc4" name="deliveryLocation" value="4">
+                                <label for="loc4">Lokasyon 4 - Kalite Lab</label>
+                            </div>
+                            <div class="delivery-location-item">
+                                <input type="checkbox" id="loc5" name="deliveryLocation" value="5">
+                                <label for="loc5">Lokasyon 5 - Sevkiyat</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Diğer Lokasyon</label>
+                        <input type="text" class="form-control" id="otherLocation" placeholder="Farklı bir teslimat noktası belirtiniz...">
+                        <small class="form-hint">Yukarıdaki lokasyonlardan hiçbiri uygun değilse buraya yazınız</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Request Items -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Talep Edilen Malzemeler</h3>
+                    <div class="card-header-actions">
+                        <button class="btn btn-primary btn-sm" id="addMaterialBtn">+ Malzeme Ekle</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <table class="table" id="materialsTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th>Malzeme No <span class="required">*</span></th>
+                                <th>Malzeme Açıklaması</th>
+                                <th>Talep Miktarı <span class="required">*</span></th>
+                                <th>Birim</th>
+                                <th>Öncelik <span class="required">*</span></th>
+                                <th style="width: 80px;">İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control form-control-sm" value="01.00002-0001" readonly>
+                                        <button class="btn btn-sm btn-outline" title="Değiştir">🔄</button>
+                                    </div>
+                                </td>
+                                <td>Rulman 6205-2RS</td>
+                                <td><input type="number" class="form-control form-control-sm" value="5" min="1" style="width: 90px;"></td>
+                                <td>AD</td>
+                                <td>
+                                    <select class="form-control form-control-sm" style="width: 120px;">
+                                        <option value="low">Düşük</option>
+                                        <option value="normal" selected>Normal</option>
+                                        <option value="high">Yüksek</option>
+                                        <option value="critical">Kritik</option>
+                                    </select>
+                                </td>
+                                <td><button class="btn btn-sm btn-danger">Sil</button></td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control form-control-sm" value="01.00001-0001" readonly>
+                                        <button class="btn btn-sm btn-outline" title="Değiştir">🔄</button>
+                                    </div>
+                                </td>
+                                <td>Elektrik Motoru 5.5kW</td>
+                                <td><input type="number" class="form-control form-control-sm" value="2" min="1" style="width: 90px;"></td>
+                                <td>AD</td>
+                                <td>
+                                    <select class="form-control form-control-sm" style="width: 120px;">
+                                        <option value="low">Düşük</option>
+                                        <option value="normal">Normal</option>
+                                        <option value="high" selected>Yüksek</option>
+                                        <option value="critical">Kritik</option>
+                                    </select>
+                                </td>
+                                <td><button class="btn btn-sm btn-danger">Sil</button></td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control form-control-sm" value="01.00003-0001" readonly>
+                                        <button class="btn btn-sm btn-outline" title="Değiştir">🔄</button>
+                                    </div>
+                                </td>
+                                <td>Hidrolik Yağ ISO 46</td>
+                                <td><input type="number" class="form-control form-control-sm" value="20" min="1" style="width: 90px;"></td>
+                                <td>LT</td>
+                                <td>
+                                    <select class="form-control form-control-sm" style="width: 120px;">
+                                        <option value="low" selected>Düşük</option>
+                                        <option value="normal">Normal</option>
+                                        <option value="high">Yüksek</option>
+                                        <option value="critical">Kritik</option>
+                                    </select>
+                                </td>
+                                <td><button class="btn btn-sm btn-danger">Sil</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="dev-note info" style="margin-top: 15px;">
+                        <h4>Öncelik Seviyeleri</h4>
+                        <ul>
+                            <li><strong>Düşük:</strong> Rutin bakım, zamanlaması esnek</li>
+                            <li><strong>Normal:</strong> Planlı bakım, standart teslimat</li>
+                            <li><strong>Yüksek:</strong> Acil ihtiyaç, hızlı teslimat gerekli</li>
+                            <li><strong>Kritik:</strong> Üretim durmuş, anında teslimat</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="form-actions" style="margin-top: 20px;" id="actionButtons">
+            <button class="btn btn-primary btn-lg" id="saveBtn">Kaydet</button>
+            <button class="btn btn-outline" id="cancelBtn">İptal</button>
+        </div>
+
+        <!-- View Mode Action Buttons (hidden by default) -->
+        <div class="form-actions" style="margin-top: 20px; display: none;" id="viewActionButtons">
+            <button class="btn btn-outline" onclick="window.location.href='material-request-list.html'">İptal</button>
+        </div>
+
+        <!-- Developer Notes -->
+        <div class="dev-note success" style="margin-top: 20px;">
+            <h4>API ve Veritabanı İşlemleri</h4>
+            <p><strong>Talep Oluşturma:</strong> POST /api/material-requests</p>
+            <p><strong>Kayıt Sırası:</strong></p>
+            <ol>
+                <li><strong>MR_Request</strong> - Ana talep kaydı (tüm header bilgileri)</li>
+                <li><strong>MR_RequestItem</strong> - Her kalem için detay (material number, title, quantity, UOM, priority)</li>
+                <li><strong>MR_RequestDeliveryLocation</strong> - Teslimat lokasyonları (1-5 + other)</li>
+                <li><strong>MR_RequestApproval</strong> - Onay akışı kayıtları</li>
+            </ol>
+            <p><strong>Talep Görüntüleme:</strong> GET /api/material-requests/:id</p>
+            <p><strong>Talep Düzenleme:</strong> PUT /api/material-requests/:id (sadece draft/beklemede durumunda)</p>
+        </div>
+
+        <div class="dev-note warning">
+            <h4>Validasyon Kuralları</h4>
+            <ul>
+                <li>En az 1 malzeme seçilmeli</li>
+                <li>Talep miktarı > 0 olmalı</li>
+                <li>Hafta numarası seçilmeli</li>
+                <li>En az 1 teslimat lokasyonu seçilmeli (5 sabit lokasyondan veya "diğer")</li>
+                <li>Departman ve masraf merkezi zorunlu</li>
+                <li>Talep açıklaması minimum 10 karakter olmalı</li>
+                <li>Her malzeme için öncelik belirtilmeli (low/normal/high/critical)</li>
+            </ul>
+        </div>
+    </main>
+
+    <script>
+        // ======================================
+        // URL Mode Detection and Handling
+        // ======================================
+        const urlParams = new URLSearchParams(window.location.search);
+        const requestId = urlParams.get('id');
+        const mode = urlParams.get('mode') || 'create'; // 'create', 'view', or 'edit'
+
+        // Simulated request data (in real app, this would come from API)
+        const requestData = {
+            'MR-2025-001234': {
+                status: 'beklemede',
+                statusText: 'Onay Bekliyor',
+                editable: true,
+                requestNumber: 'MR-2025-001234'
+            },
+            'MR-2025-001233': {
+                status: 'onaylandi',
+                statusText: 'Onaylandı',
+                editable: false,
+                requestNumber: 'MR-2025-001233'
+            },
+            'MR-2025-001232': {
+                status: 'teslim',
+                statusText: 'Teslim Edildi',
+                editable: false,
+                requestNumber: 'MR-2025-001232'
+            },
+            'MR-2025-001231': {
+                status: 'reddedildi',
+                statusText: 'Reddedildi',
+                editable: false,
+                requestNumber: 'MR-2025-001231'
+            },
+            'MR-2025-001230': {
+                status: 'iptal',
+                statusText: 'İptal Edildi',
+                editable: false,
+                requestNumber: 'MR-2025-001230'
+            }
+        };
+
+        function updatePageTitle(mode, requestNo) {
+            const titleElement = document.getElementById('pageTitle');
+            const subtitleElement = document.getElementById('pageSubtitle');
+
+            if (mode === 'create') {
+                titleElement.textContent = 'Yeni Malzeme Talebi';
+                subtitleElement.textContent = 'Talepler > Yeni Malzeme Talebi';
+            } else if (mode === 'edit') {
+                titleElement.textContent = 'Malzeme Talebi Düzenle: ' + requestNo;
+                subtitleElement.textContent = 'Talepler > Talep Düzenle';
+            } else if (mode === 'view') {
+                titleElement.textContent = 'Malzeme Talebi Detay: ' + requestNo;
+                subtitleElement.textContent = 'Talepler > Talep Detay';
+            }
+        }
+
+        function enableViewMode(status, statusText) {
+            // Show status badge
+            const badge = document.getElementById('statusBadge');
+            badge.style.display = 'inline-block';
+            badge.className = 'status-badge ' + status;
+            badge.textContent = statusText;
+            badge.style.padding = '8px 16px';
+            badge.style.marginRight = '10px';
+
+            // Show view mode notice
+            const notice = document.getElementById('viewModeNotice');
+            notice.style.display = 'block';
+
+            let reasonText = '';
+            if (status === 'onaylandi') reasonText = 'Talep onaylanmış durumda.';
+            else if (status === 'teslim') reasonText = 'Talep teslim edilmiş durumda.';
+            else if (status === 'reddedildi') reasonText = 'Talep reddedilmiş durumda.';
+            else if (status === 'beklemede') reasonText = 'Talep onay sürecinde.';
+            else if (status === 'iptal') reasonText = 'Talep iptal edilmiş.';
+            document.getElementById('viewModeReason').textContent = reasonText;
+
+            // Disable all form inputs
+            document.querySelectorAll('input, select, textarea').forEach(el => {
+                el.disabled = true;
+                if (el.type !== 'checkbox') {
+                    el.style.backgroundColor = '#f5f5f5';
+                }
+            });
+
+            // Disable checkboxes
+            document.querySelectorAll('input[type="checkbox"]').forEach(el => {
+                el.disabled = true;
+            });
+
+            // Hide edit action buttons, show view buttons
+            document.getElementById('actionButtons').style.display = 'none';
+            document.getElementById('viewActionButtons').style.display = 'block';
+
+            // Hide add/delete/change buttons
+            document.getElementById('addMaterialBtn').style.display = 'none';
+            document.querySelectorAll('#materialsTable .btn-danger, #materialsTable .btn-outline').forEach(btn => {
+                btn.style.display = 'none';
+            });
+        }
+
+        // Initialize page based on mode
+        if (mode === 'create') {
+            // New request creation mode
+            updatePageTitle('create', '');
+        } else if (requestId && requestData[requestId]) {
+            const data = requestData[requestId];
+
+            // Update page title
+            updatePageTitle(mode, requestId);
+
+            // Update request number display
+            document.getElementById('requestNumber').value = requestId;
+
+            // Load request data (in real app, this would be an API call)
+            // For now, we're just using the hardcoded data
+
+            if (mode === 'view') {
+                // View mode - read-only
+                enableViewMode(data.status, data.statusText);
+            } else if (mode === 'edit') {
+                // Edit mode
+                if (!data.editable) {
+                    // If not editable, switch to view mode
+                    alert('Bu talep düzenlenemez. Görüntüleme moduna geçiliyor.');
+                    enableViewMode(data.status, data.statusText);
+                    updatePageTitle('view', requestId);
+                } else {
+                    // Show status badge in edit mode
+                    const badge = document.getElementById('statusBadge');
+                    badge.style.display = 'inline-block';
+                    badge.className = 'status-badge ' + data.status;
+                    badge.textContent = data.statusText;
+                    badge.style.padding = '8px 16px';
+                    badge.style.marginRight = '10px';
+                }
+            }
+        }
+
+        // Week number change updates first day
+        document.getElementById('weekNumber').addEventListener('change', function() {
+            const weekMapping = {
+                '50': '2025-12-09',
+                '51': '2025-12-16',
+                '52': '2025-12-23',
+                '1': '2025-12-30'
+            };
+            document.getElementById('weekFirstDay').value = weekMapping[this.value] || '';
+        });
+
+        // Cost center change updates title
+        document.getElementById('costCenterCode').addEventListener('change', function() {
+            const titleMapping = {
+                'CC-001': 'Üretim Bölümü',
+                'CC-002': 'Bakım Bölümü',
+                'CC-003': 'Kalite Bölümü'
+            };
+            document.getElementById('costCenterTitle').value = titleMapping[this.value] || '';
+        });
+
+        // Add material button
+        document.getElementById('addMaterialBtn').addEventListener('click', function() {
+            alert('Malzeme arama modalı açılacak\n\nMalzeme listesinden seçim yapabilirsiniz.');
+        });
+
+        // Save button
+        document.getElementById('saveBtn').addEventListener('click', function() {
+            const requestNo = document.getElementById('requestNumber').value;
+            const weekNum = document.getElementById('weekNumber').value;
+            const description = document.getElementById('requestDescription').value;
+
+            // Validation
+            if (!weekNum) {
+                alert('Lütfen hafta numarası seçiniz!');
+                return;
+            }
+            if (!description || description.length < 10) {
+                alert('Talep açıklaması en az 10 karakter olmalıdır!');
+                return;
+            }
+
+            // Check delivery locations
+            const checkedLocations = document.querySelectorAll('input[name="deliveryLocation"]:checked').length;
+            const otherLocation = document.getElementById('otherLocation').value;
+            if (checkedLocations === 0 && !otherLocation) {
+                alert('En az bir teslimat lokasyonu seçmelisiniz!');
+                return;
+            }
+
+            // Check materials table
+            const materialRows = document.querySelectorAll('#materialsTable tbody tr').length;
+            if (materialRows === 0) {
+                alert('En az bir malzeme eklemelisiniz!');
+                return;
+            }
+
+            let actionText = mode === 'create' ? 'oluşturulacak' : 'güncellenecek';
+            let confirmText = mode === 'create' ? 'Malzeme Talebi oluşturulacak!' : 'Malzeme Talebi güncellenecek!';
+
+            if (confirm(confirmText + '\n\nTalep No: ' + requestNo + '\nHafta: ' + weekNum + '\n\nDevam etmek istiyor musunuz?')) {
+                alert('Talep başarıyla kaydedildi!\n\nTalep No: ' + requestNo);
+                window.location.href = 'material-request-list.html';
+            }
+        });
+
+        // Cancel button
+        document.getElementById('cancelBtn').addEventListener('click', function() {
+            if (confirm('İptal etmek istediğinizden emin misiniz?\n\nKaydedilmemiş değişiklikler kaybolacak.')) {
+                window.location.href = 'material-request-list.html';
+            }
+        });
+
+        // Delete row buttons
+        document.querySelectorAll('#materialsTable tbody .btn-danger').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                const row = this.closest('tr');
+                const materialNo = row.querySelector('input').value;
+                const materialDesc = row.cells[2].textContent;
+
+                if (confirm('Kalem silinecek:\n\n' + materialNo + ' - ' + materialDesc + '\n\nDevam etmek istiyor musunuz?')) {
+                    row.style.transition = 'opacity 0.3s';
+                    row.style.opacity = '0';
+                    setTimeout(function() {
+                        row.remove();
+                        alert('Kalem silindi');
+                    }, 300);
+                }
+            });
+        });
+
+        // Change material buttons
+        document.querySelectorAll('#materialsTable tbody .btn-outline').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                alert('Malzeme değiştirme modalı açılacak\n\nFarklı bir malzeme seçebilirsiniz.');
+            });
+        });
+    </script>
+</body>
+</html>

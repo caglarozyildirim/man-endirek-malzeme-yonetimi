@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Numara Serisi Yonetimi - IMMA</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        /* Filter Section */
+        .filter-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        .filter-group {
+            flex: 1;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* List Header Actions */
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .list-header h3 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">M</div>
+                <div class="brand-text">
+                    <span class="brand-name">IMMA</span>
+                    <span class="brand-subtitle">Endirek Malzeme Yonetimi</span>
+                </div>
+            </a>
+            <ul class="navbar-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="material-list.html" class="nav-link active">
+                        <span class="nav-icon">📦</span>
+                        Ana Veriler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-list.html" class="dropdown-item">Malzeme Listesi</a>
+                        <a href="supplier-list.html" class="dropdown-item">Tedarikçi Listesi</a>
+                        <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
+                        <a href="number-series.html" class="dropdown-item active">Numara Serileri</a>
+                        <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="mrp.html" class="nav-link">
+                        <span class="nav-icon">📈</span>
+                        MRP
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="srm-list.html" class="nav-link">
+                        <span class="nav-icon">🛒</span>
+                        Satınalma
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="srm-list.html" class="dropdown-item">Talep Listesi</a>
+                        <a href="goods-receipt.html" class="dropdown-item">Mal Kabul</a>
+                        <a href="po-list.html" class="dropdown-item">Satınalma Siparişleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="budget-management.html" class="nav-link">
+                        <span class="nav-icon">💰</span>
+                        Bütçe
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="budget-management.html" class="dropdown-item">Bütçe Yönetimi</a>
+                        <a href="budget-preference.html" class="dropdown-item">Bütçe Tercihleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="material-request-list.html" class="nav-link">
+                        <span class="nav-icon">📋</span>
+                        Talepler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-request-list.html" class="dropdown-item">Talep Listesi</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="transfer-list.html" class="nav-link">
+                        <span class="nav-icon">🏭</span>
+                        Stok
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
+                        <a href="warehouse-transfer.html" class="dropdown-item">Depo Transferi</a>
+                        <a href="transfer-list.html" class="dropdown-item">Transfer Listesi</a>
+                        <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
+                        <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
+                        <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+            </ul>
+            <div class="navbar-user">
+                <span class="user-name">Ahmet Yilmaz</span>
+                <div class="user-avatar">AY</div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="modern-container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Numara Serisi Yonetimi</h1>
+                <p class="page-subtitle">Ana Veriler > Numara Serisi Yonetimi</p>
+            </div>
+        </div>
+
+        <div class="dev-note info">
+            <h4>Dev Note: 5 MNS - Maintain Number Series</h4>
+            <p><strong>Maximo Pattern Implementation:</strong></p>
+            <ul>
+                <li>Filter Section with search capabilities</li>
+                <li>List table with View/Edit/Activate-Deactivate actions</li>
+                <li>"Yeni Seri Ekle" button opens modal for create/edit operations</li>
+                <li>Fields: Material Serial Id, Material Serial (code), Material Serial Title, Creation datetime, Created by user info, Last created material number, Inactivation status/user/datetime</li>
+            </ul>
+        </div>
+
+        <!-- FILTER SECTION -->
+        <div class="filter-section">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="filterSerialCode">Seri Kodu</label>
+                    <input type="text" id="filterSerialCode" class="form-control" placeholder="Ornek: MK, EL">
+                </div>
+                <div class="filter-group">
+                    <label for="filterSerialTitle">Seri Adi</label>
+                    <input type="text" id="filterSerialTitle" class="form-control" placeholder="Ornek: Mekanik">
+                </div>
+                <div class="filter-group">
+                    <label for="filterStatus">Durum</label>
+                    <select id="filterStatus" class="form-control">
+                        <option value="">Tumu</option>
+                        <option value="active">Aktif</option>
+                        <option value="inactive">Pasif</option>
+                    </select>
+                </div>
+                <div class="filter-actions">
+                    <button type="button" class="btn btn-primary" onclick="applyFilters()">Filtrele</button>
+                    <button type="button" class="btn btn-outline" onclick="clearFilters()">Temizle</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- LIST SECTION -->
+        <div class="card">
+            <div class="card-header">
+                <div class="list-header">
+                    <h3>Numara Serisi Listesi</h3>
+                    <a href="number-series-detail.html?mode=create" class="btn btn-primary">Yeni Seri Ekle</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <table class="table table-hover" id="numberSeriesTable">
+                    <thead>
+                        <tr>
+                            <th>Sira</th>
+                            <th>Seri ID</th>
+                            <th>Seri Kodu</th>
+                            <th>Seri Adi</th>
+                            <th>Son Olusturulan No</th>
+                            <th>Olusturma Tarihi</th>
+                            <th>Olusturan</th>
+                            <th>Durum</th>
+                            <th>Islemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr data-id="SER-00001" data-serial="MK" data-title="Mekanik Parca" data-status="active">
+                            <td>1</td>
+                            <td>SER-00001</td>
+                            <td>MK</td>
+                            <td>Mekanik Parca</td>
+                            <td>MK-00847</td>
+                            <td>05.01.2025 09:15</td>
+                            <td>Ali Kaya</td>
+                            <td><span class="status-badge status-active">Aktif</span></td>
+                            <td>
+                                <a href="number-series-detail.html?mode=view&id=SER-00001" class="btn btn-sm btn-info">Goruntule</a>
+                                <a href="number-series-detail.html?mode=edit&id=SER-00001" class="btn btn-sm btn-primary">Duzenle</a>
+                            </td>
+                        </tr>
+                        <tr data-id="SER-00002" data-serial="EL" data-title="Elektrik Malzemesi" data-status="active">
+                            <td>2</td>
+                            <td>SER-00002</td>
+                            <td>EL</td>
+                            <td>Elektrik Malzemesi</td>
+                            <td>EL-00523</td>
+                            <td>08.01.2025 14:30</td>
+                            <td>Mehmet Demir</td>
+                            <td><span class="status-badge status-active">Aktif</span></td>
+                            <td>
+                                <a href="number-series-detail.html?mode=view&id=SER-00002" class="btn btn-sm btn-info">Goruntule</a>
+                                <a href="number-series-detail.html?mode=edit&id=SER-00002" class="btn btn-sm btn-primary">Duzenle</a>
+                            </td>
+                        </tr>
+                        <tr data-id="SER-00003" data-serial="HY" data-title="Hidrolik Parca" data-status="active">
+                            <td>3</td>
+                            <td>SER-00003</td>
+                            <td>HY</td>
+                            <td>Hidrolik Parca</td>
+                            <td>HY-00156</td>
+                            <td>10.01.2025 11:20</td>
+                            <td>Ayse Yildirim</td>
+                            <td><span class="status-badge status-active">Aktif</span></td>
+                            <td>
+                                <a href="number-series-detail.html?mode=view&id=SER-00003" class="btn btn-sm btn-info">Goruntule</a>
+                                <a href="number-series-detail.html?mode=edit&id=SER-00003" class="btn btn-sm btn-primary">Duzenle</a>
+                            </td>
+                        </tr>
+                        <tr data-id="SER-00004" data-serial="PN" data-title="Pnomatik Parca" data-status="active">
+                            <td>4</td>
+                            <td>SER-00004</td>
+                            <td>PN</td>
+                            <td>Pnomatik Parca</td>
+                            <td>PN-00089</td>
+                            <td>12.01.2025 16:45</td>
+                            <td>Fatma Ozturk</td>
+                            <td><span class="status-badge status-active">Aktif</span></td>
+                            <td>
+                                <a href="number-series-detail.html?mode=view&id=SER-00004" class="btn btn-sm btn-info">Goruntule</a>
+                                <a href="number-series-detail.html?mode=edit&id=SER-00004" class="btn btn-sm btn-primary">Duzenle</a>
+                            </td>
+                        </tr>
+                        <tr data-id="SER-00005" data-serial="SH" data-title="Sarf Malzemesi" data-status="active">
+                            <td>5</td>
+                            <td>SER-00005</td>
+                            <td>SH</td>
+                            <td>Sarf Malzemesi</td>
+                            <td>SH-01245</td>
+                            <td>13.01.2025 10:00</td>
+                            <td>Hasan Can</td>
+                            <td><span class="status-badge status-active">Aktif</span></td>
+                            <td>
+                                <a href="number-series-detail.html?mode=view&id=SER-00005" class="btn btn-sm btn-info">Goruntule</a>
+                                <a href="number-series-detail.html?mode=edit&id=SER-00005" class="btn btn-sm btn-primary">Duzenle</a>
+                            </td>
+                        </tr>
+                        <tr data-id="SER-00006" data-serial="YD" data-title="Yedek Parca (Eski)" data-status="inactive">
+                            <td>6</td>
+                            <td>SER-00006</td>
+                            <td>YD</td>
+                            <td>Yedek Parca (Eski)</td>
+                            <td>YD-00034</td>
+                            <td>02.01.2025 08:30</td>
+                            <td>Can Arslan</td>
+                            <td><span class="status-badge status-pending">Pasif</span></td>
+                            <td>
+                                <a href="number-series-detail.html?mode=view&id=SER-00006" class="btn btn-sm btn-info">Goruntule</a>
+                                <a href="number-series-detail.html?mode=edit&id=SER-00006" class="btn btn-sm btn-primary">Duzenle</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Filter Functions
+        function applyFilters() {
+            const codeFilter = document.getElementById('filterSerialCode').value.toLowerCase();
+            const titleFilter = document.getElementById('filterSerialTitle').value.toLowerCase();
+            const statusFilter = document.getElementById('filterStatus').value;
+
+            const rows = document.querySelectorAll('#numberSeriesTable tbody tr');
+
+            rows.forEach(row => {
+                const code = row.dataset.serial.toLowerCase();
+                const title = row.dataset.title.toLowerCase();
+                const status = row.dataset.status;
+
+                const codeMatch = !codeFilter || code.includes(codeFilter);
+                const titleMatch = !titleFilter || title.includes(titleFilter);
+                const statusMatch = !statusFilter || status === statusFilter;
+
+                if (codeMatch && titleMatch && statusMatch) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        function clearFilters() {
+            document.getElementById('filterSerialCode').value = '';
+            document.getElementById('filterSerialTitle').value = '';
+            document.getElementById('filterStatus').value = '';
+
+            const rows = document.querySelectorAll('#numberSeriesTable tbody tr');
+            rows.forEach(row => row.style.display = '');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MRP Parametreleri - IMMA</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">M</div>
+                <div class="brand-text">
+                    <span class="brand-name">IMMA</span>
+                    <span class="brand-subtitle">Endirek Malzeme Yonetimi</span>
+                </div>
+            </a>
+            <ul class="navbar-menu">
+                <li class="nav-item"><a href="index.html" class="nav-link"><span class="nav-icon">📊</span>Dashboard</a></li>
+                <li class="nav-item">
+                    <a href="mrp.html" class="nav-link active"><span class="nav-icon">📈</span>MRP</a>
+                </li>
+            </ul>
+            <div class="navbar-user">
+                <span class="user-name">Ahmet Yilmaz</span>
+                <div class="user-avatar">AY</div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="modern-container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title" id="pageTitle">MRP Parametreleri</h1>
+                <p class="page-subtitle">MRP > <span id="breadcrumbAction">Goruntule</span></p>
+            </div>
+            <div class="page-actions">
+                <a href="mrp.html" class="btn btn-outline">← Listeye Don</a>
+                <button class="btn btn-primary" id="editModeBtn" style="display: none;">Duzenle</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Malzeme Bilgileri</h3>
+            </div>
+            <div class="card-body">
+                <form id="mrpForm">
+                    <div class="form-row">
+                        <div class="form-group col-4">
+                            <label>Malzeme No</label>
+                            <input type="text" id="materialNumber" class="form-control" readonly>
+                        </div>
+                        <div class="form-group col-8">
+                            <label>Malzeme Adi</label>
+                            <input type="text" id="materialTitle" class="form-control" readonly>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-3">
+                            <label>Birim</label>
+                            <input type="text" id="unit" class="form-control" readonly>
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Mevcut Stok</label>
+                            <input type="number" id="currentStock" class="form-control" readonly>
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Acik PO Toplami</label>
+                            <input type="number" id="openPo" class="form-control" readonly>
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Acik SRM Toplami</label>
+                            <input type="number" id="openSrm" class="form-control" readonly>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 20px;">
+            <div class="card-header">
+                <h3>MRP Parametreleri</h3>
+            </div>
+            <div class="card-body">
+                <form id="mrpParamsForm">
+                    <div class="form-row">
+                        <div class="form-group col-3">
+                            <label>Siparis Noktasi Miktari <span class="required">*</span></label>
+                            <input type="number" id="reorderPoint" class="form-control" required>
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Maksimum Stok Miktari <span class="required">*</span></label>
+                            <input type="number" id="maxStock" class="form-control" required>
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Siparis Parti Miktari <span class="required">*</span></label>
+                            <input type="number" id="orderBatch" class="form-control" required>
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Guvenlik Stogu Miktari <span class="required">*</span></label>
+                            <input type="number" id="safetyStock" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-12">
+                            <label>Onerilen Siparis Miktari (Hesaplanan)</label>
+                            <input type="number" id="suggestedQty" class="form-control" readonly style="font-weight: bold; font-size: 20px; color: #28a745; background-color: #e8f5e9;">
+                        </div>
+                    </div>
+
+                    <div class="dev-note info" style="margin-top: 15px;">
+                        <p><strong>Hesaplama:</strong> Suggested Qty = ROUNDUP((Max Stock - Current Stock - Open PO - Open SRM + Safety Stock) / Order Batch) * Order Batch</p>
+                    </div>
+
+                    <div class="form-actions" style="margin-top: 30px;" id="formActions">
+                        <a href="mrp.html" class="btn btn-outline">Iptal</a>
+                        <button type="submit" class="btn btn-primary">Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <style>
+        .required { color: #dc3545; font-weight: bold; }
+        .form-control[readonly] { background-color: #f5f5f5; }
+        .form-control:disabled { background-color: #f5f5f5; cursor: not-allowed; }
+    </style>
+
+    <script>
+        const mrpData = {
+            '1': { id: '1', materialNumber: '01.00001-0001', materialTitle: 'Elektrik Motoru 5.5kW', unit: 'AD', currentStock: 2, openPo: 0, openSrm: 0, reorderPoint: 5, maxStock: 20, orderBatch: 10, safetyStock: 3 },
+            '2': { id: '2', materialNumber: '02.00003-0001', materialTitle: 'Pnomatik Silindir 100x200', unit: 'AD', currentStock: 3, openPo: 0, openSrm: 0, reorderPoint: 3, maxStock: 15, orderBatch: 5, safetyStock: 2 },
+            '3': { id: '3', materialNumber: '01.00002-0001', materialTitle: 'Rulman 6205-2RS', unit: 'AD', currentStock: 45, openPo: 50, openSrm: 0, reorderPoint: 50, maxStock: 200, orderBatch: 100, safetyStock: 20 }
+        };
+
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return { mode: params.get('mode') || 'view', id: params.get('id') || null };
+        }
+
+        function calculateSuggestedQty() {
+            const maxStock = parseInt(document.getElementById('maxStock').value) || 0;
+            const currentStock = parseInt(document.getElementById('currentStock').value) || 0;
+            const openPo = parseInt(document.getElementById('openPo').value) || 0;
+            const openSrm = parseInt(document.getElementById('openSrm').value) || 0;
+            const safetyStock = parseInt(document.getElementById('safetyStock').value) || 0;
+            const orderBatch = parseInt(document.getElementById('orderBatch').value) || 1;
+
+            const needed = maxStock - currentStock - openPo - openSrm + safetyStock;
+            const suggestedQty = Math.ceil(needed / orderBatch) * orderBatch;
+            document.getElementById('suggestedQty').value = Math.max(0, suggestedQty);
+        }
+
+        function initializePage() {
+            const { mode, id } = getUrlParams();
+            const formElements = document.querySelectorAll('#mrpParamsForm input:not([readonly])');
+
+            switch(mode) {
+                case 'view':
+                    document.getElementById('pageTitle').textContent = 'MRP Parametreleri Goruntule';
+                    document.getElementById('breadcrumbAction').textContent = 'Goruntule';
+                    document.getElementById('editModeBtn').style.display = 'inline-block';
+                    document.getElementById('formActions').style.display = 'none';
+                    formElements.forEach(el => el.disabled = true);
+                    document.getElementById('editModeBtn').addEventListener('click', function() {
+                        window.location.href = `mrp-detail.html?mode=edit&id=${id}`;
+                    });
+                    if (id && mrpData[id]) loadData(mrpData[id]);
+                    break;
+                case 'edit':
+                    document.getElementById('pageTitle').textContent = 'MRP Parametreleri Duzenle';
+                    document.getElementById('breadcrumbAction').textContent = 'Duzenle';
+                    document.getElementById('editModeBtn').style.display = 'none';
+                    document.getElementById('formActions').style.display = 'flex';
+                    formElements.forEach(el => el.disabled = false);
+                    if (id && mrpData[id]) loadData(mrpData[id]);
+
+                    // Add event listeners for recalculation
+                    ['maxStock', 'orderBatch', 'safetyStock'].forEach(id => {
+                        document.getElementById(id).addEventListener('input', calculateSuggestedQty);
+                    });
+                    break;
+            }
+        }
+
+        function loadData(data) {
+            document.getElementById('materialNumber').value = data.materialNumber;
+            document.getElementById('materialTitle').value = data.materialTitle;
+            document.getElementById('unit').value = data.unit;
+            document.getElementById('currentStock').value = data.currentStock;
+            document.getElementById('openPo').value = data.openPo;
+            document.getElementById('openSrm').value = data.openSrm;
+            document.getElementById('reorderPoint').value = data.reorderPoint;
+            document.getElementById('maxStock').value = data.maxStock;
+            document.getElementById('orderBatch').value = data.orderBatch;
+            document.getElementById('safetyStock').value = data.safetyStock;
+            calculateSuggestedQty();
+        }
+
+        document.getElementById('mrpParamsForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('MRP parametreleri guncellendi!\n\n(Backend entegrasyonu ile calisacak)');
+            window.location.href = 'mrp.html';
+        });
+
+        document.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+</body>
+</html>
