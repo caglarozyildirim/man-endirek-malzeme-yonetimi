@@ -492,17 +492,24 @@ LIST FEATURES:
             <div class="dev-docs-body">
                 <div class="dev-docs-tabs">
                     <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('screenFields')">Ekran Alanları</button>
                     <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
                 </div>
                 <div id="dataStructure" class="dev-tab-content active">
-                    <h3>Storage Type Tablosu</h3>
+                    <h3>Storage Type Tablosu (Database)</h3>
                     <table class="dev-table"><thead><tr><th>Field Name</th><th>Type</th><th>Length</th><th>Description</th></tr></thead>
                         <tbody>
                             <tr><td>Storage type Id</td><td>int</td><td>-</td><td>Primary key</td></tr>
                             <tr><td>Storage type</td><td>char</td><td>1</td><td>1:Storage, 2:Location, 3:Bin</td></tr>
                             <tr><td>Storage Code</td><td>text</td><td>12</td><td>Depo/Lokasyon/Bin kodu</td></tr>
                             <tr><td>Storage Title</td><td>text</td><td>16</td><td>Başlık/açıklama</td></tr>
+                            <tr><td>Created By user info</td><td>int</td><td>8</td><td>Oluşturan kullanıcı</td></tr>
+                            <tr><td>Creation date time</td><td>datetime</td><td>-</td><td>Oluşturma tarihi</td></tr>
                             <tr><td>Inactivation check box</td><td>bool</td><td>-</td><td>İnaktif mi?</td></tr>
+                            <tr><td>Inactivation date time</td><td>datetime</td><td>-</td><td>İnaktivasyon tarihi</td></tr>
+                            <tr><td>Inactivated by user info</td><td>int</td><td>8</td><td>İnaktif eden kullanıcı</td></tr>
+                            <tr><td>Related Location Code</td><td>text</td><td>12</td><td>Bağlı lokasyon kodu</td></tr>
+                            <tr><td>Default sub storage type code</td><td>text</td><td>12</td><td>Varsayılan alt depo</td></tr>
                         </tbody>
                     </table>
                     <h3>Storage Type Değerleri</h3>
@@ -514,13 +521,51 @@ LIST FEATURES:
                         </tbody>
                     </table>
                 </div>
+                <div id="screenFields" class="dev-tab-content">
+                    <h3>Filtre Alanları</h3>
+                    <table class="dev-table"><thead><tr><th>Alan Adı</th><th>HTML ID</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Storage Code</td><td>filterStorageCode</td><td>text</td><td>Depo kodu ile arama</td></tr>
+                            <tr><td>Storage Name</td><td>filterStorageName</td><td>text</td><td>Depo adı ile arama</td></tr>
+                            <tr><td>Storage Type</td><td>filterStorageType</td><td>select</td><td>1:Storage, 2:Location, 3:Bin</td></tr>
+                            <tr><td>Status</td><td>filterStatus</td><td>select</td><td>1:Active, 0:Inactive</td></tr>
+                            <tr><td>Location Count (Min)</td><td>filterMinLocation</td><td>number</td><td>Min. lokasyon sayısı filtresi</td></tr>
+                            <tr><td>Location Count (Max)</td><td>filterMaxLocation</td><td>number</td><td>Max. lokasyon sayısı filtresi</td></tr>
+                            <tr><td>Minimum bin count</td><td>filterMinShelf</td><td>number</td><td>Min. bin/raf sayısı filtresi</td></tr>
+                            <tr><td>Maximum bin count</td><td>filterMaxShelf</td><td>number</td><td>Max. bin/raf sayısı filtresi</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Tablo Kolonları</h3>
+                    <table class="dev-table"><thead><tr><th>Kolon</th><th>Veri Kaynağı</th><th>Hesaplama</th></tr></thead>
+                        <tbody>
+                            <tr><td>#</td><td>Sıra no</td><td>UI index</td></tr>
+                            <tr><td>Storage ID</td><td>Storage type Id</td><td>Database</td></tr>
+                            <tr><td>Storage Type</td><td>Storage type + Title</td><td>Lookup</td></tr>
+                            <tr><td>Storage Code</td><td>Storage Code</td><td>Database</td></tr>
+                            <tr><td>Storage Name</td><td>Storage Title</td><td>Database</td></tr>
+                            <tr><td style="color:#f0ad4e;"><strong>Location Count</strong></td><td>COUNT(Location)</td><td style="color:#f0ad4e;"><strong>HESAPLANAN</strong>: Bu depoya bağlı lokasyon sayısı</td></tr>
+                            <tr><td style="color:#f0ad4e;"><strong>Bin count</strong></td><td>COUNT(Bin)</td><td style="color:#f0ad4e;"><strong>HESAPLANAN</strong>: Bu depoya/lokasyona bağlı bin sayısı</td></tr>
+                            <tr><td>Status</td><td>Inactivation check</td><td>Active/Inactive badge</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="rules-section" style="margin-top:15px;background:#3d2d44;">
+                        <h4 style="color:#f0ad4e;">Hesaplanan Alanlar Notu</h4>
+                        <ul>
+                            <li><strong>Location Count</strong>: Bu Storage kaydı için alt lokasyon sayısı (Related Location Code ile eşleşen kayıt sayısı)</li>
+                            <li><strong>Bin count</strong>: Bu Storage/Location için alt bin sayısı</li>
+                            <li>Bu değerler database'de saklanmaz, sorgu anında COUNT ile hesaplanır</li>
+                        </ul>
+                    </div>
+                </div>
                 <div id="businessRules" class="dev-tab-content">
                     <h3>Liste Özellikleri</h3>
                     <div class="rules-section">
                         <ul>
                             <li>Filtreleme: Storage Code, Storage Name, Storage Type, Status</li>
-                            <li>Sıralama: Storage Code, Title</li>
+                            <li>Ek filtreler: Location Count (Min/Max), Bin count (Min/Max)</li>
+                            <li>Sıralama: Storage Code, Title, Location Count, Bin count</li>
                             <li>Detay linki: storage-type.html?id=&mode=view</li>
+                            <li>Düzenleme linki: storage-type.html?id=&mode=edit</li>
                         </ul>
                     </div>
                     <h3>Hiyerarşi</h3>
@@ -529,6 +574,15 @@ LIST FEATURES:
                             <li><strong>Storage → Location → Bin</strong> (3 seviyeli)</li>
                             <li>İnaktif depodan malzeme <strong>ÇIKARILABİLİR</strong></li>
                             <li>İnaktif depoya malzeme <strong>KONULAMAZ</strong></li>
+                            <li>İlk oluşturulan Location otomatik default olur</li>
+                            <li>İlk oluşturulan Bin otomatik default olur</li>
+                        </ul>
+                    </div>
+                    <h3>Varsayılan Filtre</h3>
+                    <div class="rules-section">
+                        <ul>
+                            <li>Sayfa açıldığında Status = Active seçili gelir</li>
+                            <li>Diğer filtreler boş/Tümü</li>
                         </ul>
                     </div>
                 </div>
