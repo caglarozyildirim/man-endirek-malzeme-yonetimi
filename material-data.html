@@ -83,8 +83,338 @@
             font-size: 12px;
             color: var(--text-light);
         }
+        /* Upload Modal Styles */
+        .upload-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .upload-modal-overlay.active {
+            display: flex;
+        }
+        .upload-modal-content {
+            background: #fff;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+        .upload-modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .upload-modal-header h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+        }
+        .upload-modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+        .upload-modal-body {
+            padding: 20px;
+        }
+        .upload-drop-zone {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 15px;
+        }
+        .upload-drop-zone:hover,
+        .upload-drop-zone.dragover {
+            border-color: var(--primary, #e40045);
+            background: rgba(228, 0, 69, 0.05);
+        }
+        .upload-drop-zone .upload-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        .upload-drop-zone p {
+            margin: 5px 0;
+            color: #666;
+        }
+        .upload-drop-zone .formats {
+            font-size: 12px;
+            color: #999;
+        }
+        .upload-file-input {
+            display: none;
+        }
+        .upload-preview {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+        .upload-preview.has-file {
+            display: block;
+        }
+        .upload-preview-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .upload-preview-icon {
+            font-size: 24px;
+        }
+        .upload-preview-info {
+            flex: 1;
+        }
+        .upload-preview-name {
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .upload-preview-size {
+            font-size: 12px;
+            color: #666;
+        }
+        .upload-preview-remove {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        .upload-modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .upload-modal-footer .btn-cancel {
+            padding: 10px 20px;
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .upload-modal-footer .btn-upload {
+            padding: 10px 20px;
+            background: var(--primary, #e40045);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .upload-modal-footer .btn-upload:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
     </style>
 </head>
+<!--
+================================================================================
+IMMA DEVELOPER DOCUMENTATION
+================================================================================
+
+SCREEN: 1 MDM - Material Data Maintenance
+FILE: material-data.html
+LAST UPDATED: 2025-12-18
+
+--------------------------------------------------------------------------------
+RELATED DATABASE TABLES
+--------------------------------------------------------------------------------
+
+TABLE: Material
+| Field Name                              | Type     | Length | Description                          |
+|-----------------------------------------|----------|--------|--------------------------------------|
+| id                                      | int      | 8      | Primary key                          |
+| Material number                         | text     | 13     | Format: ##.#####-#### veya prefix    |
+| Old material number                     | text     | 13     | Eski sistem (Maximo) numarası        |
+| Title                                   | text     | 128    | Malzeme başlığı (taleplerde görünür) |
+| Description                             | text     | 512    | Detaylı açıklama (sadece key user)   |
+| Unit of measure code                    | text     | 4      | Ölçü birimi kodu (AD, M, KG, LT...)  |
+| Material Status code                    | char     | 1      | 1-5 arası değer (aşağıya bakınız)    |
+| Blocking Reason                         | text     | 128    | Status=2 için ZORUNLU                |
+| Blocking Reevaluation date              | datetime | -      | Bloklama yeniden değ. tarihi         |
+| Reordering quantity                     | float    | 15     | Yeniden sipariş miktarı              |
+| Safety stock quantity                   | float    | 15     | Güvenlik stoğu                       |
+| Default Storage                         | text     | 8      | Varsayılan depo kodu                 |
+| Default Location                        | text     | 8      | Varsayılan lokasyon kodu             |
+| Default Bin                             | text     | 8      | Varsayılan bin kodu                  |
+| Reordering point quantity               | float    | 15     | MRP tetikleme seviyesi               |
+| Notes                                   | text     | 512    | Sadece yetkili kullanıcılar görür    |
+| Created by user info                    | int      | 8      | Oluşturan kullanıcı ID               |
+| Accounting Number                       | int      | 8      | SAP muhasebe hesap kodu              |
+| Purchased Packing Material              | bool     | -      | İade edilebilir ambalaj mı?          |
+| Alternative material 1                  | text     | 13     | Alternatif malzeme 1 numarası        |
+| Alternative material 2                  | text     | 13     | Alternatif malzeme 2 numarası        |
+| Material Group Code                     | text     | 8      | Raporlama için grup kodu             |
+| Order batch quantity                    | float    | 15     | Sipariş parti miktarı                |
+| Unit quantity in a package              | float    | 15     | Paket içi birim (etiket hesabı)      |
+| Document group Id                       | int      | 8      | Doküman grubu referansı              |
+| Accounting actions required             | bool     | -      | Muhasebe onayı gerekli mi?           |
+| Maximum stock quantity                  | float    | 15     | MRP max stok seviyesi                |
+| Blocked for material request check      | bool     | -      | Taleplerde görünmez (true ise)       |
+| Total Stock                             | float    | 15     | READONLY - Hesaplanan toplam stok    |
+| Open request quantity                   | float    | 15     | READONLY - Açık talep miktarı        |
+| Producer name                           | text     | 32     | Üretici firma adı                    |
+| Producer model name                     | text     | 64     | Üretici model/part numarası          |
+
+Material Status Codes (Material Status code):
+- 1: Active          → Tüm işlemler yapılabilir
+- 2: Blocked         → Blocking Reason ZORUNLU, işlemler kısıtlı
+- 3: Inactive        → Hiçbir işlem yapılamaz
+- 4: Preparing to be used → SRM/PO/GR OK, Material Request YAPILAMAZ
+- 5: Preparing to discontinuation → MR/Issue/Transfer OK, yeni SRM YAPILAMAZ
+
+TABLE: Material Serial (Numara atama için)
+| Field Name                    | Type     | Length | Description                    |
+|-------------------------------|----------|--------|--------------------------------|
+| Material Serial Id            | int      | 4      | Primary key                    |
+| Material Serial               | text     | 2      | Prefix (PN, CH, TL, SP vb.)    |
+| Material Serial Title         | text     | 32     | Seri açıklaması                |
+| Last created material number  | int      | 8      | Son oluşturulan numara         |
+| Inactivation status           | bool     | -      | Seri aktif mi?                 |
+
+TABLE: Document (Ekli dokümanlar için)
+| Field Name          | Type     | Length | Description                    |
+|---------------------|----------|--------|--------------------------------|
+| Document Id         | int      | 8      | Primary key                    |
+| Document group Id   | int      | 8      | Malzeme ile ilişki             |
+| Document type       | char     | 1      | MSDS, Image, Manual vb.        |
+| File name           | text     | 128    | Dosya adı                      |
+| File size           | int      | -      | Bayt cinsinden boyut           |
+| Upload datetime     | datetime | -      | Yükleme tarihi                 |
+
+--------------------------------------------------------------------------------
+BUSINESS RULES (İş Kuralları)
+--------------------------------------------------------------------------------
+
+MATERIAL NUMBER ASSIGNMENT:
+1. İki yöntem: Seri ile otomatik VEYA manuel giriş
+2. Seri ile: Prefix + otomatik artan numara (örn: PN-12848)
+3. Manuel: ##.#####-#### formatı zorunlu (örn: 01.00001-0001)
+4. Edit modunda material number DEĞİŞTİRİLEMEZ
+
+MATERIAL STATUS RULES:
+1. Yeni malzeme oluşturulduğunda DEFAULT status: "Preparing to be used" (4)
+2. Status=Blocked (2) seçildiğinde:
+   - Blocking Reason alanı ZORUNLU olur
+   - Blocking Reevaluation date girilebilir
+   - "Blocked for material request" checkbox aktif olur
+3. Status geçiş kuralları:
+   - Active(1) → Blocked(2), Inactive(3), Preparing to discontinuation(5)
+   - Blocked(2) → Active(1), Inactive(3)
+   - Inactive(3) → Reactivate edilebilir (özel yetki gerekir)
+   - Preparing to be used(4) → Active(1) (stok girişi yapıldığında)
+   - Preparing to discontinuation(5) → Inactive(3) (stok tükendiğinde)
+
+STORAGE HIERARCHY:
+1. Storage → Location → Bin (3 seviyeli hiyerarşi)
+2. Default Storage seçildiğinde Location listesi filtrelenir
+3. Default Location seçildiğinde Bin listesi filtrelenir
+
+MRP PARAMETERS:
+1. Reordering point quantity: Bu seviyenin altına düşünce MRP önerisi oluşur
+2. Maximum stock quantity: MRP önerisi bu seviyeye kadar hesaplanır
+3. Order batch quantity: Siparişler bu miktarın KATLARINDAN oluşur
+4. Safety stock quantity: Emniyet stoğu (MRP hesaplamasında kullanılır)
+5. Unit quantity in a package: Etiket yazdırma hesaplamasında kullanılır
+
+DOCUMENT/IMAGE RULES:
+1. Desteklenen formatlar: PDF, JPG, PNG, GIF
+2. Doküman max boyut: 10MB
+3. Görsel max boyut: 5MB
+4. "main image" etiketli görsel malzeme view ekranında önce gösterilir
+5. MSDS dokümanı kimyasal malzemeler için ZORUNLU olabilir
+
+--------------------------------------------------------------------------------
+FIELD VALIDATIONS
+--------------------------------------------------------------------------------
+
+- Material number: Seri modu → otomatik, Manuel mod → ##.#####-#### regex
+- Title: maxlength=128, ZORUNLU
+- Description: maxlength=512
+- Old material number: maxlength=13
+- Producer name: maxlength=32
+- Producer model name: maxlength=64
+- Blocking Reason: maxlength=128, Status=2 ise ZORUNLU
+- Notes: maxlength=512
+- Accounting Number: maxlength=8, sadece rakam
+- Material Group Code: maxlength=8
+- Alternative material 1-2: maxlength=13, ##.#####-#### formatı
+- Default Storage/Location/Bin: maxlength=8
+
+Sayısal alanlar (float, 15 basamak):
+- Reordering point quantity
+- Reordering quantity
+- Maximum stock quantity
+- Safety stock quantity
+- Order batch quantity
+- Unit quantity in a package
+
+--------------------------------------------------------------------------------
+WORKFLOW / PROCESS FLOW
+--------------------------------------------------------------------------------
+
+CREATE MODE:
+1. Kullanıcı numara atama yöntemini seçer
+2. Seri ile: Dropdown'dan seri seçer → Otomatik numara gösterilir
+3. Manuel ile: Format doğrulaması yapılır
+4. Temel bilgiler girilir (Title ZORUNLU)
+5. Status varsayılan: "Preparing to be used"
+6. Stok parametreleri ve depo bilgileri girilir
+7. Kaydet → Malzeme oluşturulur
+8. Sonraki adım: Supplier info record ekleme, stok girişi yapma
+
+EDIT MODE:
+1. URL'den ?id= parametresi okunur
+2. Mevcut malzeme verileri yüklenir
+3. Material number READONLY olur
+4. Tüm diğer alanlar düzenlenebilir
+5. Status değişikliği özel kurallara tabidir
+6. Kaydet → Değişiklikler kaydedilir
+
+VIEW MODE:
+1. Tüm alanlar READONLY
+2. "main image" etiketli görsel gösterilir
+3. Doküman listesi görüntüleme/indirme yapılabilir
+4. "Düzenle" butonu edit moduna geçirir
+
+--------------------------------------------------------------------------------
+INTEGRATION NOTES
+--------------------------------------------------------------------------------
+
+SAP Integration:
+- Material number SAP'dan gelebilir (Old material number alanında saklanır)
+- Accounting Number SAP muhasebe hesabına referans verir
+- Stok hareketleri SAP'a aktarılır (MM movement types)
+
+MRP Integration:
+- Reordering point altına düşünce SRM Suggestion oluşturulur
+- Maximum stock seviyesine kadar sipariş önerilir
+- Order batch quantity katları olarak sipariş miktarı hesaplanır
+
+Budget Integration:
+- Malzeme talepleri budget kontrolünden geçer
+- Material Group bazında bütçe raporlaması yapılabilir
+
+Supplier Info Record:
+- Malzeme aktif olunca supplier info record eklenebilir
+- Birden fazla tedarikçi tanımlanabilir (preferred order ile öncelik)
+
+================================================================================
+-->
 <body>
     <!-- ============================================
          NAVBAR - Top Navigation (Maximo Style)
@@ -141,7 +471,7 @@
                 <li class="nav-item">
                     <a href="budget-management.html" class="nav-link">
                         <span class="nav-icon">💰</span>
-                        Bütçe
+                        Budget
                     </a>
                     <div class="dropdown-menu">
                         <a href="budget-management.html" class="dropdown-item">Bütçe Yönetimi</a>
@@ -160,7 +490,7 @@
                 <li class="nav-item">
                     <a href="transfer-list.html" class="nav-link">
                         <span class="nav-icon">🏭</span>
-                        Stok
+                        Stock
                     </a>
                     <div class="dropdown-menu">
                         <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
@@ -207,47 +537,25 @@
         </div>
 
         <!-- Developer Note - Ekran Aciklamasi -->
-        <div class="dev-note">
-            <div class="dev-note-title">EKRAN: 1 MDM - Material Data Maintenance</div>
-            <div class="dev-note-content">
-                <p><strong>Fonksiyonlar:</strong></p>
-                <ul>
-                    <li>a. Malzeme numarasi atama (manuel veya seri ile)</li>
-                    <li>b. Malzeme bilgisi giris</li>
-                    <li>c. Ek dosya yukleme</li>
-                    <li>d. Toplu dokuman yukleme (istisnalar icin)</li>
-                    <li>6. Malzeme muhasebe iliskisi tanimlama</li>
-                </ul>
-                <p><strong>Veri Alanlari:</strong> Malzeme No (13 karakter), Eski Malzeme No, Baslik (128), Aciklama (512), Resim, Olcu Birimi, Durum, Bloklama Nedeni, Yeniden Siparis Miktari, Guvenlik Stoku, Varsayilan Depo/Lokasyon/Raf</p>
-            </div>
         </div>
 
         <!-- Form Content -->
         <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
             <!-- Sol Kolon - Form -->
             <div>
-                <!-- Malzeme Numarasi Atama -->
+                <!-- Material number Atama -->
                 <div class="card">
                     <div class="card-header">
                         <div class="card-title">
                             <span class="card-title-icon">🔢</span>
-                            Malzeme Numarasi Atama
+                            Material Number Assignment
                         </div>
                     </div>
                     <div class="card-body">
-                        <div class="dev-note success">
-                            <div class="dev-note-title">IS KURALI: Malzeme Numarasi</div>
-                            <div class="dev-note-content">
-                                <ul>
-                                    <li>Malzeme numarasi secilen seriden "prefix + sonraki numara" seklinde atanabilir</li>
-                                    <li>VEYA "##.#####-####" formatinda 11 haneli manuel giris yapilabilir</li>
-                                    <li>Ornek format: 12.34567-8901</li>
-                                </ul>
-                            </div>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Numara Atama Yontemi</label>
+                            <label class="form-label">Number Assignment Method</label>
                             <div style="display: flex; gap: 16px; margin-top: 8px;">
                                 <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                                     <input type="radio" name="numberType" value="serial" checked>
@@ -263,9 +571,9 @@
                         <!-- Seri ile Otomatik Numara Atama -->
                         <div class="form-grid" id="serialNumberSection">
                             <div class="form-group">
-                                <label class="form-label">Malzeme Serisi <span class="required">*</span></label>
+                                <label class="form-label">Material Serial <span class="required">*</span></label>
                                 <select class="form-control" id="materialSerialSelect">
-                                    <option value="">Seri Secin...</option>
+                                    <option value="">Seri Seçin...</option>
                                     <option value="PN">PN - Standart Endirek Malzeme</option>
                                     <option value="CH">CH - Kimyasal Malzeme</option>
                                     <option value="TL">TL - Alet/Takimlar</option>
@@ -274,7 +582,7 @@
                                 <div class="form-hint" id="lastSerialHint">Seri secildiginde son numara gosterilecek</div>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Olusturulacak Numara</label>
+                                <label class="form-label">Generated Number</label>
                                 <div class="material-number-preview" id="autoGeneratedNumber">-</div>
                             </div>
                         </div>
@@ -282,12 +590,12 @@
                         <!-- Manuel Numara Girisi -->
                         <div class="form-grid" id="manualNumberSection" style="display: none;">
                             <div class="form-group">
-                                <label class="form-label">Malzeme Numarasi <span class="required">*</span></label>
+                                <label class="form-label">Material number <span class="required">*</span></label>
                                 <input type="text" class="form-control" id="manualMaterialNumber" placeholder="##.#####-####" maxlength="13" style="font-family: monospace; font-size: 18px; letter-spacing: 1px;">
                                 <div class="form-hint">Format: ##.#####-#### (Ornek: 01.00002-0001)</div>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Girilen Numara</label>
+                                <label class="form-label">Entered Number</label>
                                 <div class="material-number-preview" id="manualPreview">-</div>
                             </div>
                         </div>
@@ -299,40 +607,35 @@
                     <div class="card-header">
                         <div class="card-title">
                             <span class="card-title-icon">📋</span>
-                            Temel Bilgiler
+                            Basic Information
                         </div>
                     </div>
                     <div class="card-body">
                         <div class="form-grid">
                             <div class="form-group">
-                                <label class="form-label required">Malzeme Basligi</label>
+                                <label class="form-label required">Material title</label>
                                 <input type="text" class="form-control" placeholder="Max 128 karakter" maxlength="128">
                                 <div class="form-hint">Malzeme talebinde goruntulenir</div>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Eski Malzeme Numarasi</label>
-                                <input type="text" class="form-control" placeholder="13 karakter">
+                                <label class="form-label">Old material number</label>
+                                <input type="text" class="form-control" id="oldMaterialNumber" placeholder="13 karakter" maxlength="13">
                                 <div class="form-hint">Maximo'dan tasinan eski numara</div>
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Malzeme Aciklamasi</label>
+                            <label class="form-label">Material description</label>
                             <textarea class="form-control" placeholder="Max 512 karakter - Detayli aciklama (sadece anahtar kullanici gorebilir)" maxlength="512"></textarea>
                         </div>
 
-                        <div class="dev-note info">
-                            <div class="dev-note-title">NOT: Malzeme Aciklamasi Gorunurlugu</div>
-                            <div class="dev-note-content">
-                                Malzeme aciklamasi talep olusturma ekraninda GORUNTULENMEZ. Sadece endirek malzeme anahtar kullanicisi malzeme bakiminda veya SRM talep olusturmada gorebilir. Malzeme basligi ise tum kullanicilara gosterilir.
-                            </div>
                         </div>
 
                         <div class="form-grid">
                             <div class="form-group">
-                                <label class="form-label required">Olcu Birimi</label>
-                                <select class="form-control">
-                                    <option value="">Secin...</option>
+                                <label class="form-label required">Unit of measure</label>
+                                <select class="form-control" id="unitOfMeasure">
+                                    <option value="">Seçin...</option>
                                     <option value="AD">AD - Adet</option>
                                     <option value="M">M - Metre</option>
                                     <option value="KG">KG - Kilogram</option>
@@ -343,169 +646,155 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label class="form-label required">Malzeme Durumu</label>
-                                <select class="form-control">
-                                    <option value="4" selected>Kullanima Hazirlaniyor</option>
-                                    <option value="1">Aktif</option>
-                                    <option value="2">Bloke</option>
-                                    <option value="3">Pasif</option>
-                                    <option value="5">Kullanimdan Kaldirilacak</option>
+                                <label class="form-label required">Material status</label>
+                                <select class="form-control" id="materialStatus" onchange="toggleBlockingInfo()">
+                                    <option value="4" selected>Preparing to be used</option>
+                                    <option value="1">Active</option>
+                                    <option value="2">Blocked</option>
+                                    <option value="3">Inactive</option>
+                                    <option value="5">Preparing to discontinuation</option>
                                 </select>
                             </div>
                         </div>
 
-                        <div class="dev-note success">
-                            <div class="dev-note-title">IS KURALI: Malzeme Durumlari</div>
-                            <div class="dev-note-content">
-                                <ul>
-                                    <li><strong>Aktif:</strong> Tum islemler yapilabilir</li>
-                                    <li><strong>Bloke:</strong> Goruntulenir ama talep edilemez. Bloklama nedeni ve yeniden degerlendirme tarihi gosterilir</li>
-                                    <li><strong>Pasif:</strong> Tum islemler engellenir</li>
-                                    <li><strong>Kullanima Hazirlaniyor:</strong> Satin alma ve mal kabul yapilabilir, malzeme talebi YAPILAMAZ (yeni malzeme icin varsayilan)</li>
-                                    <li><strong>Kullanimdan Kaldirilacak:</strong> Malzeme talebi, cikis ve transfer yapilabilir, yeni SRM talebi OLUSTURULAMAZ</li>
-                                </ul>
-                            </div>
                         </div>
 
-                        <!-- Bloklama Bilgileri (Durum Bloke ise gorunur) -->
+                        <!-- Bloklama Bilgileri (Status Bloke ise gorunur) -->
                         <div id="blockingInfo" style="display: none; margin-top: 16px;">
                             <div class="form-grid">
                                 <div class="form-group">
-                                    <label class="form-label">Bloklama Nedeni</label>
-                                    <input type="text" class="form-control" placeholder="Max 128 karakter">
+                                    <label class="form-label">Blocking Reason</label>
+                                    <input type="text" class="form-control" id="blockingReason" placeholder="Max 128 karakter" maxlength="128">
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label">Yeniden Degerlendirme Tarihi</label>
-                                    <input type="date" class="form-control">
+                                    <label class="form-label">Blocking Reevaluation date</label>
+                                    <input type="date" class="form-control" id="blockingReevaluationDate">
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Uretici Bilgileri -->
-                <div class="card" style="margin-top: 24px;">
-                    <div class="card-header">
-                        <div class="card-title">
-                            <span class="card-title-icon">�icing</span>
-                            Uretici Bilgileri
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label class="form-label">Uretici Adi</label>
-                                <input type="text" class="form-control" placeholder="Max 32 karakter">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Uretici Model Kodu</label>
-                                <input type="text" class="form-control" placeholder="Max 64 karakter">
+                            <div class="form-group" style="margin-top: 12px;">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" id="blockedForMaterialRequest" name="blockedForMaterialRequest">
+                                    Blocked for material request
+                                </label>
+                                <div class="form-hint">Bu malzeme taleplerde gosterilmez</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Stok Parametreleri -->
-                <div class="card" style="margin-top: 24px;">
-                    <div class="card-header">
-                        <div class="card-title">
-                            <span class="card-title-icon">📊</span>
-                            Stok ve MRP Parametreleri
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label class="form-label">Yeniden Siparis Noktasi</label>
-                                <input type="number" class="form-control" placeholder="0.000" step="0.001">
-                                <div class="form-hint">Bu seviyenin altina dusunce siparis onerisi olusturulur</div>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Yeniden Siparis Miktari</label>
-                                <input type="number" class="form-control" placeholder="0.000" step="0.001">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Maksimum Stok Miktari</label>
-                                <input type="number" class="form-control" placeholder="0.000" step="0.001">
-                                <div class="form-hint">Siparis onerisi bu seviyeye kadar hesaplanir</div>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Guvenlik Stoku</label>
-                                <input type="number" class="form-control" placeholder="0.000" step="0.001">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Siparis Parti Miktari</label>
-                                <input type="number" class="form-control" placeholder="0.000" step="0.001">
-                                <div class="form-hint">Siparisler bu miktarin katlari olarak olusturulur</div>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Paket Icindeki Birim Adedi</label>
-                                <input type="number" class="form-control" placeholder="0.000" step="0.001">
-                                <div class="form-hint">Etiket yazdirma hesaplamasinda kullanilir</div>
-                            </div>
-                        </div>
-
-                        <div class="dev-note success">
-                            <div class="dev-note-title">IS KURALI: MRP Hesaplama</div>
-                            <div class="dev-note-content">
-                                <ul>
-                                    <li>Stok yeniden siparis noktasinin altina dusunce maksimum stok seviyesine tamamlamak icin SRM onerisi olusturulur</li>
-                                    <li>Acik siparis ve acik SRM talep miktarlari oneri miktarindan dusulur</li>
-                                    <li>Siparis parti miktari varsa, oneri miktari bu miktarin katlari olarak hesaplanir (maks. stok asmasin)</li>
-                                    <li>Tedarikci bilgi kaydinda parti miktari varsa, malzeme parti miktarini override eder</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Varsayilan Depolama -->
+                <!-- Manufacturer Information -->
                 <div class="card" style="margin-top: 24px;">
                     <div class="card-header">
                         <div class="card-title">
                             <span class="card-title-icon">🏭</span>
-                            Varsayilan Depolama Yeri
+                            Manufacturer Information
                         </div>
                     </div>
                     <div class="card-body">
                         <div class="form-grid">
                             <div class="form-group">
-                                <label class="form-label">Varsayilan Depo</label>
-                                <select class="form-control">
-                                    <option value="">Secin...</option>
+                                <label class="form-label">Producer name</label>
+                                <input type="text" class="form-control" id="producerName" placeholder="Max 32 karakter" maxlength="32">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Producer model name</label>
+                                <input type="text" class="form-control" id="producerModelName" placeholder="Max 64 karakter" maxlength="64">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stock Parametreleri -->
+                <div class="card" style="margin-top: 24px;">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="card-title-icon">📊</span>
+                            Stock and MRP Parameters
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Reordering point quantity</label>
+                                <input type="number" class="form-control" id="reorderingPointQuantity" placeholder="0.000" step="0.001" max="999999999999999">
+                                <div class="form-hint">Bu seviyenin altina dusunce siparis onerisi olusturulur</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Reordering quantity</label>
+                                <input type="number" class="form-control" id="reorderingQuantity" placeholder="0.000" step="0.001" max="999999999999999">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Maximum stock quantity</label>
+                                <input type="number" class="form-control" id="maximumStockQuantity" placeholder="0.000" step="0.001" max="999999999999999">
+                                <div class="form-hint">Siparis onerisi bu seviyeye kadar hesaplanir</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Safety stock quantity</label>
+                                <input type="number" class="form-control" id="safetyStockQuantity" placeholder="0.000" step="0.001" max="999999999999999">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Order batch quantity</label>
+                                <input type="number" class="form-control" id="orderBatchQuantity" placeholder="0.000" step="0.001" max="999999999999999">
+                                <div class="form-hint">Siparisler bu miktarin katlari olarak olusturulur</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Unit quantity in a package</label>
+                                <input type="number" class="form-control" id="unitQuantityInPackage" placeholder="0.000" step="0.001" max="999999999999999">
+                                <div class="form-hint">Etiket yazdirma hesaplamasinda kullanilir</div>
+                            </div>
+                        </div>
+                        <!-- Readonly calculated fields -->
+                        <div class="form-grid" style="margin-top: 16px;">
+                            <div class="form-group">
+                                <label class="form-label">Total Stock</label>
+                                <input type="number" class="form-control" id="totalStock" placeholder="0.000" readonly style="background-color: #f5f5f5;">
+                                <div class="form-hint">Toplam stok miktari (hesaplanan)</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Open request quantity</label>
+                                <input type="number" class="form-control" id="openRequestQuantity" placeholder="0.000" readonly style="background-color: #f5f5f5;">
+                                <div class="form-hint">Acik talep miktari (hesaplanan)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Default Depolama -->
+                <div class="card" style="margin-top: 24px;">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="card-title-icon">🏭</span>
+                            Default Storage Location
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Default Storage</label>
+                                <select class="form-control" id="defaultStorage">
+                                    <option value="">Seçin...</option>
                                     <option value="MAIN">Main - Bakim Deposu</option>
                                     <option value="02Q">02Q - Alet Atolyesi</option>
                                     <option value="02C">02C - Kimyasal Depo</option>
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Varsayilan Lokasyon</label>
-                                <select class="form-control">
-                                    <option value="">Secin...</option>
-                                    <option value="A1">A1 - Raf Bolumu A1</option>
-                                    <option value="A2">A2 - Raf Bolumu A2</option>
-                                    <option value="B1">B1 - Raf Bolumu B1</option>
+                                <label class="form-label">Default Location</label>
+                                <select class="form-control" id="defaultLocation">
+                                    <option value="">Seçin...</option>
+                                    <option value="A1">A1 - Raf Bölümü A1</option>
+                                    <option value="A2">A2 - Raf Bölümü A2</option>
+                                    <option value="B1">B1 - Raf Bölümü B1</option>
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Varsayilan Raf</label>
-                                <select class="form-control">
-                                    <option value="">Secin...</option>
+                                <label class="form-label">Default Bin</label>
+                                <select class="form-control" id="defaultBin">
+                                    <option value="">Seçin...</option>
                                     <option value="01-01">01-01</option>
                                     <option value="01-02">01-02</option>
                                     <option value="02-01">02-01</option>
                                 </select>
-                            </div>
-                        </div>
-
-                        <div class="dev-note info">
-                            <div class="dev-note-title">NOT: Varsayilan Depolama</div>
-                            <div class="dev-note-content">
-                                <ul>
-                                    <li>Mal kabul sirasinda bu degerler varsayilan olarak gelir, degistirilebilir</li>
-                                    <li>Ayni malzeme baska lokasyonlarda da varsa, bunlar da secenek olarak gosterilir</li>
-                                    <li>Pasif edilen depo/lokasyon/raftan malzeme ALINABILIR ama KOYULAMAZ</li>
-                                </ul>
                             </div>
                         </div>
                     </div>
@@ -516,79 +805,79 @@
                     <div class="card-header">
                         <div class="card-title">
                             <span class="card-title-icon">🔄</span>
-                            Alternatif Malzemeler
+                            Alternative Materials
                         </div>
                     </div>
                     <div class="card-body">
                         <div class="form-grid">
                             <div class="form-group">
-                                <label class="form-label">Alternatif Malzeme 1</label>
-                                <input type="text" class="form-control" placeholder="Malzeme no giriniz...">
+                                <label class="form-label">Alternative material 1</label>
+                                <input type="text" class="form-control" id="alternativeMaterial1" placeholder="##.#####-####" maxlength="13">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Alternatif Malzeme 2</label>
-                                <input type="text" class="form-control" placeholder="Malzeme no giriniz...">
+                                <label class="form-label">Alternative material 2</label>
+                                <input type="text" class="form-control" id="alternativeMaterial2" placeholder="##.#####-####" maxlength="13">
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Malzeme Grubu ve Muhasebe -->
+                <!-- Material Group Code ve Muhasebe -->
                 <div class="card" style="margin-top: 24px;">
                     <div class="card-header">
                         <div class="card-title">
                             <span class="card-title-icon">💼</span>
-                            Gruplama ve Muhasebe
+                            Grouping and Accounting
                         </div>
                     </div>
                     <div class="card-body">
                         <div class="form-grid">
                             <div class="form-group">
-                                <label class="form-label">Malzeme Grubu</label>
-                                <select class="form-control">
-                                    <option value="">Secin...</option>
+                                <label class="form-label">Material Group Code</label>
+                                <select class="form-control" id="materialGroupCode">
+                                    <option value="">Seçin...</option>
                                     <option value="GEN">GEN - Genel Malzemeler</option>
                                     <option value="ELK">ELK - Elektrik Malzemeleri</option>
                                     <option value="MKN">MKN - Mekanik Parcalar</option>
                                     <option value="KMY">KMY - Kimyasallar</option>
                                 </select>
-                                <div class="form-hint">Cesitli raporlama ve gruplama amacli</div>
+                                <div class="form-hint">Cesitli raporlama ve gruplama amacli (max 8 karakter)</div>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Muhasebe Hesap Kodu</label>
-                                <input type="text" class="form-control" placeholder="8 haneli hesap kodu">
+                                <label class="form-label">Accounting Number</label>
+                                <input type="text" class="form-control" id="accountingNumber" placeholder="8 haneli hesap kodu" maxlength="8">
                             </div>
                         </div>
 
                         <div class="form-group">
                             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input type="checkbox" name="purchasedPacking">
-                                Satin Alinan Ambalaj Malzemesi
+                                <input type="checkbox" id="purchasedPackingMaterial" name="purchasedPacking">
+                                Purchased Packing Material
                             </label>
                             <div class="form-hint">Bu malzeme iade edilebilir ambalaj malzemesi mi?</div>
                         </div>
 
                         <div class="form-group">
                             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input type="checkbox" name="accountingRequired">
-                                Islemlerde Muhasebe Onay Gerekli
+                                <input type="checkbox" id="accountingActionsRequired" name="accountingRequired">
+                                Accounting actions required for transactions
                             </label>
                             <div class="form-hint">Bu malzeme icin muhasebe islem onay gerektirir mi?</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Notlar -->
+                <!-- Notes -->
                 <div class="card" style="margin-top: 24px;">
                     <div class="card-header">
                         <div class="card-title">
                             <span class="card-title-icon">📝</span>
-                            Notlar
+                            Notes
                         </div>
                     </div>
                     <div class="card-body">
                         <div class="form-group">
-                            <label class="form-label">Dahili Notlar</label>
+                            <label class="form-label">Notes</label>
                             <textarea class="form-control" placeholder="Max 512 karakter - Sadece yetkili kullanicilar gorebilir" maxlength="512" rows="4"></textarea>
                         </div>
                     </div>
@@ -602,7 +891,7 @@
                     <div class="card-header">
                         <div class="card-title">
                             <span class="card-title-icon">🖼️</span>
-                            Malzeme Resmi
+                            Material Image
                         </div>
                     </div>
                     <div class="card-body">
@@ -613,11 +902,6 @@
                             <div style="font-size: 12px; color: var(--text-light); margin-top: 8px;">veya surukleyip birakin</div>
                         </div>
 
-                        <div class="dev-note info" style="margin-top: 16px;">
-                            <div class="dev-note-title">IS KURALI: Ana Resim</div>
-                            <div class="dev-note-content">
-                                "main image" etiketli resim malzeme goruntuleme ekraninda sayfa yuklendiginde gosterilir. Her malzeme icin sadece BIR ana resim olabilir. Resme tiklandiginda tam ekran acilir.
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -627,20 +911,11 @@
                     <div class="card-header">
                         <div class="card-title">
                             <span class="card-title-icon">📎</span>
-                            Ekli Dokumanlar
+                            Attached Documents
                         </div>
-                        <button class="btn btn-sm btn-primary">+ Dokuman Ekle</button>
+                        <button class="btn btn-sm btn-primary">+ Add Document</button>
                     </div>
                     <div class="card-body">
-                        <div class="dev-note warning">
-                            <div class="dev-note-title">DOKUMAN TURLERI</div>
-                            <div class="dev-note-content">
-                                <ul>
-                                    <li><strong>Material Image:</strong> Malzeme gorseli</li>
-                                    <li><strong>MSDS:</strong> Malzeme Guvenlik Bilgi Formu</li>
-                                    <li><strong>Other:</strong> Diger dokumanlar</li>
-                                </ul>
-                            </div>
                         </div>
 
                         <div class="attachment-list" style="margin-top: 16px;">
@@ -664,39 +939,34 @@
                             </div>
                         </div>
 
-                        <div class="dev-note" style="margin-top: 16px;">
-                            <div class="dev-note-title">TOPLU DOKUMAN YUKLEME</div>
-                            <div class="dev-note-content">
-                                Istisna durumlarda toplu dokuman yukleme destegi saglanmalidir. Dokuman Grup ID ile iliskilendirilir.
-                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Kayit Bilgileri -->
+                <!-- Record Information -->
                 <div class="card" style="margin-top: 24px;">
                     <div class="card-header">
                         <div class="card-title">
                             <span class="card-title-icon">ℹ️</span>
-                            Kayit Bilgileri
+                            Record Information
                         </div>
                     </div>
                     <div class="card-body">
                         <div style="display: grid; gap: 12px; font-size: 13px;">
                             <div style="display: flex; justify-content: space-between;">
-                                <span style="color: var(--text-light);">Olusturan:</span>
+                                <span style="color: var(--text-light);">Created by user info:</span>
                                 <span>-</span>
                             </div>
                             <div style="display: flex; justify-content: space-between;">
-                                <span style="color: var(--text-light);">Olusturma Tarihi:</span>
+                                <span style="color: var(--text-light);">Creation date time:</span>
                                 <span>-</span>
                             </div>
                             <div style="display: flex; justify-content: space-between;">
-                                <span style="color: var(--text-light);">Son Degistiren:</span>
+                                <span style="color: var(--text-light);">Last change user info:</span>
                                 <span>-</span>
                             </div>
                             <div style="display: flex; justify-content: space-between;">
-                                <span style="color: var(--text-light);">Son Degisiklik:</span>
+                                <span style="color: var(--text-light);">Last change date time:</span>
                                 <span>-</span>
                             </div>
                         </div>
@@ -714,7 +984,84 @@
 
     </main>
 
+    <!-- Document Upload Modal -->
+    <div class="upload-modal-overlay" id="documentUploadModal">
+        <div class="upload-modal-content">
+            <div class="upload-modal-header">
+                <h3>📎 Add Document</h3>
+                <button class="upload-modal-close" data-modal="documentUploadModal">&times;</button>
+            </div>
+            <div class="upload-modal-body">
+                <div class="upload-drop-zone" id="documentDropZone">
+                    <div class="upload-icon">📄</div>
+                    <p><strong>Dosya seçmek için tıklayın</strong></p>
+                    <p>veya sürükleyip bırakın</p>
+                    <p class="formats">Desteklenen formatlar: PDF, JPG, PNG (Maks. 10MB)</p>
+                </div>
+                <input type="file" class="upload-file-input" id="documentFileInput" accept=".pdf,.jpg,.jpeg,.png">
+                <div class="upload-preview" id="documentPreview">
+                    <div class="upload-preview-item">
+                        <span class="upload-preview-icon">📄</span>
+                        <div class="upload-preview-info">
+                            <div class="upload-preview-name" id="documentFileName">-</div>
+                            <div class="upload-preview-size" id="documentFileSize">-</div>
+                        </div>
+                        <button class="upload-preview-remove" id="documentRemoveBtn">&times;</button>
+                    </div>
+                </div>
+            </div>
+            <div class="upload-modal-footer">
+                <button class="btn-cancel" data-modal="documentUploadModal">İptal</button>
+                <button class="btn-upload" id="documentUploadBtn" disabled>Yükle</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Upload Modal -->
+    <div class="upload-modal-overlay" id="imageUploadModal">
+        <div class="upload-modal-content">
+            <div class="upload-modal-header">
+                <h3>📷 Resim Yükle</h3>
+                <button class="upload-modal-close" data-modal="imageUploadModal">&times;</button>
+            </div>
+            <div class="upload-modal-body">
+                <div class="upload-drop-zone" id="imageDropZone">
+                    <div class="upload-icon">🖼️</div>
+                    <p><strong>Resim seçmek için tıklayın</strong></p>
+                    <p>veya sürükleyip bırakın</p>
+                    <p class="formats">Desteklenen formatlar: JPG, PNG, GIF (Maks. 5MB)</p>
+                </div>
+                <input type="file" class="upload-file-input" id="imageFileInput" accept=".jpg,.jpeg,.png,.gif">
+                <div class="upload-preview" id="imagePreview">
+                    <div class="upload-preview-item">
+                        <span class="upload-preview-icon">🖼️</span>
+                        <div class="upload-preview-info">
+                            <div class="upload-preview-name" id="imageFileName">-</div>
+                            <div class="upload-preview-size" id="imageFileSize">-</div>
+                        </div>
+                        <button class="upload-preview-remove" id="imageRemoveBtn">&times;</button>
+                    </div>
+                </div>
+            </div>
+            <div class="upload-modal-footer">
+                <button class="btn-cancel" data-modal="imageUploadModal">İptal</button>
+                <button class="btn-upload" id="imageUploadBtn" disabled>Yükle</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Toggle blocking info section based on material status
+        function toggleBlockingInfo() {
+            const status = document.getElementById('materialStatus').value;
+            const blockingInfo = document.getElementById('blockingInfo');
+            if (status === '2') { // Blocked
+                blockingInfo.style.display = 'block';
+            } else {
+                blockingInfo.style.display = 'none';
+            }
+        }
+
         // Page header buttons
         document.querySelector('.page-actions .btn-secondary').addEventListener('click', function() {
             if (confirm('Yapılan değişiklikler kaydedilmeyecek. İptal etmek istediğinizden emin misiniz?')) {
@@ -738,8 +1085,8 @@
             }
 
             const status = asDraft ? 'Taslak' : 'Aktif';
-            if (confirm('Malzeme kaydedilecek: ' + materialNumber + '\nDurum: ' + status + '\n\nDevam etmek istiyor musunuz?')) {
-                alert('✅ Malzeme başarıyla kaydedildi!\n\nMalzeme No: ' + materialNumber + '\nMalzeme Başlığı: ' + materialTitle);
+            if (confirm('Malzeme kaydedilecek: ' + materialNumber + '\nStatus: ' + status + '\n\nDevam etmek istiyor musunuz?')) {
+                alert('✅ Malzeme başarıyla kaydedildi!\n\nMaterial number: ' + materialNumber + '\nMaterial title: ' + materialTitle);
                 return true;
             }
             return false;
@@ -766,11 +1113,37 @@
             }
         });
 
-        // Attachment view buttons
+        // Attachment view buttons - opens file in new window
         document.querySelectorAll('.attachment-item .btn-secondary').forEach(function(btn) {
             btn.addEventListener('click', function() {
                 const fileName = this.closest('.attachment-item').querySelector('.attachment-name').textContent;
-                alert('📄 Dosya görüntüleniyor: ' + fileName + '\n\n(Gerçek uygulamada dosya yeni pencerede açılır)');
+                // In a real app, this would open the actual file URL
+                // For demo, we show a simulated viewer
+                const viewerWindow = window.open('', '_blank', 'width=800,height=600');
+                viewerWindow.document.write(`
+                    <html>
+                    <head>
+                        <title>Dosya Görüntüleyici - ${fileName}</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; padding: 40px; text-align: center; background: #f5f5f5; }
+                            .viewer-container { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto; }
+                            .file-icon { font-size: 64px; margin-bottom: 20px; }
+                            h2 { color: #333; margin-bottom: 10px; }
+                            p { color: #666; }
+                            .btn { padding: 12px 24px; background: #e40045; color: white; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="viewer-container">
+                            <div class="file-icon">📄</div>
+                            <h2>${fileName}</h2>
+                            <p>Dosya görüntüleniyor</p>
+                            <p style="font-size: 13px; color: #999;">(Demo modunda gerçek dosya içeriği görüntülenmiyor)</p>
+                            <button class="btn" onclick="window.close()">Kapat</button>
+                        </div>
+                    </body>
+                    </html>
+                `);
             });
         });
 
@@ -790,14 +1163,206 @@
             });
         });
 
-        // Add document button
-        document.querySelector('.card-header .btn-primary').addEventListener('click', function() {
-            alert('📎 Doküman ekleme modalı açılacak\n\nDesteklenen formatlar: PDF, JPG, PNG');
+        // ======================================
+        // Upload Modal Handling
+        // ======================================
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('active');
+            // Reset the modal state
+            const preview = modal.querySelector('.upload-preview');
+            if (preview) preview.classList.remove('has-file');
+            const uploadBtn = modal.querySelector('.btn-upload');
+            if (uploadBtn) uploadBtn.disabled = true;
+            const fileInput = modal.querySelector('.upload-file-input');
+            if (fileInput) fileInput.value = '';
+        }
+
+        // Close modal buttons
+        document.querySelectorAll('.upload-modal-close, .btn-cancel').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const modalId = this.dataset.modal || this.closest('.upload-modal-overlay').id;
+                closeModal(modalId);
+            });
         });
 
-        // Image upload area
+        // Close on overlay click
+        document.querySelectorAll('.upload-modal-overlay').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal(this.id);
+                }
+            });
+        });
+
+        // Document upload modal setup
+        const documentModal = document.getElementById('documentUploadModal');
+        const documentDropZone = document.getElementById('documentDropZone');
+        const documentFileInput = document.getElementById('documentFileInput');
+        const documentPreview = document.getElementById('documentPreview');
+        const documentFileName = document.getElementById('documentFileName');
+        const documentFileSize = document.getElementById('documentFileSize');
+        const documentUploadBtn = document.getElementById('documentUploadBtn');
+        const documentRemoveBtn = document.getElementById('documentRemoveBtn');
+        let selectedDocumentFile = null;
+
+        documentDropZone.addEventListener('click', () => documentFileInput.click());
+        documentDropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            documentDropZone.classList.add('dragover');
+        });
+        documentDropZone.addEventListener('dragleave', () => {
+            documentDropZone.classList.remove('dragover');
+        });
+        documentDropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            documentDropZone.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file) handleDocumentFile(file);
+        });
+
+        documentFileInput.addEventListener('change', function() {
+            if (this.files[0]) handleDocumentFile(this.files[0]);
+        });
+
+        function handleDocumentFile(file) {
+            const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+            if (!allowedTypes.includes(file.type)) {
+                alert('Desteklenmeyen dosya formatı. Lütfen PDF, JPG veya PNG yükleyin.');
+                return;
+            }
+            if (file.size > 10 * 1024 * 1024) {
+                alert('Dosya boyutu 10MB\'dan büyük olamaz.');
+                return;
+            }
+            selectedDocumentFile = file;
+            documentFileName.textContent = file.name;
+            documentFileSize.textContent = formatFileSize(file.size);
+            documentPreview.classList.add('has-file');
+            documentUploadBtn.disabled = false;
+        }
+
+        documentRemoveBtn.addEventListener('click', function() {
+            selectedDocumentFile = null;
+            documentFileInput.value = '';
+            documentPreview.classList.remove('has-file');
+            documentUploadBtn.disabled = true;
+        });
+
+        documentUploadBtn.addEventListener('click', function() {
+            if (selectedDocumentFile) {
+                // Simulate upload
+                alert('✅ Doküman başarıyla yüklendi!\n\nDosya: ' + selectedDocumentFile.name);
+
+                // Add to attachment list
+                const attachmentList = document.querySelector('.attachment-list');
+                if (attachmentList) {
+                    const newItem = document.createElement('div');
+                    newItem.className = 'attachment-item';
+                    newItem.innerHTML = `
+                        <div class="attachment-icon">📄</div>
+                        <div class="attachment-info">
+                            <div class="attachment-name">${selectedDocumentFile.name}</div>
+                            <div class="attachment-meta">${formatFileSize(selectedDocumentFile.size)} • Yeni yüklendi</div>
+                        </div>
+                        <button class="btn btn-secondary btn-sm">Görüntüle</button>
+                        <button class="btn btn-danger btn-sm">Sil</button>
+                    `;
+                    attachmentList.appendChild(newItem);
+                }
+
+                closeModal('documentUploadModal');
+            }
+        });
+
+        // Image upload modal setup
+        const imageDropZone = document.getElementById('imageDropZone');
+        const imageFileInput = document.getElementById('imageFileInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const imageFileName = document.getElementById('imageFileName');
+        const imageFileSize = document.getElementById('imageFileSize');
+        const imageUploadBtn = document.getElementById('imageUploadBtn');
+        const imageRemoveBtn = document.getElementById('imageRemoveBtn');
+        let selectedImageFile = null;
+
+        imageDropZone.addEventListener('click', () => imageFileInput.click());
+        imageDropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            imageDropZone.classList.add('dragover');
+        });
+        imageDropZone.addEventListener('dragleave', () => {
+            imageDropZone.classList.remove('dragover');
+        });
+        imageDropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            imageDropZone.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file) handleImageFile(file);
+        });
+
+        imageFileInput.addEventListener('change', function() {
+            if (this.files[0]) handleImageFile(this.files[0]);
+        });
+
+        function handleImageFile(file) {
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+            if (!allowedTypes.includes(file.type)) {
+                alert('Desteklenmeyen dosya formatı. Lütfen JPG, PNG veya GIF yükleyin.');
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Dosya boyutu 5MB\'dan büyük olamaz.');
+                return;
+            }
+            selectedImageFile = file;
+            imageFileName.textContent = file.name;
+            imageFileSize.textContent = formatFileSize(file.size);
+            imagePreview.classList.add('has-file');
+            imageUploadBtn.disabled = false;
+        }
+
+        imageRemoveBtn.addEventListener('click', function() {
+            selectedImageFile = null;
+            imageFileInput.value = '';
+            imagePreview.classList.remove('has-file');
+            imageUploadBtn.disabled = true;
+        });
+
+        imageUploadBtn.addEventListener('click', function() {
+            if (selectedImageFile) {
+                // Simulate upload and show preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const uploadArea = document.querySelector('.image-upload-area');
+                    uploadArea.innerHTML = '<img src="' + e.target.result + '" alt="Malzeme Resmi">';
+                    uploadArea.classList.add('has-image');
+                    alert('✅ Resim başarıyla yüklendi!\n\nDosya: ' + selectedImageFile.name);
+                };
+                reader.readAsDataURL(selectedImageFile);
+                closeModal('imageUploadModal');
+            }
+        });
+
+        // Add document button - opens modal
+        document.querySelector('.card-header .btn-primary').addEventListener('click', function() {
+            openModal('documentUploadModal');
+        });
+
+        // Image upload area - opens modal
         document.querySelector('.image-upload-area').addEventListener('click', function() {
-            alert('📷 Resim yükleme penceresi açılacak\n\nDesteklenen formatlar: JPG, PNG, GIF');
+            openModal('imageUploadModal');
         });
 
         // Demo material data for edit mode (matching material-list.html)
@@ -1055,7 +1620,7 @@
         };
 
         // =============================================
-        // Malzeme Numarasi Atama Mantigi
+        // Material number Atama Mantigi
         // =============================================
         const serialNumberSection = document.getElementById('serialNumberSection');
         const manualNumberSection = document.getElementById('manualNumberSection');
@@ -1194,7 +1759,7 @@
                 // Alternative method - find by card title text
                 document.querySelectorAll('.card').forEach(card => {
                     const title = card.querySelector('.card-title');
-                    if (title && title.textContent.includes('Kayit Bilgileri')) {
+                    if (title && title.textContent.includes('Record Information')) {
                         const infoGrid = card.querySelector('.card-body > div');
                         if (infoGrid) {
                             const spans = infoGrid.querySelectorAll('div > span:last-child');
@@ -1208,6 +1773,312 @@
                     }
                 });
             }
+        }
+    </script>
+
+    <!-- DEVELOPER DOCUMENTATION PANEL -->
+    <div id="devDocsPanel" class="dev-docs-panel">
+        <button class="dev-docs-toggle" onclick="toggleDevDocs()">
+            📋 Geliştirici Dokümantasyonu
+        </button>
+        <div class="dev-docs-content" id="devDocsContent">
+            <div class="dev-docs-header">
+                <h2>📋 1 MDM - Material Data Maintenance</h2>
+                <button class="dev-docs-close" onclick="toggleDevDocs()">✕</button>
+            </div>
+            <div class="dev-docs-body">
+                <div class="dev-docs-tabs">
+                    <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
+                    <button class="dev-tab" onclick="showDevTab('validations')">Validasyonlar</button>
+                </div>
+
+                <div id="dataStructure" class="dev-tab-content active">
+                    <h3>TABLE: Material</h3>
+                    <table class="dev-table">
+                        <thead>
+                            <tr><th>Field Name</th><th>Type</th><th>Length</th><th>Description</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>id</td><td>int</td><td>8</td><td>Primary key</td></tr>
+                            <tr><td>Material number</td><td>text</td><td>13</td><td>Format: ##.#####-####</td></tr>
+                            <tr><td>Old material number</td><td>text</td><td>13</td><td>Eski sistem numarası</td></tr>
+                            <tr><td>Title</td><td>text</td><td>128</td><td>Malzeme başlığı (ZORUNLU)</td></tr>
+                            <tr><td>Description</td><td>text</td><td>512</td><td>Detaylı açıklama</td></tr>
+                            <tr><td>Unit of measure code</td><td>text</td><td>4</td><td>AD, M, KG, LT...</td></tr>
+                            <tr><td>Material Status code</td><td>char</td><td>1</td><td>1-5 arası değer</td></tr>
+                            <tr><td>Blocking Reason</td><td>text</td><td>128</td><td>Status=2 için ZORUNLU</td></tr>
+                            <tr><td>Blocking Reevaluation date</td><td>datetime</td><td>-</td><td>Yeniden değ. tarihi</td></tr>
+                            <tr><td>Reordering quantity</td><td>float</td><td>15</td><td>Yeniden sipariş miktarı</td></tr>
+                            <tr><td>Safety stock quantity</td><td>float</td><td>15</td><td>Güvenlik stoğu</td></tr>
+                            <tr><td>Default Storage</td><td>text</td><td>8</td><td>Varsayılan depo</td></tr>
+                            <tr><td>Default Location</td><td>text</td><td>8</td><td>Varsayılan lokasyon</td></tr>
+                            <tr><td>Default Bin</td><td>text</td><td>8</td><td>Varsayılan bin</td></tr>
+                            <tr><td>Reordering point quantity</td><td>float</td><td>15</td><td>MRP tetikleme seviyesi</td></tr>
+                            <tr><td>Notes</td><td>text</td><td>512</td><td>Notlar</td></tr>
+                            <tr><td>Created by user info</td><td>int</td><td>8</td><td>Oluşturan kullanıcı ID</td></tr>
+                            <tr><td>Accounting Number</td><td>int</td><td>8</td><td>SAP muhasebe kodu</td></tr>
+                            <tr><td>Purchased Packing Material</td><td>bool</td><td>-</td><td>İade edilebilir ambalaj</td></tr>
+                            <tr><td>Alternative material 1</td><td>text</td><td>13</td><td>Alternatif malzeme 1</td></tr>
+                            <tr><td>Alternative material 2</td><td>text</td><td>13</td><td>Alternatif malzeme 2</td></tr>
+                            <tr><td>Material Group Code</td><td>text</td><td>8</td><td>Malzeme grubu kodu</td></tr>
+                            <tr><td>Order batch quantity</td><td>float</td><td>15</td><td>Sipariş parti miktarı</td></tr>
+                            <tr><td>Unit quantity in a package</td><td>float</td><td>15</td><td>Paket içi adet</td></tr>
+                            <tr><td>Document group Id</td><td>int</td><td>8</td><td>Doküman grubu ref.</td></tr>
+                            <tr><td>Accounting actions required</td><td>bool</td><td>-</td><td>Muhasebe onayı gerekli</td></tr>
+                            <tr><td>Maximum stock quantity</td><td>float</td><td>15</td><td>MRP max stok</td></tr>
+                            <tr><td>Blocked for material request</td><td>bool</td><td>-</td><td>Taleplerde görünmez</td></tr>
+                            <tr><td>Total Stock</td><td>float</td><td>15</td><td>READONLY - Toplam stok</td></tr>
+                            <tr><td>Open request quantity</td><td>float</td><td>15</td><td>READONLY - Açık talep</td></tr>
+                            <tr><td>Producer name</td><td>text</td><td>32</td><td>Üretici firma adı</td></tr>
+                            <tr><td>Producer model name</td><td>text</td><td>64</td><td>Model/part numarası</td></tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Material Status Codes</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Code</th><th>Status</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>1</td><td>Active</td><td>Tüm işlemler yapılabilir</td></tr>
+                            <tr><td>2</td><td>Blocked</td><td>Blocking Reason ZORUNLU</td></tr>
+                            <tr><td>3</td><td>Inactive</td><td>Hiçbir işlem yapılamaz</td></tr>
+                            <tr><td>4</td><td>Preparing to be used</td><td>SRM/PO/GR OK, MR YAPILAMAZ</td></tr>
+                            <tr><td>5</td><td>Preparing to discontinuation</td><td>MR/Issue/Transfer OK, yeni SRM YAPILAMAZ</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="businessRules" class="dev-tab-content">
+                    <h3>Material Number Atama Kuralları</h3>
+                    <ul>
+                        <li><strong>Seri ile otomatik:</strong> Prefix + artan numara (örn: PN-12848)</li>
+                        <li><strong>Manuel:</strong> ##.#####-#### formatı zorunlu</li>
+                        <li>Edit modunda material number DEĞİŞTİRİLEMEZ</li>
+                    </ul>
+
+                    <h3>Material Status Kuralları</h3>
+                    <ul>
+                        <li>Yeni malzeme DEFAULT status: <strong>"Preparing to be used" (4)</strong></li>
+                        <li>Status=Blocked (2) seçildiğinde <strong>Blocking Reason ZORUNLU</strong></li>
+                        <li>Blocking Reevaluation date girilebilir (opsiyonel)</li>
+                    </ul>
+
+                    <h3>Status Geçiş Kuralları</h3>
+                    <ul>
+                        <li>Active(1) → Blocked(2), Inactive(3), Preparing to discontinuation(5)</li>
+                        <li>Blocked(2) → Active(1), Inactive(3)</li>
+                        <li>Inactive(3) → Reactivate (özel yetki gerekir)</li>
+                        <li>Preparing to be used(4) → Active(1) (stok girişi yapıldığında)</li>
+                        <li>Preparing to discontinuation(5) → Inactive(3) (stok tükendiğinde)</li>
+                    </ul>
+
+                    <h3>MRP Parametreleri</h3>
+                    <ul>
+                        <li><strong>Reordering point:</strong> Bu seviyenin altına düşünce MRP önerisi oluşur</li>
+                        <li><strong>Maximum stock:</strong> MRP önerisi bu seviyeye kadar hesaplanır</li>
+                        <li><strong>Order batch:</strong> Siparişler bu miktarın KATLARINDAN oluşur</li>
+                        <li><strong>Safety stock:</strong> Emniyet stoğu (MRP hesaplamasında buffer)</li>
+                    </ul>
+
+                    <h3>Depo Hiyerarşisi</h3>
+                    <ul>
+                        <li>Storage → Location → Bin (3 seviye)</li>
+                        <li>Default Storage seçilince Location listesi filtrelenir</li>
+                        <li>Default Location seçilince Bin listesi filtrelenir</li>
+                    </ul>
+                </div>
+
+                <div id="validations" class="dev-tab-content">
+                    <h3>Zorunlu Alanlar</h3>
+                    <ul>
+                        <li><strong>Title:</strong> maxlength=128, ZORUNLU</li>
+                        <li><strong>Blocking Reason:</strong> Status=2 ise ZORUNLU</li>
+                    </ul>
+
+                    <h3>Maxlength Kuralları</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Maxlength</th></tr></thead>
+                        <tbody>
+                            <tr><td>Title</td><td>128</td></tr>
+                            <tr><td>Description</td><td>512</td></tr>
+                            <tr><td>Old material number</td><td>13</td></tr>
+                            <tr><td>Producer name</td><td>32</td></tr>
+                            <tr><td>Producer model name</td><td>64</td></tr>
+                            <tr><td>Blocking Reason</td><td>128</td></tr>
+                            <tr><td>Notes</td><td>512</td></tr>
+                            <tr><td>Accounting Number</td><td>8</td></tr>
+                            <tr><td>Material Group Code</td><td>8</td></tr>
+                            <tr><td>Alternative material 1-2</td><td>13</td></tr>
+                            <tr><td>Default Storage/Location/Bin</td><td>8</td></tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Format Validasyonları</h3>
+                    <ul>
+                        <li><strong>Material number:</strong> ##.#####-#### regex pattern</li>
+                        <li><strong>Alternative material:</strong> ##.#####-#### formatı</li>
+                        <li><strong>Accounting Number:</strong> Sadece rakam</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .dev-docs-panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 9999;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .dev-docs-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+        }
+        .dev-docs-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+        .dev-docs-content {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60vh;
+            background: #1a1a2e;
+            color: #e0e0e0;
+            box-shadow: 0 -5px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .dev-docs-content.active {
+            display: flex;
+            flex-direction: column;
+        }
+        .dev-docs-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .dev-docs-header h2 {
+            margin: 0;
+            font-size: 18px;
+        }
+        .dev-docs-close {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        .dev-docs-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 25px;
+        }
+        .dev-docs-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 15px;
+        }
+        .dev-tab {
+            background: #2a2a4a;
+            border: none;
+            color: #aaa;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .dev-tab:hover {
+            background: #3a3a5a;
+            color: #fff;
+        }
+        .dev-tab.active {
+            background: #667eea;
+            color: white;
+        }
+        .dev-tab-content {
+            display: none;
+        }
+        .dev-tab-content.active {
+            display: block;
+        }
+        .dev-tab-content h3 {
+            color: #667eea;
+            margin: 20px 0 10px 0;
+            font-size: 16px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+        }
+        .dev-tab-content h3:first-child {
+            margin-top: 0;
+        }
+        .dev-tab-content ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .dev-tab-content li {
+            margin: 8px 0;
+            line-height: 1.5;
+        }
+        .dev-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 13px;
+        }
+        .dev-table th {
+            background: #2a2a4a;
+            color: #667eea;
+            text-align: left;
+            padding: 10px;
+            border: 1px solid #333;
+        }
+        .dev-table td {
+            padding: 8px 10px;
+            border: 1px solid #333;
+        }
+        .dev-table tr:hover {
+            background: #2a2a4a;
+        }
+    </style>
+
+    <script>
+        function toggleDevDocs() {
+            const content = document.getElementById('devDocsContent');
+            const toggle = document.querySelector('.dev-docs-toggle');
+            content.classList.toggle('active');
+            toggle.style.display = content.classList.contains('active') ? 'none' : 'block';
+        }
+
+        function showDevTab(tabId) {
+            document.querySelectorAll('.dev-tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.dev-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
         }
     </script>
 </body>

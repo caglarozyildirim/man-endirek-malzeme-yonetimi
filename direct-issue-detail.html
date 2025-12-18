@@ -6,6 +6,94 @@
     <title>Doğrudan Çıkış Detay - IMMA</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
+<!--
+================================================================================
+IMMA DEVELOPER DOCUMENTATION
+================================================================================
+
+SCREEN: 20 DGI - Direct Goods Issue (Detail)
+FILE: direct-issue-detail.html
+LAST UPDATED: 2025-12-18
+
+--------------------------------------------------------------------------------
+RELATED DATABASE TABLES
+--------------------------------------------------------------------------------
+
+TABLE: Direct Goods Issue Header
+| Field Name                 | Type     | Length | Description                  |
+|----------------------------|----------|--------|------------------------------|
+| Material Movement Header Id| int      | 8      | Primary key                  |
+| Selected week number       | int      | 2      | Seçilen hafta numarası       |
+| Selected weeks first day   | date     | -      | Haftanın ilk günü            |
+| Description for the request| text     | 128    | İstek açıklaması             |
+| Requesting department      | text     | 8      | Talep eden departman         |
+| Requesting user info       | int      | 8      | Talep eden kullanıcı         |
+| Priority                   | bool     | -      | Öncelikli mi                 |
+
+TABLE: Material Movement (for tracking)
+| Field Name                 | Type     | Length | Description                  |
+|----------------------------|----------|--------|------------------------------|
+| Material Movement id       | int      | 12     | Hareket ID                   |
+| Material number            | text     | 13     | Malzeme numarası             |
+| Movement type              | int      | 2      | Hareket tipi (6=Goods issue) |
+| Movement quantity          | float    | 15     | Hareket miktarı              |
+| Stock record Id            | int      | 8      | Stok kaydı referansı         |
+| Created datetime           | datetime | -      | Oluşturma tarihi             |
+| Created by user info       | int      | 8      | Oluşturan kullanıcı          |
+
+--------------------------------------------------------------------------------
+MOVEMENT TYPE FOR DIRECT ISSUE
+--------------------------------------------------------------------------------
+
+| Code | Type               | Description                    |
+|------|--------------------|--------------------------------|
+| 6    | Goods issue        | Doğrudan çıkış                 |
+| 7    | Goods issue rollback| Çıkış iptali                  |
+
+--------------------------------------------------------------------------------
+BUSINESS RULES
+--------------------------------------------------------------------------------
+
+1. Doğrudan çıkış, depodan masraf merkezi bazlı malzeme çıkışıdır
+2. Masraf merkezi (Cost Center) ve kullanıcı seçimi zorunlu
+3. FIFO kuralına göre en eski stoktan çıkış yapılır
+4. Çıkış miktarı mevcut stoktan fazla olamaz
+5. Priority işaretlenirse öncelikli olarak işlenir
+6. 3 seviyeli onay eklenebilir (opsiyonel)
+
+--------------------------------------------------------------------------------
+DISPLAYED INFORMATION
+--------------------------------------------------------------------------------
+
+Issue Information:
+- Issue ID (Material Movement Header Id)
+- Date
+- Status
+- Performed by (user)
+
+Material Information:
+- Material number
+- Material title
+- Quantity
+- Unit of measure
+
+Location Information:
+- Source Storage
+- Location
+- Bin
+- Cost Center
+
+--------------------------------------------------------------------------------
+INTEGRATION NOTES
+--------------------------------------------------------------------------------
+
+- Material Stock tablosundan stok düşümü yapılır
+- Cost tablosunda Consumed Quantity güncellenir (FIFO)
+- Material Movement tablosuna kayıt eklenir (type=6)
+- Budget'tan düşüm yapılır (Euro değer bazında)
+
+================================================================================
+-->
 <body>
     <nav class="modern-navbar">
         <div class="navbar-container">
@@ -21,10 +109,10 @@
                 <li class="nav-item"><a href="material-list.html" class="nav-link"><span class="nav-icon">📦</span>Ana Veriler</a></li>
                 <li class="nav-item"><a href="mrp.html" class="nav-link"><span class="nav-icon">📈</span>MRP</a></li>
                 <li class="nav-item"><a href="srm-list.html" class="nav-link"><span class="nav-icon">🛒</span>Satınalma</a></li>
-                <li class="nav-item"><a href="budget-management.html" class="nav-link"><span class="nav-icon">💰</span>Bütçe</a></li>
+                <li class="nav-item"><a href="budget-management.html" class="nav-link"><span class="nav-icon">💰</span>Budget</a></li>
                 <li class="nav-item"><a href="material-request-list.html" class="nav-link"><span class="nav-icon">📋</span>Talepler</a></li>
                 <li class="nav-item">
-                    <a href="transfer-list.html" class="nav-link active"><span class="nav-icon">🏭</span>Stok</a>
+                    <a href="transfer-list.html" class="nav-link active"><span class="nav-icon">🏭</span>Stock</a>
                     <div class="dropdown-menu">
                         <a href="direct-issue.html" class="dropdown-item active">Doğrudan Çıkış</a>
                         <a href="warehouse-transfer.html" class="dropdown-item">Depo Transferi</a>
@@ -46,7 +134,7 @@
         <div class="page-header">
             <div>
                 <h1 class="page-title">Doğrudan Çıkış Detayı</h1>
-                <p class="page-subtitle">Stok > Doğrudan Çıkış > <span id="issueId">-</span></p>
+                <p class="page-subtitle">Stock > Doğrudan Çıkış > <span id="issueId">-</span></p>
             </div>
             <div class="page-actions">
                 <a href="direct-issue.html" class="btn btn-outline">← Geri Dön</a>
@@ -55,24 +143,24 @@
 
         <div class="card">
             <div class="card-header">
-                <h3>Çıkış Bilgileri</h3>
+                <h3>Issue Information</h3>
             </div>
             <div class="card-body">
                 <div class="info-grid">
                     <div class="info-item">
-                        <label>Çıkış ID:</label>
+                        <label>Issue ID:</label>
                         <span id="displayIssueId">-</span>
                     </div>
                     <div class="info-item">
-                        <label>Tarih:</label>
+                        <label>Date:</label>
                         <span id="displayDate">-</span>
                     </div>
                     <div class="info-item">
-                        <label>Durum:</label>
+                        <label>Status:</label>
                         <span id="displayStatus">-</span>
                     </div>
                     <div class="info-item">
-                        <label>İşlem Yapan:</label>
+                        <label>Performed by:</label>
                         <span id="displayUser">-</span>
                     </div>
                 </div>
@@ -81,24 +169,24 @@
 
         <div class="card">
             <div class="card-header">
-                <h3>Malzeme Bilgileri</h3>
+                <h3>Material Information</h3>
             </div>
             <div class="card-body">
                 <div class="info-grid">
                     <div class="info-item">
-                        <label>Malzeme No:</label>
+                        <label>Material number:</label>
                         <span id="displayMaterialNo">-</span>
                     </div>
                     <div class="info-item">
-                        <label>Malzeme Adı:</label>
+                        <label>Material title:</label>
                         <span id="displayMaterialName">-</span>
                     </div>
                     <div class="info-item">
-                        <label>Miktar:</label>
+                        <label>Quantity:</label>
                         <span id="displayQuantity">-</span>
                     </div>
                     <div class="info-item">
-                        <label>Birim:</label>
+                        <label>Unit of measure:</label>
                         <span id="displayUnit">-</span>
                     </div>
                 </div>
@@ -107,16 +195,16 @@
 
         <div class="card">
             <div class="card-header">
-                <h3>Lokasyon Bilgileri</h3>
+                <h3>Location Information</h3>
             </div>
             <div class="card-body">
                 <div class="info-grid">
                     <div class="info-item">
-                        <label>Kaynak Depo:</label>
+                        <label>Source Storage:</label>
                         <span id="displayWarehouse">-</span>
                     </div>
                     <div class="info-item">
-                        <label>Lokasyon:</label>
+                        <label>Location:</label>
                         <span id="displayLocation">-</span>
                     </div>
                     <div class="info-item">
@@ -124,7 +212,7 @@
                         <span id="displayBin">-</span>
                     </div>
                     <div class="info-item">
-                        <label>Maliyet Merkezi:</label>
+                        <label>Cost Center:</label>
                         <span id="displayCostCenter">-</span>
                     </div>
                 </div>
@@ -165,7 +253,7 @@
                 materialName: 'Rulman 6205-2RS',
                 quantity: 5,
                 unit: 'AD',
-                warehouse: 'Merkez Depo',
+                warehouse: 'Merkez Storage',
                 location: 'A-01-03',
                 bin: 'SHELF-A-003',
                 costCenter: 'BAKIM-001'
@@ -179,7 +267,7 @@
                 materialName: 'Sensör Endüktif M12',
                 quantity: 2,
                 unit: 'AD',
-                warehouse: 'Merkez Depo',
+                warehouse: 'Merkez Storage',
                 location: 'B-02-01',
                 bin: 'SHELF-B-010',
                 costCenter: 'URETIM-001'
@@ -193,7 +281,7 @@
                 materialName: 'Elektrik Kablosu 3x1.5',
                 quantity: 50,
                 unit: 'M',
-                warehouse: 'Merkez Depo',
+                warehouse: 'Merkez Storage',
                 location: 'C-03-01',
                 bin: 'ROLL-C-001',
                 costCenter: 'ELEKTRIK-001'
@@ -207,7 +295,7 @@
                 materialName: 'Güvenlik Eldiveni',
                 quantity: 10,
                 unit: 'AD',
-                warehouse: 'Merkez Depo',
+                warehouse: 'Merkez Storage',
                 location: 'D-01-01',
                 bin: 'BIN-D-100',
                 costCenter: 'ISG-001'
@@ -247,5 +335,83 @@
 
         document.addEventListener('DOMContentLoaded', initializePage);
     </script>
+
+    <!-- DEVELOPER DOCUMENTATION PANEL -->
+    <div id="devDocsPanel" class="dev-docs-panel">
+        <button class="dev-docs-toggle" onclick="toggleDevDocs()">📋 Geliştirici Dokümantasyonu</button>
+        <div class="dev-docs-content" id="devDocsContent">
+            <div class="dev-docs-header">
+                <h2>📋 20 DGI - Direct Goods Issue (Detail)</h2>
+                <button class="dev-docs-close" onclick="toggleDevDocs()">✕</button>
+            </div>
+            <div class="dev-docs-body">
+                <div class="dev-docs-tabs">
+                    <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
+                    <button class="dev-tab" onclick="showDevTab('movementTypes')">Hareket Tipleri</button>
+                </div>
+                <div id="dataStructure" class="dev-tab-content active">
+                    <h3>Direct Goods Issue Header Tablosu</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Uzunluk</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Material Movement Header Id</td><td>int</td><td>8</td><td>Primary key</td></tr>
+                            <tr><td>Selected week number</td><td>int</td><td>2</td><td>Seçilen hafta numarası</td></tr>
+                            <tr><td>Selected weeks first day</td><td>date</td><td>-</td><td>Haftanın ilk günü</td></tr>
+                            <tr><td>Description for the request</td><td>text</td><td>128</td><td>Talep açıklaması</td></tr>
+                            <tr><td>Requesting department</td><td>text</td><td>8</td><td>Talep eden departman</td></tr>
+                            <tr><td>Requesting user info</td><td>int</td><td>8</td><td>Talep eden kullanıcı</td></tr>
+                            <tr><td>Priority</td><td>bool</td><td>-</td><td>Öncelikli mi</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Material Movement Alanları</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Storage/Location/Bin</td><td>Çıkış yapılan depo bilgileri</td></tr>
+                            <tr><td>Cost Center Code</td><td>Masraf merkezi (maxlength=10)</td></tr>
+                            <tr><td>Movement Type</td><td>6: Goods issue</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="businessRules" class="dev-tab-content">
+                    <div class="rules-section">
+                        <h4>Doğrudan Çıkış Kuralları</h4>
+                        <ul>
+                            <li>Masraf merkezi seçimi zorunlu</li>
+                            <li>Talep eden kişi/departman seçimi zorunlu</li>
+                            <li>FIFO kuralına göre stok seçilir (en eski Cost ID önce)</li>
+                            <li>3 seviyeli onay eklenebilir (isteğe bağlı)</li>
+                            <li>Hafta numarası bütçe kontrolü için kullanılır</li>
+                        </ul>
+                    </div>
+                    <div class="rules-section">
+                        <h4>Stok Kontrolü</h4>
+                        <ul>
+                            <li>Stoktan fazla çıkış yapılamaz</li>
+                            <li>Bloklu stoktan çıkış yapılamaz (Block for issue check)</li>
+                            <li>İnaktif depodan çıkış yapılabilir</li>
+                        </ul>
+                    </div>
+                </div>
+                <div id="movementTypes" class="dev-tab-content">
+                    <div class="rules-section">
+                        <h4>İlgili Hareket Tipleri</h4>
+                        <table class="dev-table">
+                            <thead><tr><th>Kod</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                            <tbody>
+                                <tr><td>6</td><td>Goods issue</td><td>Malzeme çıkışı</td></tr>
+                                <tr><td>7</td><td>Goods issue rollback</td><td>Çıkış iptali</td></tr>
+                                <tr><td>14</td><td>Other material issue</td><td>Diğer malzeme çıkışı</td></tr>
+                                <tr><td>15</td><td>Other material issue rollback</td><td>Diğer çıkış iptali</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>.dev-docs-panel{position:fixed;bottom:0;left:0;right:0;z-index:9999;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}.dev-docs-toggle{width:100%;padding:12px 20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;cursor:pointer;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px}.dev-docs-toggle:hover{background:linear-gradient(135deg,#5a6fd6 0%,#6a4190 100%)}.dev-docs-content{display:none;background:#1a1a2e;color:#eee;max-height:70vh;overflow-y:auto}.dev-docs-content.active{display:block}.dev-docs-header{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;background:#16213e;border-bottom:2px solid #667eea}.dev-docs-header h2{margin:0;font-size:16px;color:#fff}.dev-docs-close{background:#e74c3c;color:#fff;border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px}.dev-docs-body{padding:20px}.dev-docs-tabs{display:flex;gap:10px;margin-bottom:20px;border-bottom:2px solid #333;padding-bottom:10px}.dev-tab{padding:8px 16px;background:#2d2d44;color:#aaa;border:none;border-radius:6px 6px 0 0;cursor:pointer;font-size:13px}.dev-tab.active,.dev-tab:hover{background:#667eea;color:#fff}.dev-tab-content{display:none}.dev-tab-content.active{display:block}.dev-table{width:100%;border-collapse:collapse;margin:15px 0;font-size:13px}.dev-table th,.dev-table td{padding:10px;text-align:left;border:1px solid #333}.dev-table th{background:#2d2d44;color:#667eea;font-weight:600}.dev-table tr:nth-child(even){background:#1f1f35}.rules-section{margin-bottom:20px}.rules-section h4{color:#667eea;margin-bottom:10px;font-size:14px}.rules-section ul{margin:0;padding-left:20px}.rules-section li{margin-bottom:6px;line-height:1.5;font-size:13px}</style>
+    <script>function toggleDevDocs(){document.getElementById('devDocsContent').classList.toggle('active')}function showDevTab(tabId){document.querySelectorAll('.dev-tab-content').forEach(c=>c.classList.remove('active'));document.querySelectorAll('.dev-tab').forEach(t=>t.classList.remove('active'));document.getElementById(tabId).classList.add('active');event.target.classList.add('active')}</script>
 </body>
 </html>

@@ -6,6 +6,81 @@
     <title>Numara Serisi Detay - IMMA</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
+<!--
+================================================================================
+IMMA DEVELOPER DOCUMENTATION
+================================================================================
+
+SCREEN: 5 MNS - Maintain Number Series (Detail)
+FILE: number-series-detail.html
+LAST UPDATED: 2025-12-18
+
+--------------------------------------------------------------------------------
+RELATED DATABASE TABLES
+--------------------------------------------------------------------------------
+
+TABLE: Material Serial
+| Field Name                    | Type     | Length | Description                    |
+|-------------------------------|----------|--------|--------------------------------|
+| Material Serial Id            | int      | 4      | Primary key                    |
+| Material Serial               | text     | 2      | Seri prefix kodu (2 karakter)  |
+| Material Serial Title         | text     | 32     | Seri açıklaması                |
+| Creation datetime             | datetime | -      | Oluşturma tarihi               |
+| Created by user info          | int      | 8      | Oluşturan kullanıcı ID         |
+| Last created material number  | int      | 8      | Son oluşturulan numara         |
+| Inactivation status           | bool     | -      | İnaktif durumu                 |
+| Inactivated by user info      | int      | 8      | İnaktif eden kullanıcı         |
+| Inactivation date time        | datetime | -      | İnaktif edilme tarihi          |
+
+--------------------------------------------------------------------------------
+BUSINESS RULES
+--------------------------------------------------------------------------------
+
+1. Material Serial (prefix) 2 karakterlik benzersiz kod olmalı
+2. Title maxlength=32 karakter
+3. Last created material number sadece okunabilir, sistem tarafından güncellenir
+4. İnaktif seri ile yeni malzeme oluşturulamaz
+5. İnaktif edildiğinde tarih ve kullanıcı bilgisi otomatik set edilir
+
+--------------------------------------------------------------------------------
+MATERIAL NUMBER FORMAT
+--------------------------------------------------------------------------------
+
+Malzeme numarası formatı: ##.#####-####
+- İlk 2 karakter: Material Serial (prefix)
+- Sonraki 5 karakter: Sıra numarası
+- Son 4 karakter: Alt sıra numarası
+
+Örnek: MK.00847-0001
+- MK: Mekanik Parça serisi
+- 00847: 847. malzeme
+- 0001: İlk varyant
+
+--------------------------------------------------------------------------------
+FORM MODES
+--------------------------------------------------------------------------------
+
+- view: Tüm alanlar disabled, sadece görüntüleme
+- edit: Serial ve Title düzenlenebilir, inactivation checkbox aktif
+- create: Yeni seri oluşturma
+
+URL Parametreleri:
+- mode: view | edit | create
+- id: Material Serial ID (view/edit için)
+
+--------------------------------------------------------------------------------
+FIELD VALIDATIONS
+--------------------------------------------------------------------------------
+
+- Material Serial Id: Otomatik (readonly)
+- Material Serial: Zorunlu, maxlength=2, sadece alfanumerik
+- Material Serial Title: Zorunlu, maxlength=32
+- Last created material number: Readonly (sistem günceller)
+- Creation datetime: Readonly (otomatik set)
+- Created by user info: Readonly (otomatik set)
+
+================================================================================
+-->
 <body>
     <nav class="modern-navbar">
         <div class="navbar-container">
@@ -17,15 +92,73 @@
                 </div>
             </a>
             <ul class="navbar-menu">
-                <li class="nav-item"><a href="index.html" class="nav-link"><span class="nav-icon">📊</span>Dashboard</a></li>
                 <li class="nav-item">
-                    <a href="material-list.html" class="nav-link active"><span class="nav-icon">📦</span>Ana Veriler</a>
+                    <a href="index.html" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="material-list.html" class="nav-link active">
+                        <span class="nav-icon">📦</span>
+                        Ana Veriler
+                    </a>
                     <div class="dropdown-menu">
                         <a href="material-list.html" class="dropdown-item">Malzeme Listesi</a>
-                        <a href="supplier-list.html" class="dropdown-item">Tedarikci Listesi</a>
+                        <a href="supplier-list.html" class="dropdown-item">Tedarikçi Listesi</a>
                         <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
                         <a href="number-series.html" class="dropdown-item active">Numara Serileri</a>
                         <a href="material-group.html" class="dropdown-item">Malzeme Gruplari</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="mrp.html" class="nav-link">
+                        <span class="nav-icon">📈</span>
+                        MRP
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="srm-list.html" class="nav-link">
+                        <span class="nav-icon">🛒</span>
+                        Satinalma
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="srm-list.html" class="dropdown-item">Talep Listesi</a>
+                        <a href="goods-receipt.html" class="dropdown-item">Mal Kabul</a>
+                        <a href="po-list.html" class="dropdown-item">Satinalma Siparisleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="budget-management.html" class="nav-link">
+                        <span class="nav-icon">💰</span>
+                        Budget
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="budget-management.html" class="dropdown-item">Budget Yonetimi</a>
+                        <a href="budget-preference.html" class="dropdown-item">Bütçe Tercihleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="material-request-list.html" class="nav-link">
+                        <span class="nav-icon">📋</span>
+                        Talepler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-request-list.html" class="dropdown-item">Talep Listesi</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="transfer-list.html" class="nav-link">
+                        <span class="nav-icon">🏭</span>
+                        Stock
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
+                        <a href="warehouse-transfer.html" class="dropdown-item">Depo Transferi</a>
+                        <a href="transfer-list.html" class="dropdown-item">Transfer Listesi</a>
+                        <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
+                        <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
+                        <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
                     </div>
                 </li>
             </ul>
@@ -40,47 +173,47 @@
         <div class="page-header">
             <div>
                 <h1 class="page-title" id="pageTitle">Numara Serisi Detay</h1>
-                <p class="page-subtitle">Ana Veriler > Numara Serileri > <span id="breadcrumbAction">Goruntule</span></p>
+                <p class="page-subtitle">Ana Veriler > Numara Serileri > <span id="breadcrumbAction">Görüntüle</span></p>
             </div>
             <div class="page-actions">
                 <a href="number-series.html" class="btn btn-outline">← Listeye Don</a>
-                <button class="btn btn-primary" id="editModeBtn" style="display: none;">Duzenle</button>
+                <button class="btn btn-primary" id="editModeBtn" style="display: none;">Düzenle</button>
             </div>
         </div>
 
         <div class="card">
             <div class="card-header">
-                <h3 id="formTitle">Numara Serisi Bilgileri</h3>
+                <h3 id="formTitle">Number Series Information</h3>
             </div>
             <div class="card-body">
                 <form id="numberSeriesForm">
                     <div class="form-row">
                         <div class="form-group col-4">
-                            <label>Seri ID</label>
+                            <label>Material Serial Id</label>
                             <input type="text" id="serialId" class="form-control" readonly>
                         </div>
                         <div class="form-group col-4">
-                            <label>Seri Kodu <span class="required">*</span></label>
+                            <label>Material Serial <span class="required">*</span></label>
                             <input type="text" id="serialCode" class="form-control" maxlength="2" placeholder="Ornek: MK, EL" required>
                             <small class="form-text">2 karakterli seri kodu</small>
                         </div>
                         <div class="form-group col-4">
-                            <label>Seri Adi <span class="required">*</span></label>
+                            <label>Material Serial Title <span class="required">*</span></label>
                             <input type="text" id="serialTitle" class="form-control" maxlength="32" placeholder="Ornek: Mekanik Parca" required>
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group col-4">
-                            <label>Son Olusturulan No</label>
+                            <label>Last created material number</label>
                             <input type="text" id="lastNumber" class="form-control" readonly placeholder="Otomatik olusturulacak">
                         </div>
                         <div class="form-group col-4">
-                            <label>Olusturma Tarihi</label>
+                            <label>Creation date time</label>
                             <input type="text" id="createdDate" class="form-control" readonly>
                         </div>
                         <div class="form-group col-4">
-                            <label>Olusturan</label>
+                            <label>Created by user info</label>
                             <input type="text" id="createdBy" class="form-control" readonly>
                         </div>
                     </div>
@@ -89,7 +222,7 @@
                         <div class="form-group col-12">
                             <label class="checkbox-label">
                                 <input type="checkbox" id="inactivationCheck">
-                                <span>Pasif Et</span>
+                                <span>Inactivation status</span>
                             </label>
                         </div>
                     </div>
@@ -97,11 +230,11 @@
                     <div id="inactivationDetails" style="display: none;">
                         <div class="form-row">
                             <div class="form-group col-6">
-                                <label>Pasif Edilme Tarihi</label>
+                                <label>Inactivation date time</label>
                                 <input type="text" id="inactivationDate" class="form-control" readonly>
                             </div>
                             <div class="form-group col-6">
-                                <label>Pasif Eden Kullanici</label>
+                                <label>Inactivated by user info</label>
                                 <input type="text" id="inactivatedBy" class="form-control" readonly>
                             </div>
                         </div>
@@ -145,8 +278,8 @@
 
             switch(mode) {
                 case 'view':
-                    document.getElementById('pageTitle').textContent = 'Numara Serisi Goruntule';
-                    document.getElementById('breadcrumbAction').textContent = 'Goruntule';
+                    document.getElementById('pageTitle').textContent = 'Numara Serisi Görüntüle';
+                    document.getElementById('breadcrumbAction').textContent = 'Görüntüle';
                     document.getElementById('editModeBtn').style.display = 'inline-block';
                     document.getElementById('formActions').style.display = 'none';
                     document.getElementById('serialCode').disabled = true;
@@ -158,8 +291,8 @@
                     if (id && numberSeries[id]) loadData(numberSeries[id]);
                     break;
                 case 'edit':
-                    document.getElementById('pageTitle').textContent = 'Numara Serisi Duzenle';
-                    document.getElementById('breadcrumbAction').textContent = 'Duzenle';
+                    document.getElementById('pageTitle').textContent = 'Numara Serisi Düzenle';
+                    document.getElementById('breadcrumbAction').textContent = 'Düzenle';
                     document.getElementById('editModeBtn').style.display = 'none';
                     document.getElementById('formActions').style.display = 'flex';
                     document.getElementById('serialCode').disabled = false;
@@ -218,5 +351,75 @@
 
         document.addEventListener('DOMContentLoaded', initializePage);
     </script>
+
+    <!-- DEVELOPER DOCUMENTATION PANEL -->
+    <div id="devDocsPanel" class="dev-docs-panel">
+        <button class="dev-docs-toggle" onclick="toggleDevDocs()">📋 Geliştirici Dokümantasyonu</button>
+        <div class="dev-docs-content" id="devDocsContent">
+            <div class="dev-docs-header">
+                <h2>📋 5 MNS - Maintain Number Series (Detail)</h2>
+                <button class="dev-docs-close" onclick="toggleDevDocs()">✕</button>
+            </div>
+            <div class="dev-docs-body">
+                <div class="dev-docs-tabs">
+                    <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
+                    <button class="dev-tab" onclick="showDevTab('validations')">Validasyonlar</button>
+                </div>
+                <div id="dataStructure" class="dev-tab-content active">
+                    <h3>Material Serial Tablosu</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Uzunluk</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Material Serial Id</td><td>int</td><td>4</td><td>Primary key</td></tr>
+                            <tr><td>Material Serial</td><td>text</td><td>2</td><td>Prefix (ör: MK, EL, HY)</td></tr>
+                            <tr><td>Material Serial Title</td><td>text</td><td>32</td><td>Seri başlığı</td></tr>
+                            <tr><td>Creation datetime</td><td>datetime</td><td>-</td><td>Oluşturma tarihi</td></tr>
+                            <tr><td>Created by user info</td><td>int</td><td>8</td><td>Oluşturan kullanıcı</td></tr>
+                            <tr><td>Last created material number</td><td>int</td><td>8</td><td>Son oluşturulan numara</td></tr>
+                            <tr><td>Inactivation status</td><td>bool</td><td>-</td><td>İnaktif durumu</td></tr>
+                            <tr><td>Inactivated by user info</td><td>int</td><td>8</td><td>İnaktif eden kullanıcı</td></tr>
+                            <tr><td>Inactivation date time</td><td>datetime</td><td>-</td><td>İnaktivasyon tarihi</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Malzeme Numarası Formatı</h3>
+                    <p style="background:#2d2d44;padding:10px;border-radius:4px;font-family:monospace;">##.#####-#### (Örnek: 01.00001-0001)</p>
+                </div>
+                <div id="businessRules" class="dev-tab-content">
+                    <div class="rules-section">
+                        <h4>Numara Serisi Kuralları</h4>
+                        <ul>
+                            <li>Prefix maksimum 2 karakter olmalıdır</li>
+                            <li>Prefix benzersiz olmalıdır</li>
+                            <li>Yeni malzeme oluşturulduğunda Last created material number otomatik artar</li>
+                            <li>İnaktif seri kullanılamaz</li>
+                            <li>Mevcut malzemeleri olan seri inaktif yapılabilir ama silinmemeli</li>
+                        </ul>
+                    </div>
+                    <div class="rules-section">
+                        <h4>Numara Atama Akışı</h4>
+                        <ul>
+                            <li>1. Kullanıcı seri seçer</li>
+                            <li>2. Sistem son numarayı kontrol eder</li>
+                            <li>3. Yeni numara = son numara + 1</li>
+                            <li>4. Format: [Prefix]-[5 haneli sayı]</li>
+                        </ul>
+                    </div>
+                </div>
+                <div id="validations" class="dev-tab-content">
+                    <div class="rules-section">
+                        <h4>Alan Validasyonları</h4>
+                        <ul>
+                            <li><strong>Material Serial:</strong> Zorunlu, text, maxlength=2, büyük harf</li>
+                            <li><strong>Material Serial Title:</strong> Zorunlu, text, maxlength=32</li>
+                            <li><strong>Last created material number:</strong> Readonly, sistem tarafından yönetilir</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>.dev-docs-panel{position:fixed;bottom:0;left:0;right:0;z-index:9999;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}.dev-docs-toggle{width:100%;padding:12px 20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;cursor:pointer;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px}.dev-docs-toggle:hover{background:linear-gradient(135deg,#5a6fd6 0%,#6a4190 100%)}.dev-docs-content{display:none;background:#1a1a2e;color:#eee;max-height:70vh;overflow-y:auto}.dev-docs-content.active{display:block}.dev-docs-header{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;background:#16213e;border-bottom:2px solid #667eea}.dev-docs-header h2{margin:0;font-size:16px;color:#fff}.dev-docs-close{background:#e74c3c;color:#fff;border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px}.dev-docs-body{padding:20px}.dev-docs-tabs{display:flex;gap:10px;margin-bottom:20px;border-bottom:2px solid #333;padding-bottom:10px}.dev-tab{padding:8px 16px;background:#2d2d44;color:#aaa;border:none;border-radius:6px 6px 0 0;cursor:pointer;font-size:13px}.dev-tab.active,.dev-tab:hover{background:#667eea;color:#fff}.dev-tab-content{display:none}.dev-tab-content.active{display:block}.dev-table{width:100%;border-collapse:collapse;margin:15px 0;font-size:13px}.dev-table th,.dev-table td{padding:10px;text-align:left;border:1px solid #333}.dev-table th{background:#2d2d44;color:#667eea;font-weight:600}.dev-table tr:nth-child(even){background:#1f1f35}.rules-section{margin-bottom:20px}.rules-section h4{color:#667eea;margin-bottom:10px;font-size:14px}.rules-section ul{margin:0;padding-left:20px}.rules-section li{margin-bottom:6px;line-height:1.5;font-size:13px}</style>
+    <script>function toggleDevDocs(){document.getElementById('devDocsContent').classList.toggle('active')}function showDevTab(tabId){document.querySelectorAll('.dev-tab-content').forEach(c=>c.classList.remove('active'));document.querySelectorAll('.dev-tab').forEach(t=>t.classList.remove('active'));document.getElementById(tabId).classList.add('active');event.target.classList.add('active')}</script>
 </body>
 </html>

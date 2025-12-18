@@ -6,6 +6,229 @@
     <title>Mal Kabul - IMMA</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
+<!--
+================================================================================
+IMMA DEVELOPER DOCUMENTATION
+================================================================================
+
+SCREEN: 13 GR - Goods Receipt
+FILE: goods-receipt.html
+LAST UPDATED: 2025-12-18
+
+--------------------------------------------------------------------------------
+RELATED DATABASE TABLES
+--------------------------------------------------------------------------------
+
+TABLE: Cost (Ana stok/maliyet tablosu)
+| Field Name                         | Type     | Length | Description                          |
+|------------------------------------|----------|--------|--------------------------------------|
+| Cost ID                            | int      | 8      | Primary key - FIFO sıralaması için   |
+| Total Quantity                     | float    | 15     | Giriş yapılan toplam miktar          |
+| Total Euro Cost                    | float    | 14     | Toplam Euro maliyeti                 |
+| Total TRY Cost                     | float    | 14     | Toplam TL maliyeti                   |
+| Consumed Quantity                  | float    | 15     | Tüketilen/çıkış yapılan miktar       |
+| Consumed Euro Value                | float    | 14     | Tüketilen Euro değeri                |
+| Consumed TRY Value                 | float    | 14     | Tüketilen TL değeri                  |
+| Totally consumed check             | bool     | -      | Stok tamamen tükendi mi?             |
+| Storage code                       | text     | 12     | Depo kodu                            |
+| Location code                      | text     | 12     | Lokasyon kodu                        |
+| Bin code                           | text     | 12     | Bin kodu                             |
+| Block for issue check              | bool     | -      | Çıkış için bloklu mu?                |
+| Euro Unit cost                     | float    | 14     | Birim Euro maliyeti                  |
+| TRY Unit cost                      | float    | 14     | Birim TL maliyeti                    |
+| Original currency code             | text     | 3      | Orijinal para birimi (EUR, USD, TRY) |
+| Original goods receipt unit price  | float    | 14     | Orijinal birim fiyatı                |
+| Goods receipt date time            | datetime | -      | Mal kabul tarihi/saati               |
+| Goods receipt document date        | date     | -      | Belge tarihi (irsaliye/fatura)       |
+
+TABLE: Material Stock (Malzeme-Stok ilişkisi)
+| Field Name              | Type     | Length | Description                          |
+|-------------------------|----------|--------|--------------------------------------|
+| Material Stock Id       | int      | 8      | Primary key                          |
+| Material number         | text     | 13     | Malzeme numarası (FK)                |
+| Cost ID                 | int      | 8      | Cost tablosu referansı (FK)          |
+| Purchasing Order Item Id| int      | 12     | PO satırı referansı (FK)             |
+
+TABLE: Material Movement (Hareket kaydı)
+| Field Name              | Type     | Length | Description                          |
+|-------------------------|----------|--------|--------------------------------------|
+| Material Movement Id    | int      | 12     | Primary key                          |
+| Material number         | text     | 13     | Malzeme numarası                     |
+| Movement type           | char     | 1      | Hareket tipi (1-15)                  |
+| Quantity                | float    | 15     | Hareket miktarı                      |
+| Cost ID                 | int      | 8      | İlgili Cost kaydı                    |
+| Movement datetime       | datetime | -      | Hareket tarihi/saati                 |
+| Created by user info    | int      | 8      | İşlemi yapan kullanıcı               |
+| Document number         | text     | 20     | İrsaliye/Fatura numarası             |
+
+TABLE: Purchasing Order Item (Sipariş satırı - referans)
+| Field Name                   | Type     | Length | Description                    |
+|------------------------------|----------|--------|--------------------------------|
+| Purchasing Order item Id     | int      | 12     | Primary key                    |
+| Purchasing Order SAP no      | int      | 10     | SAP sipariş numarası           |
+| Purchasing Order SAP Item No | int      | 4      | SAP satır numarası             |
+| Material number              | text     | 13     | Malzeme numarası               |
+| Unit of measure code         | text     | 3      | Ölçü birimi                    |
+| Order quantity               | float    | 15     | Sipariş miktarı                |
+| Goods receipt quantity       | float    | 15     | Teslim alınan toplam miktar    |
+| currency code                | text     | 3      | Para birimi                    |
+| Unit price                   | float    | 14     | Birim fiyatı                   |
+
+Material Movement Types:
+| Code | Description                              |
+|------|------------------------------------------|
+| 1    | Goods Receipt (Mal Kabul)                |
+| 2    | Goods Receipt Rollback (Mal Kabul İptali)|
+| 3    | Goods Return (Mal İade)                  |
+| 4    | Material transfer entry (Depo Giriş)     |
+| 5    | Material transfer exit (Depo Çıkış)      |
+| 6    | Goods issue (Malzeme Çıkışı)             |
+| 7    | Goods issue rollback (Çıkış İptali)      |
+| 8    | Inventory positive record (+Sayım Farkı) |
+| 9    | Inventory negative record (-Sayım Farkı) |
+| 10   | Packing material receipt (Ambalaj Giriş) |
+| 11   | Packing material return (Ambalaj İade)   |
+| 12   | Scrapping (Hurda)                        |
+| 13   | Scrapping Rollback (Hurda İptali)        |
+| 14   | Other material issue (Diğer Çıkış)       |
+| 15   | Other material issue rollback            |
+
+--------------------------------------------------------------------------------
+BUSINESS RULES (İş Kuralları)
+--------------------------------------------------------------------------------
+
+FIFO PRENSİBİ (KRİTİK):
+1. Her mal kabul için YENİ Cost kaydı oluşturulur
+2. Cost ID sıralaması = FIFO sıralaması
+3. Stok çıkışlarında EN DÜŞÜK Cost ID'li kayıt önce kullanılır
+4. Totally consumed check = true olunca bir sonraki kayda geçilir
+5. Manuel FIFO müdahalesi YAPILAMAZ
+
+MAL KABUL KURALLARI:
+1. PO (Purchasing Order) seçimi ZORUNLU
+2. En az bir belge numarası ZORUNLU (irsaliye VEYA fatura)
+3. Hem irsaliye hem fatura girilebilir
+4. Teslim miktarı sipariş miktarını AŞAMAZ
+5. Kısmi teslimat yapılabilir (Goods receipt quantity güncellenir)
+6. Kısmi teslimat ile sipariş KAPATILABİLİR (force close)
+
+DEPO/LOKASYON/BİN SEÇİMİ:
+1. Varsayılan: Malzemenin default depo/lokasyon/bin bilgisi
+2. Manuel değiştirilebilir (aktif depolar arasından)
+3. İnaktif depoya MAL KABUL YAPILAMAZ
+4. Seçilen depo, stok takibi için Cost kaydına yazılır
+
+DÖVİZ KURU:
+1. Orijinal para birimi (Original currency code) saklanır
+2. EUR çevrimi için SATIŞ KURU kullanılır
+3. TRY çevrimi için SATIŞ KURU kullanılır
+4. Kur tarihi: Goods receipt document date
+
+ETİKET HESAPLAMA:
+1. Unit quantity in a package değeri varsa etiket adedi hesaplanır
+2. Etiket adedi = Total Quantity / Unit quantity in a package
+3. Kesirli değerler yukarı yuvarlanır
+
+MALİYET HESAPLAMA:
+1. Euro Unit cost = Total Euro Cost / Total Quantity
+2. TRY Unit cost = Total TRY Cost / Total Quantity
+3. Birim maliyetler otomatik hesaplanır ve saklanır
+
+--------------------------------------------------------------------------------
+FIELD VALIDATIONS
+--------------------------------------------------------------------------------
+
+Zorunlu Alanlar:
+- Purchasing Order seçimi: ZORUNLU
+- Material number: ZORUNLU (PO'dan gelir)
+- Teslim miktarı: > 0 ve <= Kalan sipariş miktarı
+- İrsaliye No VEYA Fatura No: En az biri ZORUNLU
+- Goods receipt document date: ZORUNLU
+
+Opsiyonel Alanlar:
+- Storage/Location/Bin: Varsayılan değerler kullanılabilir
+- Her iki belge numarası (irsaliye + fatura)
+- Notlar
+
+Hesaplanan Alanlar (READONLY):
+- Cost ID: Otomatik artan
+- Euro Unit cost
+- TRY Unit cost
+- Goods receipt date time: Sistem tarihi/saati
+
+--------------------------------------------------------------------------------
+WORKFLOW / PROCESS FLOW
+--------------------------------------------------------------------------------
+
+MAL KABUL SÜRECİ:
+1. Kullanıcı PO (Purchasing Order) seçer
+2. PO satırları listelenir
+3. Teslim alınacak satır(lar) seçilir
+4. Her satır için:
+   a. Teslim miktarı girilir (max: kalan sipariş)
+   b. Birim fiyat doğrulanır (PO'dan gelir)
+   c. Depo/Lokasyon/Bin seçilir veya varsayılan kullanılır
+5. Belge bilgileri girilir:
+   a. İrsaliye numarası ve/veya
+   b. Fatura numarası
+   c. Belge tarihi
+6. "Mal Kabul" butonuna tıklanır
+7. Sistem kontrolleri:
+   a. Miktar kontrolü
+   b. Belge kontrolü
+   c. Depo aktiflik kontrolü
+8. İşlem onayı
+9. Cost kayıtları oluşturulur
+10. Material Movement kayıtları oluşturulur (Type=1)
+11. PO Goods receipt quantity güncellenir
+12. Malzeme Total Stock güncellenir
+13. Etiket yazdırma seçeneği sunulur
+
+GERİ ALMA (ROLLBACK):
+1. Mal kabul kaydı seçilir
+2. Geri alınacak miktar girilir (max: kalan stok)
+3. İşlem onayı
+4. Material Movement kaydı oluşturulur (Type=2)
+5. Cost kaydı güncellenir (Consumed Quantity artar)
+6. PO Goods receipt quantity azalır
+
+KISMİ TESLİMAT:
+1. Sipariş miktarından az teslim alınabilir
+2. PO durumu "Kısmen Teslim" olur
+3. Kalan miktar için yeni mal kabul yapılabilir
+4. "Siparişi Kapat" ile zorla kapatılabilir
+
+--------------------------------------------------------------------------------
+INTEGRATION NOTES
+--------------------------------------------------------------------------------
+
+SAP Integration:
+- PO bilgileri SAP'dan alınır (Purchasing Order SAP number)
+- Mal kabul sonrası SAP'a MIGO işlemi gönderilir
+- Hareket tipi: 101 (Goods Receipt)
+- Geri alma için: 102 (Reversal)
+
+Stock Integration:
+- Mal kabul sonrası malzeme Total Stock güncellenir
+- Open request quantity değişmez
+- Malzeme status "Preparing to be used" (4) ise "Active" (1) olabilir
+
+MRP Integration:
+- Mal kabul sonrası MRP yeniden hesaplanır
+- Açık SRM Suggestion'lar güncellenir
+- Reordering point kontrolü yapılır
+
+Accounting Integration:
+- Accounting actions required = true ise muhasebe bildirimi
+- SAP FI entegrasyonu için maliyet kayıtları
+
+Label Printing:
+- Mal kabul sonrası etiket yazdırma seçeneği
+- Etiket adedi = Quantity / Unit quantity in a package
+- Barkod: Material number + Cost ID
+
+================================================================================
+-->
 <body>
     <!-- ============================================
          NAVBAR - Top Navigation (Maximo Style)
@@ -59,7 +282,7 @@
                 <li class="nav-item">
                     <a href="budget-management.html" class="nav-link">
                         <span class="nav-icon">💰</span>
-                        Bütçe
+                        Budget
                     </a>
                     <div class="dropdown-menu">
                         <a href="budget-management.html" class="dropdown-item">Bütçe Yönetimi</a>
@@ -78,7 +301,7 @@
                 <li class="nav-item">
                     <a href="transfer-list.html" class="nav-link">
                         <span class="nav-icon">🏭</span>
-                        Stok
+                        Stock
                     </a>
                     <div class="dropdown-menu">
                         <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
@@ -104,7 +327,7 @@
         <!-- Page Header -->
         <div class="page-header">
             <div>
-                <h1 class="page-title" id="pageTitle">Mal Kabul İşlemleri</h1>
+                <h1 class="page-title" id="pageTitle">Mal Kabul İşlemi</h1>
                 <p class="page-subtitle">Satınalma > Mal Kabul</p>
             </div>
             <div class="page-actions">
@@ -117,12 +340,12 @@
         <!-- Transaction Type Selection -->
         <div class="card" id="transactionTypeCard">
             <div class="card-header">
-                <h3>İşlem Tipi Seçimi</h3>
+                <h3>Operation Type Selection</h3>
             </div>
             <div class="card-body">
                 <div class="form-row">
                     <div class="form-group col-4">
-                        <label>Hareket Tipi <span class="required">*</span></label>
+                        <label>Movement type <span class="required">*</span></label>
                         <select class="form-control" id="transactionType" required>
                             <option value="">Seçiniz...</option>
                             <option value="101">101 - Mal Kabul (Standart)</option>
@@ -132,14 +355,11 @@
                         </select>
                     </div>
                     <div class="form-group col-4">
-                        <label>Hareket Tipi Açıklama</label>
+                        <label>Movement type Description</label>
                         <input type="text" class="form-control" id="transactionTypeTitle" readonly>
                     </div>
                     <div class="form-group col-4">
                         <label>&nbsp;</label>
-                        <div class="dev-note info" style="margin: 0; padding: 10px;">
-                            <small><strong>101:</strong> Standart mal kabul | <strong>102:</strong> Önceki GR iptal | <strong>122:</strong> Malzeme iade | <strong>161:</strong> Ambalaj iade</small>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -150,42 +370,42 @@
              ============================================ -->
         <div class="card" id="openOrdersSection">
             <div class="card-header">
-                <h3>Açık Siparişleri Ara / Filtrele</h3>
+                <h3>Search / Filter Open Orders</h3>
             </div>
             <div class="card-body">
                 <div class="form-row">
                     <div class="form-group col-3">
-                        <label>Arama</label>
+                        <label>Search</label>
                         <input type="text" class="form-control" id="searchBox" placeholder="Sipariş, malzeme veya tedarikçi ara...">
                     </div>
                     <div class="form-group col-2">
-                        <label>Sipariş No</label>
+                        <label>Order number</label>
                         <input type="text" class="form-control" id="filterOrderNo" placeholder="4500012345">
                     </div>
                     <div class="form-group col-2">
-                        <label>Kalem No</label>
+                        <label>Item number No</label>
                         <input type="text" class="form-control" id="filterItemNo" placeholder="10">
                     </div>
                     <div class="form-group col-2">
-                        <label>Malzeme No</label>
+                        <label>Material number</label>
                         <input type="text" class="form-control" id="filterMaterialNo" placeholder="01.00002-0001">
                     </div>
                     <div class="form-group col-3">
-                        <label>Malzeme Adı</label>
+                        <label>Material title</label>
                         <input type="text" class="form-control" id="filterMaterialTitle" placeholder="Rulman">
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group col-2">
-                        <label>Tedarikçi No</label>
+                        <label>Supplier number</label>
                         <input type="text" class="form-control" id="filterSupplierNo" placeholder="1000045678">
                     </div>
                     <div class="form-group col-3">
-                        <label>Tedarikçi Adı</label>
+                        <label>Supplier title</label>
                         <input type="text" class="form-control" id="filterSupplierTitle" placeholder="ABC Endüstriyel">
                     </div>
                     <div class="form-group col-2">
-                        <label>Birim</label>
+                        <label>Unit of measure</label>
                         <select class="form-control" id="filterUOM">
                             <option value="">Tümü</option>
                             <option>AD</option>
@@ -209,34 +429,35 @@
         <!-- Open PO Items List -->
         <div class="card" id="openItemsListCard">
             <div class="card-header">
-                <h3>Mal Kabul Bekleyen Sipariş Kalemleri</h3>
+                <h3>Pending Order Items for Goods Receipt</h3>
                 <div class="card-header-actions">
                     <label style="margin-right: 15px; display: inline-flex; align-items: center;">
                         <input type="checkbox" id="selectAllItems" style="margin-right: 5px;">
                         Tümünü Seç
                     </label>
-                    <span class="status-badge status-active" id="openItemsCount">3 Açık Kalem</span>
+                    <span class="status-badge status-active" id="openItemsCount">3 Açık Item number</span>
                 </div>
             </div>
             <div class="card-body">
-                <table class="table" style="font-size: 12px;">
+                <div class="table-responsive-wrapper">
+                <table class="table pending-items-table" style="font-size: 12px; min-width: 1400px;">
                     <thead>
                         <tr>
                             <th style="width: 40px;">Seç</th>
-                            <th style="width: 50px;">Hariç</th>
-                            <th>Sipariş No</th>
-                            <th>Kalem</th>
-                            <th>Malzeme No</th>
-                            <th>Malzeme Adı</th>
-                            <th>Ted. Malz. No</th>
-                            <th>Ted. Malz. Adı</th>
-                            <th>Tedarikçi No</th>
-                            <th>Tedarikçi Adı</th>
-                            <th>Birim</th>
-                            <th>Sipariş Mik.</th>
-                            <th>Açık Mik.</th>
-                            <th>Birim Fiyat</th>
-                            <th>Para Birimi</th>
+                            <th style="width: 50px;">Exclude</th>
+                            <th>Order number</th>
+                            <th>Item number</th>
+                            <th>Material number</th>
+                            <th>Material title</th>
+                            <th>Supplier material number</th>
+                            <th>Supplier material title</th>
+                            <th>Supplier number</th>
+                            <th>Supplier title</th>
+                            <th>Unit of measure</th>
+                            <th>Order quantity</th>
+                            <th>Open quantity</th>
+                            <th>Unit price</th>
+                            <th>Currency</th>
                         </tr>
                     </thead>
                     <tbody id="openItemsTable">
@@ -293,8 +514,10 @@
                         </tr>
                     </tbody>
                 </table>
-                <div class="dev-note info" style="margin-top: 15px;">
-                    <p><strong>Çoklu Seçim:</strong> Birden fazla kalem seçerek tek bir mal kabul belgesi ile toplu işlem yapabilirsiniz. "Hariç" işaretli kalemler işleme dahil edilmez.</p>
+                </div>
+                <!-- Scroll Indicator -->
+                <div class="scroll-indicator">
+                    <span>← Kaydırın →</span>
                 </div>
             </div>
         </div>
@@ -318,16 +541,16 @@
                         <small class="form-text text-muted">Sistem otomatik oluşturur</small>
                     </div>
                     <div class="form-group col-3">
-                        <label>Giriş Tarihi (Entry Date)</label>
+                        <label>Entry date (Entry Date)</label>
                         <input type="datetime-local" class="form-control" id="entryDate" readonly>
                         <small class="form-text text-muted">Sistem zamanı</small>
                     </div>
                     <div class="form-group col-3">
-                        <label>SRM No</label>
+                        <label>SRM number</label>
                         <input type="text" class="form-control" id="srmNo" readonly>
                     </div>
                     <div class="form-group col-3">
-                        <label>Hareket Tipi</label>
+                        <label>Movement type</label>
                         <input type="text" class="form-control" id="formTransactionType" value="101 - Mal Kabul" readonly>
                     </div>
                 </div>
@@ -335,46 +558,46 @@
                 <!-- Invoice and Delivery Note (At least one mandatory) - Screen Designs 13 GR -->
                 <div class="form-row" style="background-color: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
                     <div class="form-group col-3">
-                        <label>Fatura No <span class="required-or">*</span></label>
+                        <label>Invoice number <span class="required-or">*</span></label>
                         <input type="text" class="form-control" id="invoiceNumber" placeholder="Fatura numarası">
                     </div>
                     <div class="form-group col-3">
-                        <label>Fatura Tarihi (Invoice Doc. Date)</label>
+                        <label>Invoice document Date (Invoice Doc. Date)</label>
                         <input type="date" class="form-control" id="invoiceDate">
                     </div>
                     <div class="form-group col-3">
-                        <label>İrsaliye No <span class="required-or">*</span></label>
+                        <label>Delivery note number <span class="required-or">*</span></label>
                         <input type="text" class="form-control" id="deliveryNoteNumber" placeholder="İrsaliye numarası">
                     </div>
                     <div class="form-group col-3">
-                        <label>İrsaliye Tarihi (Del. Note Date)</label>
+                        <label>Delivery note document date (Del. Note Date)</label>
                         <input type="date" class="form-control" id="deliveryNoteDate">
                     </div>
                     <div class="col-12">
-                        <small class="text-warning"><strong>Not:</strong> Fatura No veya İrsaliye No'dan en az biri zorunludur.</small>
+                        <small class="text-warning"><strong>Not:</strong> Invoice number veya Delivery note number'dan en az biri zorunludur.</small>
                     </div>
                 </div>
 
                 <!-- PO and Material Info (from selected item - all readonly) -->
                 <div class="form-row">
                     <div class="form-group col-2">
-                        <label>Sipariş No (PO Number)</label>
+                        <label>Order number (PO Number)</label>
                         <input type="text" class="form-control" id="formPoNumber" readonly>
                     </div>
                     <div class="form-group col-1">
-                        <label>Kalem</label>
+                        <label>Item number</label>
                         <input type="text" class="form-control" id="formItemNo" readonly>
                     </div>
                     <div class="form-group col-2">
-                        <label>Malzeme No</label>
+                        <label>Material number</label>
                         <input type="text" class="form-control" id="formMaterialNo" readonly>
                     </div>
                     <div class="form-group col-4">
-                        <label>Malzeme Adı</label>
+                        <label>Material title</label>
                         <input type="text" class="form-control" id="formMaterialTitle" readonly>
                     </div>
                     <div class="form-group col-3">
-                        <label>Birim (UoM)</label>
+                        <label>Unit of measure (UoM)</label>
                         <input type="text" class="form-control" id="formUOM" readonly>
                     </div>
                 </div>
@@ -382,19 +605,19 @@
                 <!-- Supplier Info (all readonly) -->
                 <div class="form-row">
                     <div class="form-group col-2">
-                        <label>Tedarikçi No (SAP)</label>
+                        <label>Supplier number (SAP)</label>
                         <input type="text" class="form-control" id="formSupplierNo" readonly>
                     </div>
                     <div class="form-group col-4">
-                        <label>Tedarikçi Adı</label>
+                        <label>Supplier title</label>
                         <input type="text" class="form-control" id="formSupplierTitle" readonly>
                     </div>
                     <div class="form-group col-2">
-                        <label>Ted. Malz. No</label>
+                        <label>Supplier material number</label>
                         <input type="text" class="form-control" id="formSupplierMaterialNo" readonly>
                     </div>
                     <div class="form-group col-4">
-                        <label>Ted. Malz. Adı</label>
+                        <label>Supplier material title</label>
                         <input type="text" class="form-control" id="formSupplierMaterialTitle" readonly>
                     </div>
                 </div>
@@ -402,28 +625,28 @@
                 <!-- Quantity Information - Screen Designs 13 GR -->
                 <div class="form-row" style="background-color: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
                     <div class="form-group col-2">
-                        <label>Sipariş Miktarı</label>
+                        <label>Order quantity</label>
                         <input type="number" class="form-control" id="formOrderQty" readonly>
                     </div>
                     <div class="form-group col-2">
-                        <label>Açık Miktar</label>
+                        <label>Open quantity</label>
                         <input type="number" class="form-control" id="formOpenQty" readonly style="font-weight: bold; color: #1565c0;">
                     </div>
                     <div class="form-group col-2">
-                        <label>Teslim Miktarı (Receipt Qty) <span class="required">*</span></label>
+                        <label>Delivery quantity (Receipt Qty) <span class="required">*</span></label>
                         <input type="number" class="form-control" id="receivedQty" min="0" step="0.001" required style="font-weight: bold; font-size: 16px; border: 2px solid #4caf50;">
                     </div>
                     <div class="form-group col-2">
-                        <label>Birim/Paket (Unit in Pack)</label>
+                        <label>Unit quantity in a package (Unit in Pack)</label>
                         <input type="number" class="form-control" id="unitPerPackage" min="1" value="1">
                     </div>
                     <div class="form-group col-2">
-                        <label>Etiket Adedi (Label Qty)</label>
+                        <label>Label Quantity (Label Qty)</label>
                         <input type="number" class="form-control" id="labelQty" readonly style="background-color: #e8f5e9; font-weight: bold;">
                         <small class="form-text text-muted">Hesaplanan</small>
                     </div>
                     <div class="form-group col-2">
-                        <label>Birim Fiyat (Unit Price)</label>
+                        <label>Unit price (Unit Price)</label>
                         <input type="text" class="form-control" id="formUnitPrice" readonly>
                     </div>
                 </div>
@@ -436,24 +659,24 @@
                         <small class="form-text text-muted">Sistem oluşturur</small>
                     </div>
                     <div class="form-group col-2">
-                        <label>Euro Birim Fiyat</label>
+                        <label>Euro Unit price</label>
                         <input type="number" class="form-control" id="euroUnitCost" step="0.01" readonly>
                     </div>
                     <div class="form-group col-2">
-                        <label>TRY Birim Fiyat</label>
+                        <label>TRY Unit price</label>
                         <input type="number" class="form-control" id="tryUnitCost" step="0.01" readonly style="background-color: #e8f5e9; font-weight: bold;">
                         <small class="form-text text-muted">EUR × Kur</small>
                     </div>
                     <div class="form-group col-2">
-                        <label>Maliyet Tarihi (Cost Date)</label>
+                        <label>Goods receipt date time</label>
                         <input type="date" class="form-control" id="costDate">
                     </div>
                     <div class="form-group col-2">
-                        <label>Toplam EUR</label>
+                        <label>Total Euro Cost</label>
                         <input type="number" class="form-control" id="euroTotalCost" step="0.01" readonly>
                     </div>
                     <div class="form-group col-2">
-                        <label>Toplam TRY</label>
+                        <label>Total TRY Cost</label>
                         <input type="number" class="form-control" id="tryTotalCost" step="0.01" readonly style="background-color: #e8f5e9; font-weight: bold;">
                     </div>
                     <div class="col-12">
@@ -464,7 +687,7 @@
                 <!-- Storage Location (Warehouse/Location/Bin) - Screen Designs 13 GR -->
                 <div class="form-row">
                     <div class="form-group col-3">
-                        <label>Depo (Storage) <span class="required">*</span></label>
+                        <label>Storage (Storage) <span class="required">*</span></label>
                         <select class="form-control" id="warehouse" required>
                             <option value="">Seçiniz...</option>
                             <option value="MERKEZ">MERKEZ</option>
@@ -473,17 +696,17 @@
                         </select>
                     </div>
                     <div class="form-group col-3">
-                        <label>Lokasyon (Location) <span class="required">*</span></label>
+                        <label>Location (Location) <span class="required">*</span></label>
                         <select class="form-control" id="location" required>
                             <option value="">Seçiniz...</option>
-                            <option value="Alt Raf">Alt Raf</option>
-                            <option value="Ust Raf">Ust Raf</option>
+                            <option value="Alt Bin">Alt Bin</option>
+                            <option value="Ust Bin">Ust Bin</option>
                             <option value="Kimyasal">Kimyasal</option>
                             <option value="Agir Parca">Agir Parca</option>
                         </select>
                     </div>
                     <div class="form-group col-3">
-                        <label>Raf (Bin) <span class="required">*</span></label>
+                        <label>Bin (Bin) <span class="required">*</span></label>
                         <input type="text" class="form-control" id="bin" placeholder="A01-R02-K05" required>
                     </div>
                     <div class="form-group col-3">
@@ -500,17 +723,17 @@
                 <!-- Stock Record IDs - Screen Designs 13 GR (section b) -->
                 <div class="form-row">
                     <div class="form-group col-3">
-                        <label>Stok Kayıt ID (Stock Record Id)</label>
+                        <label>Stock Kayıt ID (Stock Record Id)</label>
                         <input type="text" class="form-control" id="stockRecordId" readonly placeholder="Otomatik">
                         <small class="form-text text-muted">Sistem oluşturur</small>
                     </div>
                     <div class="form-group col-3">
-                        <label>Önceki Stok Kayıt ID (Prev. Stock Rec.)</label>
+                        <label>Önceki Stock Kayıt ID (Prev. Stock Rec.)</label>
                         <input type="text" class="form-control" id="prevStockRecordId" readonly>
                         <small class="form-text text-muted">Rollback için</small>
                     </div>
                     <div class="form-group col-6">
-                        <label>Notlar</label>
+                        <label>Notes</label>
                         <textarea class="form-control" id="receiptNotes" rows="2" placeholder="Mal kabul ile ilgili notlar..."></textarea>
                     </div>
                 </div>
@@ -541,10 +764,6 @@
                 </div>
             </div>
             <div class="card-body">
-                <div class="dev-note warning" style="margin-bottom: 20px;">
-                    <h4>⚠️ İptal İşlemi Hakkında</h4>
-                    <p>Bu işlem seçilen mal kabul kaydını iptal eder. Stok ve maliyet kayıtları ters işlem ile düzeltilir.</p>
-                </div>
 
                 <div class="form-row">
                     <div class="form-group col-4">
@@ -565,15 +784,15 @@
                             <input type="text" class="form-control" id="prevGrId" readonly>
                         </div>
                         <div class="form-group col-3">
-                            <label>Önceki Stok Kayıt ID</label>
+                            <label>Önceki Stock Kayıt ID</label>
                             <input type="text" class="form-control" id="prevStockRecordId" readonly>
                         </div>
                         <div class="form-group col-3">
-                            <label>Sipariş No</label>
+                            <label>Order number</label>
                             <input type="text" class="form-control" id="rollbackPoNo" readonly>
                         </div>
                         <div class="form-group col-3">
-                            <label>Malzeme No</label>
+                            <label>Material number</label>
                             <input type="text" class="form-control" id="rollbackMaterialNo" readonly>
                         </div>
                     </div>
@@ -583,7 +802,7 @@
                             <input type="number" class="form-control" id="rollbackQty" readonly>
                         </div>
                         <div class="form-group col-3">
-                            <label>Birim</label>
+                            <label>Unit of measure</label>
                             <input type="text" class="form-control" id="rollbackUom" readonly>
                         </div>
                         <div class="form-group col-6">
@@ -594,7 +813,7 @@
 
                     <div class="form-actions" style="margin-top: 20px;">
                         <button class="btn btn-danger btn-lg" id="executeRollbackBtn">
-                            ⚠️ İptal İşlemini Uygula
+                            ⚠️ İptal Actionini Uygula
                         </button>
                         <button class="btn btn-outline" id="cancelRollbackBtn">
                             Vazgeç
@@ -616,9 +835,6 @@
             </div>
             <div class="card-body">
                 <!-- Step 1: GR Seçimi -->
-                <div class="dev-note info" style="margin-bottom: 20px;">
-                    <p><strong>Adım 1:</strong> İade edilecek malzemenin orijinal Mal Kabul (GR) kaydını listeden seçin.</p>
-                </div>
 
                 <div class="form-row" style="background-color: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
                     <div class="form-group col-3">
@@ -627,7 +843,7 @@
                         <small class="form-text text-muted">Sistem otomatik oluşturur</small>
                     </div>
                     <div class="form-group col-3">
-                        <label>İade Tarihi <span class="required">*</span></label>
+                        <label>İade Datei <span class="required">*</span></label>
                         <input type="date" class="form-control" id="returnDate" required>
                     </div>
                     <div class="form-group col-6">
@@ -641,9 +857,6 @@
 
                 <!-- Step 2-6: Original GR Details (Hidden until GR found) -->
                 <div id="returnGrDetails" style="display: none;">
-                    <div class="dev-note success" style="margin-bottom: 20px;">
-                        <p><strong>✓ GR Bulundu!</strong> Aşağıdaki bilgileri kontrol edin ve iade detaylarını girin.</p>
-                    </div>
 
                     <!-- GR Header Info (readonly) -->
                     <div class="form-row" style="background-color: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
@@ -652,15 +865,15 @@
                             <input type="text" class="form-control" id="returnOriginalGrId" readonly>
                         </div>
                         <div class="form-group col-3">
-                            <label>Orijinal GR Tarihi</label>
+                            <label>Orijinal GR Datei</label>
                             <input type="text" class="form-control" id="returnOriginalGrDate" readonly>
                         </div>
                         <div class="form-group col-3">
-                            <label>Sipariş No (PO)</label>
+                            <label>Order number (PO)</label>
                             <input type="text" class="form-control" id="returnPoNo" readonly>
                         </div>
                         <div class="form-group col-3">
-                            <label>Kalem No</label>
+                            <label>Item number No</label>
                             <input type="text" class="form-control" id="returnItemNo" readonly>
                         </div>
                     </div>
@@ -668,11 +881,11 @@
                     <!-- Material Info (readonly) -->
                     <div class="form-row">
                         <div class="form-group col-3">
-                            <label>Malzeme No</label>
+                            <label>Material number</label>
                             <input type="text" class="form-control" id="returnMaterialNo" readonly>
                         </div>
                         <div class="form-group col-5">
-                            <label>Malzeme Adı</label>
+                            <label>Material title</label>
                             <input type="text" class="form-control" id="returnMaterialTitle" readonly>
                         </div>
                         <div class="form-group col-4">
@@ -689,7 +902,7 @@
                             <small class="form-text text-muted">Orijinal kabul</small>
                         </div>
                         <div class="form-group col-2">
-                            <label>Mevcut Stok</label>
+                            <label>Available quantity</label>
                             <input type="number" class="form-control" id="returnCurrentStock" readonly style="background-color: #e8f5e9; font-weight: bold;">
                         </div>
                         <div class="form-group col-2">
@@ -697,11 +910,11 @@
                             <input type="number" class="form-control" id="returnQty" min="0.01" step="0.01" required style="font-size: 16px; border: 2px solid #ff9800; font-weight: bold;">
                         </div>
                         <div class="form-group col-2">
-                            <label>Birim</label>
+                            <label>Unit of measure</label>
                             <input type="text" class="form-control" id="returnUom" readonly>
                         </div>
                         <div class="form-group col-2">
-                            <label>EUR Birim Fiyat</label>
+                            <label>EUR Unit price</label>
                             <input type="text" class="form-control" id="returnEurPrice" readonly>
                         </div>
                         <div class="form-group col-2">
@@ -713,19 +926,19 @@
                     <!-- Location Info (readonly from original GR) -->
                     <div class="form-row">
                         <div class="form-group col-3">
-                            <label>Depo</label>
+                            <label>Storage</label>
                             <input type="text" class="form-control" id="returnWarehouse" readonly>
                         </div>
                         <div class="form-group col-3">
-                            <label>Lokasyon</label>
+                            <label>Location</label>
                             <input type="text" class="form-control" id="returnLocation" readonly>
                         </div>
                         <div class="form-group col-3">
-                            <label>Raf</label>
+                            <label>Bin</label>
                             <input type="text" class="form-control" id="returnBin" readonly>
                         </div>
                         <div class="form-group col-3">
-                            <label>Stok Kayıt ID</label>
+                            <label>Stock Kayıt ID</label>
                             <input type="text" class="form-control" id="returnStockRecordId" readonly>
                         </div>
                     </div>
@@ -745,7 +958,7 @@
                             </select>
                         </div>
                         <div class="form-group col-8">
-                            <label>İade Açıklaması</label>
+                            <label>İade Descriptionsı</label>
                             <textarea class="form-control" id="returnDescription" rows="2" placeholder="İade ile ilgili detaylı açıklama..."></textarea>
                         </div>
                     </div>
@@ -753,7 +966,7 @@
                     <!-- Action Buttons -->
                     <div class="form-actions" style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
                         <button class="btn btn-warning btn-lg" id="executeReturnBtn">
-                            ↩️ İade İşlemini Uygula
+                            ↩️ İade Actionini Uygula
                         </button>
                         <button class="btn btn-outline" id="cancelReturnBtn">
                             Vazgeç
@@ -763,11 +976,6 @@
 
                 <!-- No GR Found Message -->
                 <div id="returnGrNotFound" style="display: none;">
-                    <div class="dev-note warning">
-                        <h4>⚠️ GR Bulunamadı</h4>
-                        <p>Girdiğiniz GR numarası sistemde bulunamadı. Lütfen doğru GR numarasını girin.</p>
-                        <p><strong>Örnek format:</strong> GR-2025-000001, GR-2025-000002</p>
-                    </div>
                 </div>
             </div>
         </div>
@@ -788,20 +996,20 @@
                     <table class="table batch-receipt-table">
                         <thead>
                             <tr>
-                                <th class="sticky-col col-po">Sipariş No</th>
-                                <th class="col-item">Kalem</th>
-                                <th class="col-material">Malzeme No</th>
-                                <th class="col-material-name">Malzeme Adı</th>
-                                <th class="col-qty">Açık Mik.</th>
-                                <th class="col-qty-input">Teslim Mik.</th>
-                                <th class="col-unit">Birim</th>
-                                <th class="col-pack">Birim/Paket</th>
-                                <th class="col-label">Etiket Ad.</th>
-                                <th class="col-price">EUR Fiyat</th>
-                                <th class="col-price">TRY Fiyat</th>
-                                <th class="col-location">Depo</th>
-                                <th class="col-location">Lokasyon</th>
-                                <th class="col-location">Raf</th>
+                                <th class="sticky-col col-po">Order number</th>
+                                <th class="col-item">Item number</th>
+                                <th class="col-material">Material number</th>
+                                <th class="col-material-name">Material title</th>
+                                <th class="col-qty">Open quantity</th>
+                                <th class="col-qty-input">Delivery quantity</th>
+                                <th class="col-unit">Unit of measure</th>
+                                <th class="col-pack">Unit quantity in a package</th>
+                                <th class="col-label">Label Quantity</th>
+                                <th class="col-price">Euro Unit cost</th>
+                                <th class="col-price">TRY Unit cost</th>
+                                <th class="col-location">Storage</th>
+                                <th class="col-location">Location</th>
+                                <th class="col-location">Bin</th>
                                 <th class="col-close">Kapat</th>
                             </tr>
                         </thead>
@@ -819,19 +1027,19 @@
                 <!-- Common fields for batch receipt -->
                 <div class="form-row" style="background-color: #fff3e0; padding: 15px; border-radius: 8px; margin-top: 15px;">
                     <div class="form-group col-3">
-                        <label>Fatura No <span class="required-or">*</span></label>
+                        <label>Invoice number <span class="required-or">*</span></label>
                         <input type="text" class="form-control" id="batchInvoiceNumber">
                     </div>
                     <div class="form-group col-3">
-                        <label>Fatura Tarihi</label>
+                        <label>Invoice document Date</label>
                         <input type="date" class="form-control" id="batchInvoiceDate">
                     </div>
                     <div class="form-group col-3">
-                        <label>İrsaliye No <span class="required-or">*</span></label>
+                        <label>Delivery note number <span class="required-or">*</span></label>
                         <input type="text" class="form-control" id="batchDeliveryNoteNumber">
                     </div>
                     <div class="form-group col-3">
-                        <label>İrsaliye Tarihi</label>
+                        <label>Delivery note document date</label>
                         <input type="date" class="form-control" id="batchDeliveryNoteDate">
                     </div>
                 </div>
@@ -851,57 +1059,7 @@
         </div>
 
         <!-- Developer Notes -->
-        <div class="dev-note success">
-            <h4>Mal Kabul Kayıt İşlemleri - Screen Designs 13 GR</h4>
-            <p><strong>API Endpoint:</strong> POST /api/goods-receipts</p>
-            <p><strong>Zorunlu Alanlar:</strong></p>
-            <ul>
-                <li>Fatura No VEYA İrsaliye No (en az biri zorunlu)</li>
-                <li>Giriş Tarihi (Entry Date) - sistem otomatik</li>
-                <li>Teslim Alınan Miktar (Receipt Qty)</li>
-                <li>Depo/Lokasyon/Raf (Storage/Location/Bin)</li>
-            </ul>
-            <p><strong>Hesaplanan Alanlar:</strong></p>
-            <ul>
-                <li>TRY Birim Fiyat = EUR × Güncel Kur (SAP_ExchangeRate)</li>
-                <li>Etiket Adedi = ceil(Teslim Mik. / Birim/Paket)</li>
-            </ul>
-        </div>
 
-        <div class="dev-note">
-            <h4>Hareket Tipleri (Material Movement)</h4>
-            <table class="table table-sm">
-                <thead>
-                    <tr>
-                        <th>Kod</th>
-                        <th>Açıklama</th>
-                        <th>Stok Etkisi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>101</td>
-                        <td>Mal Kabul (Standart GR)</td>
-                        <td>+ Artış</td>
-                    </tr>
-                    <tr>
-                        <td>102</td>
-                        <td>Mal Kabul İptal (Rollback)</td>
-                        <td>- Azalış</td>
-                    </tr>
-                    <tr>
-                        <td>122</td>
-                        <td>Malzeme İade (Tedarikçiye)</td>
-                        <td>- Azalış</td>
-                    </tr>
-                    <tr>
-                        <td>161</td>
-                        <td>Ambalaj İade</td>
-                        <td>- Azalış</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
     </main>
 
     <style>
@@ -1189,7 +1347,7 @@
                 uom: 'AD',
                 eurPrice: 125.50,
                 warehouse: 'MERKEZ',
-                location: 'Alt Raf',
+                location: 'Alt Bin',
                 bin: 'A01-R02-K05',
                 stockRecordId: 'STK-2025-000001'
             },
@@ -1243,7 +1401,7 @@
                 uom: 'AD',
                 eurPrice: 2.50,
                 warehouse: 'MERKEZ',
-                location: 'Alt Raf',
+                location: 'Alt Bin',
                 bin: 'A05-R01-K01',
                 stockRecordId: 'STK-2025-000004',
                 isPacking: true
@@ -1297,7 +1455,7 @@
                 });
             });
 
-            // Birim seçimi değiştiğinde otomatik filtrele
+            // Unit of measure seçimi değiştiğinde otomatik filtrele
             document.getElementById('filterUOM').addEventListener('change', applyFilters);
 
             // Select all checkbox
@@ -1464,7 +1622,7 @@
 
                 const option = document.createElement('option');
                 option.value = gr.grId;
-                option.textContent = `${gr.grId} | ${gr.materialNo} - ${gr.materialTitle} | Stok: ${gr.currentStock} ${gr.uom}`;
+                option.textContent = `${gr.grId} | ${gr.materialNo} - ${gr.materialTitle} | Stock: ${gr.currentStock} ${gr.uom}`;
                 dropdown.appendChild(option);
             });
 
@@ -1606,8 +1764,8 @@
                     <td>
                         <select class="form-control batch-location" data-index="${index}">
                             <option value="">...</option>
-                            <option value="Alt Raf">Alt Raf</option>
-                            <option value="Ust Raf">Ust Raf</option>
+                            <option value="Alt Bin">Alt Bin</option>
+                            <option value="Ust Bin">Ust Bin</option>
                             <option value="Kimyasal">Kimyasal</option>
                         </select>
                     </td>
@@ -1672,7 +1830,7 @@
 
             // At least one of invoice or delivery note required
             if (!invoiceNo && !deliveryNo) {
-                alert('⚠️ Fatura No veya İrsaliye No\'dan en az biri zorunludur.');
+                alert('⚠️ Invoice number veya Delivery note number\'dan en az biri zorunludur.');
                 return false;
             }
 
@@ -1687,7 +1845,7 @@
             }
 
             if (!warehouse || !location || !bin) {
-                alert('⚠️ Depo, lokasyon ve raf bilgileri zorunludur.');
+                alert('⚠️ Storage, lokasyon ve raf bilgileri zorunludur.');
                 return false;
             }
 
@@ -1703,7 +1861,7 @@
 
             if (confirm('Mal kabul işlemi kaydedilecek!\n\n' +
                 'Mal Kabul No: ' + grNumber + '\n' +
-                'Sipariş No: ' + item.poNumber + '\n' +
+                'Order number: ' + item.poNumber + '\n' +
                 'Malzeme: ' + item.materialNo + '\n' +
                 'Miktar: ' + document.getElementById('receivedQty').value + ' ' + item.uom + '\n' +
                 'TRY Maliyet: ' + document.getElementById('tryTotalCost').value + ' TL\n\n' +
@@ -1711,7 +1869,7 @@
 
                 alert('✅ Mal kabul başarıyla kaydedildi!\n\n' +
                     'Mal Kabul No: ' + grNumber + '\n' +
-                    'Stok güncellendi.\n' +
+                    'Stock güncellendi.\n' +
                     'FIFO maliyet kaydı oluşturuldu.\n' +
                     'Denetim kaydı oluşturuldu.\n\n' +
                     'API: POST /api/goods-receipts');
@@ -1726,7 +1884,7 @@
             const deliveryNo = document.getElementById('batchDeliveryNoteNumber').value.trim();
 
             if (!invoiceNo && !deliveryNo) {
-                alert('⚠️ Fatura No veya İrsaliye No\'dan en az biri zorunludur.');
+                alert('⚠️ Invoice number veya Delivery note number\'dan en az biri zorunludur.');
                 return;
             }
 
@@ -1743,7 +1901,7 @@
             });
 
             if (!valid) {
-                alert('⚠️ Tüm kalemler için Depo, Lokasyon ve Raf bilgileri zorunludur.');
+                alert('⚠️ Tüm kalemler için Storage, Location ve Bin bilgileri zorunludur.');
                 return;
             }
 
@@ -1753,7 +1911,7 @@
 
                 alert('✅ Toplu mal kabul başarıyla kaydedildi!\n\n' +
                     selectedItems.length + ' kalem işlendi.\n' +
-                    'Stoklar güncellendi.\n' +
+                    'Stocklar güncellendi.\n' +
                     'FIFO maliyet kayıtları oluşturuldu.\n\n' +
                     'API: POST /api/goods-receipts/batch');
 
@@ -1775,9 +1933,9 @@
             }
 
             alert('🏷️ Etiket yazdırma başlatıldı!\n\n' +
-                'Etiket Adedi: ' + labelQty + '\n' +
-                'Malzeme No: ' + materialNo + '\n' +
-                'Lokasyon: ' + warehouse + '/' + location + '/' + bin + '\n\n' +
+                'Label Quantity: ' + labelQty + '\n' +
+                'Material number: ' + materialNo + '\n' +
+                'Location: ' + warehouse + '/' + location + '/' + bin + '\n\n' +
                 '(Zebra etiket yazıcı entegrasyonu)');
         }
 
@@ -1846,12 +2004,12 @@
             if (confirm('⚠️ DİKKAT: Bu işlem geri alınamaz!\n\n' +
                 'GR No: ' + document.getElementById('rollbackGrNo').value + '\n' +
                 'Miktar: ' + document.getElementById('rollbackQty').value + ' ' + document.getElementById('rollbackUom').value + '\n\n' +
-                'Stok ve maliyet kayıtları ters işlem ile düzeltilecek.\n\n' +
+                'Stock ve maliyet kayıtları ters işlem ile düzeltilecek.\n\n' +
                 'Devam etmek istiyor musunuz?')) {
 
                 alert('✅ Mal kabul iptal işlemi başarıyla tamamlandı!\n\n' +
-                    'Hareket Tipi: 102 - Rollback\n' +
-                    'Stok azaltıldı.\n' +
+                    'Movement type: 102 - Rollback\n' +
+                    'Stock azaltıldı.\n' +
                     'Maliyet kaydı ters işlem ile düzeltildi.\n' +
                     'Sipariş kalemi tekrar açık duruma getirildi.\n\n' +
                     'API: POST /api/goods-receipts/rollback');
@@ -1982,25 +2140,25 @@
                 `═══════════════════════════════════\n` +
                 `İade No: ${returnId}\n` +
                 `Orijinal GR: ${originalGrId}\n` +
-                `Hareket Tipi: ${transactionType}\n` +
+                `Movement type: ${transactionType}\n` +
                 `═══════════════════════════════════\n` +
                 `Malzeme: ${materialNo}\n` +
                 `${materialTitle}\n` +
                 `═══════════════════════════════════\n` +
                 `İade Miktarı: ${returnQty} ${uom}\n` +
                 `İade Tutarı: ${totalEur} EUR\n` +
-                `Lokasyon: ${warehouse}/${location}/${bin}\n` +
+                `Location: ${warehouse}/${location}/${bin}\n` +
                 `═══════════════════════════════════\n\n` +
-                `⚠️ UYARI: Stok ${returnQty} ${uom} AZALTILACAK!\n\n` +
+                `⚠️ UYARI: Stock ${returnQty} ${uom} AZALTILACAK!\n\n` +
                 `Devam etmek istiyor musunuz?`;
 
             if (confirm(confirmMsg)) {
                 const successMsg = `✅ ${typeName} işlemi başarıyla tamamlandı!\n\n` +
                     `═══════════════════════════════════\n` +
                     `İade No: ${returnId}\n` +
-                    `Hareket Tipi: ${transactionType} - ${typeName}\n` +
+                    `Movement type: ${transactionType} - ${typeName}\n` +
                     `═══════════════════════════════════\n` +
-                    `✓ Stok kaydı güncellendi (${currentStock} → ${currentStock - returnQty} ${uom})\n` +
+                    `✓ Stock kaydı güncellendi (${currentStock} → ${currentStock - returnQty} ${uom})\n` +
                     `✓ Material Movement kaydı oluşturuldu\n` +
                     `✓ Maliyet kaydı güncellendi (-${totalEur} EUR)\n` +
                     `✓ Audit trail oluşturuldu\n` +
@@ -2069,8 +2227,8 @@
                 if (cells.length === 0) return;
 
                 // Güncel sütun indeksleri (0-indexed):
-                // 0: Seç, 1: Hariç, 2: Sipariş No, 3: Kalem, 4: Malzeme No, 5: Malzeme Adı
-                // 6: Ted. Malz. No, 7: Ted. Malz. Adı, 8: Tedarikçi No, 9: Tedarikçi Adı, 10: Birim
+                // 0: Select, 1: Exclude, 2: Order number, 3: Item number, 4: Material number, 5: Material title
+                // 6: Supplier material number, 7: Supplier material title, 8: Supplier number, 9: Supplier title, 10: Unit of measure
                 const rowOrderNo = cells[2].textContent.toLowerCase();
                 const rowItemNo = cells[3].textContent.toLowerCase();
                 const rowMaterialNo = cells[4].textContent.toLowerCase();
@@ -2105,7 +2263,7 @@
                 if (visible) visibleCount++;
             });
 
-            document.getElementById('openItemsCount').textContent = visibleCount + ' Açık Kalem';
+            document.getElementById('openItemsCount').textContent = visibleCount + ' Açık Item number';
         }
 
         // Clear filters
@@ -2124,7 +2282,7 @@
                 row.style.display = '';
             });
 
-            document.getElementById('openItemsCount').textContent = rows.length + ' Açık Kalem';
+            document.getElementById('openItemsCount').textContent = rows.length + ' Açık Item number';
         }
 
         // Reset form
@@ -2154,6 +2312,145 @@
         // Initialize with default transaction type
         document.getElementById('transactionType').value = '101';
         handleTransactionTypeChange();
+    </script>
+
+    <!-- DEVELOPER DOCUMENTATION PANEL -->
+    <div id="devDocsPanel" class="dev-docs-panel">
+        <button class="dev-docs-toggle" onclick="toggleDevDocs()">📋 Geliştirici Dokümantasyonu</button>
+        <div class="dev-docs-content" id="devDocsContent">
+            <div class="dev-docs-header">
+                <h2>📋 13 GR - Goods Receipt</h2>
+                <button class="dev-docs-close" onclick="toggleDevDocs()">✕</button>
+            </div>
+            <div class="dev-docs-body">
+                <div class="dev-docs-tabs">
+                    <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
+                    <button class="dev-tab" onclick="showDevTab('movementTypes')">Hareket Tipleri</button>
+                </div>
+
+                <div id="dataStructure" class="dev-tab-content active">
+                    <h3>TABLE: Cost (Goods Receipt)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Field Name</th><th>Type</th><th>Length</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td>Cost ID</td><td>int</td><td>8</td><td>Primary key</td></tr>
+                            <tr><td>Total Quantity</td><td>float</td><td>15</td><td>Toplam miktar</td></tr>
+                            <tr><td>Total Euro Cost</td><td>float</td><td>14</td><td>Toplam Euro maliyet</td></tr>
+                            <tr><td>Total TRY Cost</td><td>float</td><td>14</td><td>Toplam TRY maliyet</td></tr>
+                            <tr><td>Consumed Quantity</td><td>float</td><td>15</td><td>Tüketilen miktar (FIFO)</td></tr>
+                            <tr><td>Consumed Euro Value</td><td>float</td><td>14</td><td>Tüketilen Euro değer</td></tr>
+                            <tr><td>Consumed TRY Value</td><td>float</td><td>14</td><td>Tüketilen TRY değer</td></tr>
+                            <tr><td>Totally consumed check</td><td>bool</td><td>-</td><td>Tamamen tüketildi mi</td></tr>
+                            <tr><td>Storage code</td><td>text</td><td>12</td><td>Depo kodu</td></tr>
+                            <tr><td>Location code</td><td>text</td><td>12</td><td>Lokasyon kodu</td></tr>
+                            <tr><td>Bin code</td><td>text</td><td>12</td><td>Bin kodu</td></tr>
+                            <tr><td>Block for issue check</td><td>bool</td><td>-</td><td>Çıkış için bloklu</td></tr>
+                            <tr><td>Euro Unit cost</td><td>float</td><td>14</td><td>Birim Euro maliyet</td></tr>
+                            <tr><td>TRY Unit cost</td><td>float</td><td>14</td><td>Birim TRY maliyet</td></tr>
+                            <tr><td>Original currency code</td><td>text</td><td>3</td><td>Orijinal para birimi</td></tr>
+                            <tr><td>Original goods receipt unit price</td><td>float</td><td>14</td><td>Orijinal birim fiyat</td></tr>
+                            <tr><td>Goods receipt date time</td><td>datetime</td><td>-</td><td>Mal kabul tarihi</td></tr>
+                            <tr><td>Goods receipt document date</td><td>date</td><td>-</td><td>Belge tarihi</td></tr>
+                        </tbody>
+                    </table>
+
+                    <h3>TABLE: Purchasing Order Item</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Field Name</th><th>Type</th><th>Length</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td>Purchasing Order item Id</td><td>int</td><td>12</td><td>Primary key</td></tr>
+                            <tr><td>Purchasing Order SAP no</td><td>int</td><td>10</td><td>SAP sipariş no</td></tr>
+                            <tr><td>Purchasing Order SAP Item No</td><td>int</td><td>4</td><td>SAP kalem no</td></tr>
+                            <tr><td>Material number</td><td>text</td><td>13</td><td>Malzeme numarası</td></tr>
+                            <tr><td>Order quantity</td><td>float</td><td>15</td><td>Sipariş miktarı</td></tr>
+                            <tr><td>Goods receipt quantity</td><td>float</td><td>15</td><td>Kabul edilen miktar</td></tr>
+                            <tr><td>Unit price</td><td>float</td><td>14</td><td>Birim fiyat</td></tr>
+                            <tr><td>currency code</td><td>text</td><td>3</td><td>Para birimi</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="businessRules" class="dev-tab-content">
+                    <h3>Mal Kabul Kuralları</h3>
+                    <ul>
+                        <li><strong>FIFO prensibi:</strong> En eski stok önce tüketilir</li>
+                        <li>En az bir <strong>irsaliye veya fatura numarası</strong> zorunlu</li>
+                        <li>Paket bilgisi varsa <strong>etiket adedi</strong> hesaplanır</li>
+                        <li><strong>Kısmi teslimat</strong> ile sipariş kapatılabilir</li>
+                        <li>Döviz kuru <strong>satış kuru</strong> üzerinden hesaplanır</li>
+                    </ul>
+
+                    <h3>Kabul Miktarı Kuralları</h3>
+                    <ul>
+                        <li>Kabul miktarı ≤ Sipariş miktarı olmalı</li>
+                        <li>Kalan miktar = Sipariş miktarı - Önceki kabuller</li>
+                        <li>Fazla kabul yapılamaz (validation)</li>
+                    </ul>
+
+                    <h3>Maliyet Hesaplama</h3>
+                    <ul>
+                        <li><strong>Euro Unit Cost:</strong> Original Price / Exchange Rate</li>
+                        <li><strong>TRY Unit Cost:</strong> Original Price * TRY Exchange Rate</li>
+                        <li><strong>Total Cost:</strong> Unit Cost * Quantity</li>
+                    </ul>
+                </div>
+
+                <div id="movementTypes" class="dev-tab-content">
+                    <h3>Material Movement Types</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Code</th><th>Type</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td>1</td><td>Goods Receipt</td><td>Mal kabul</td></tr>
+                            <tr><td>2</td><td>Goods Receipt Rollback</td><td>Mal kabul iptali</td></tr>
+                            <tr><td>3</td><td>Goods Return</td><td>Mal iade</td></tr>
+                            <tr><td>4</td><td>Material transfer entry</td><td>Transfer giriş</td></tr>
+                            <tr><td>5</td><td>Material transfer exit</td><td>Transfer çıkış</td></tr>
+                            <tr><td>6</td><td>Goods issue</td><td>Malzeme çıkış</td></tr>
+                            <tr><td>7</td><td>Goods issue rollback</td><td>Çıkış iptali</td></tr>
+                            <tr><td>8</td><td>Inventory positive</td><td>Sayım fazlası</td></tr>
+                            <tr><td>9</td><td>Inventory negative</td><td>Sayım eksiği</td></tr>
+                            <tr><td>10</td><td>Packing material receipt</td><td>Ambalaj kabul</td></tr>
+                            <tr><td>11</td><td>Packing material return</td><td>Ambalaj iade</td></tr>
+                            <tr><td>12</td><td>Scrapping</td><td>Hurda</td></tr>
+                            <tr><td>13</td><td>Scrapping Rollback</td><td>Hurda iptali</td></tr>
+                            <tr><td>14</td><td>Other material issue</td><td>Diğer çıkış</td></tr>
+                            <tr><td>15</td><td>Other material issue rollback</td><td>Diğer çıkış iptali</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .dev-docs-panel { position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .dev-docs-toggle { position: fixed; bottom: 20px; right: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 20px; border-radius: 25px; cursor: pointer; font-size: 14px; font-weight: 600; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); }
+        .dev-docs-toggle:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5); }
+        .dev-docs-content { display: none; position: fixed; bottom: 0; left: 0; right: 0; height: 60vh; background: #1a1a2e; color: #e0e0e0; box-shadow: 0 -5px 30px rgba(0,0,0,0.3); }
+        .dev-docs-content.active { display: flex; flex-direction: column; }
+        .dev-docs-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 25px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .dev-docs-header h2 { margin: 0; font-size: 18px; }
+        .dev-docs-close { background: rgba(255,255,255,0.2); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 18px; }
+        .dev-docs-body { flex: 1; overflow-y: auto; padding: 20px 25px; }
+        .dev-docs-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        .dev-tab { background: #2a2a4a; border: none; color: #aaa; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+        .dev-tab:hover { background: #3a3a5a; color: #fff; }
+        .dev-tab.active { background: #667eea; color: white; }
+        .dev-tab-content { display: none; }
+        .dev-tab-content.active { display: block; }
+        .dev-tab-content h3 { color: #667eea; margin: 20px 0 10px 0; font-size: 16px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .dev-tab-content h3:first-child { margin-top: 0; }
+        .dev-tab-content ul { margin: 0; padding-left: 20px; }
+        .dev-tab-content li { margin: 8px 0; line-height: 1.5; }
+        .dev-table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 13px; }
+        .dev-table th { background: #2a2a4a; color: #667eea; text-align: left; padding: 10px; border: 1px solid #333; }
+        .dev-table td { padding: 8px 10px; border: 1px solid #333; }
+        .dev-table tr:hover { background: #2a2a4a; }
+    </style>
+    <script>
+        function toggleDevDocs() { const c = document.getElementById('devDocsContent'); const t = document.querySelector('.dev-docs-toggle'); c.classList.toggle('active'); t.style.display = c.classList.contains('active') ? 'none' : 'block'; }
+        function showDevTab(tabId) { document.querySelectorAll('.dev-tab-content').forEach(c => c.classList.remove('active')); document.querySelectorAll('.dev-tab').forEach(t => t.classList.remove('active')); document.getElementById(tabId).classList.add('active'); event.target.classList.add('active'); }
     </script>
 </body>
 </html>

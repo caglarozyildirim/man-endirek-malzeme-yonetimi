@@ -3,9 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bütçe Tercih Detay - IMMA</title>
+    <title>Budget Tercih Detay - IMMA</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
+<!--
+================================================================================
+IMMA DEVELOPER DOCUMENTATION
+================================================================================
+
+SCREEN: 15 BP - Budget Preference (Detail)
+FILE: budget-preference-detail.html
+LAST UPDATED: 2025-12-18
+
+--------------------------------------------------------------------------------
+RELATED DATABASE TABLES
+--------------------------------------------------------------------------------
+
+TABLE: Budget Preference
+| Field Name                    | Type | Length | Description                 |
+|-------------------------------|------|--------|-----------------------------|
+| Budget Preference Id          | int  | 8      | Primary key                 |
+| Budget Approval request Type  | char | 1      | Onay tipi kodu (1-6)        |
+| Department code               | text | 8      | Departman kodu              |
+
+--------------------------------------------------------------------------------
+BUDGET APPROVAL REQUEST TYPES
+--------------------------------------------------------------------------------
+
+| Code | Type Name                           | Description                        |
+|------|-------------------------------------|------------------------------------|
+| 1    | SL Approval                         | Her talep için SL onayı gerekli    |
+| 2    | SL over budget approval             | Sadece bütçe aşımında SL onayı     |
+| 3    | Manager approval                    | Her talep için yönetici onayı      |
+| 4    | Manager Over budget Approval        | Sadece bütçe aşımında yönetici     |
+| 5    | Only TL and above material request  | Sadece TL ve üstü talep yapabilir  |
+| 6    | Budget approval doesn't required    | Bütçe onayı gerekmez               |
+
+--------------------------------------------------------------------------------
+BUSINESS RULES
+--------------------------------------------------------------------------------
+
+1. Her departman için tek bir Budget Preference olabilir
+2. Approval Type departmanın tüm talep akışlarını belirler
+3. Department code benzersiz olmalı (unique per department)
+4. Aktif/Pasif durumu belirlenebilir
+5. Geçerlilik başlangıç tarihi belirlenebilir
+
+--------------------------------------------------------------------------------
+FORM MODES
+--------------------------------------------------------------------------------
+
+- view: Tüm alanlar disabled, sadece görüntüleme
+- edit: Department ve Approval Type düzenlenebilir
+- create: Yeni preference oluşturma
+
+URL Parametreleri:
+- mode: view | edit | create
+- id: Budget Preference ID (view/edit için)
+
+--------------------------------------------------------------------------------
+FIELD VALIDATIONS
+--------------------------------------------------------------------------------
+
+- Budget Preference Id: Otomatik oluşturulur (readonly)
+- Budget Approval Request Type: Zorunlu (1-6 arası)
+- Department Code: Zorunlu (text, maxlength=8)
+
+--------------------------------------------------------------------------------
+INTEGRATION NOTES
+--------------------------------------------------------------------------------
+
+- Material Request oluşturulurken bu preference kontrol edilir
+- Approval akışı bu preference'a göre belirlenir
+- Budget tablosuyla bütçe aşımı kontrolü için entegrasyon
+
+================================================================================
+-->
 <body>
     <!-- NAVBAR - Top Navigation (Maximo Style) -->
     <nav class="modern-navbar">
@@ -57,7 +130,7 @@
                 <li class="nav-item">
                     <a href="budget-management.html" class="nav-link active">
                         <span class="nav-icon">💰</span>
-                        Bütçe
+                        Budget
                     </a>
                     <div class="dropdown-menu">
                         <a href="budget-management.html" class="dropdown-item">Bütçe Yönetimi</a>
@@ -76,7 +149,7 @@
                 <li class="nav-item">
                     <a href="transfer-list.html" class="nav-link">
                         <span class="nav-icon">🏭</span>
-                        Stok
+                        Stock
                     </a>
                     <div class="dropdown-menu">
                         <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
@@ -99,8 +172,8 @@
     <main class="modern-container">
         <div class="page-header">
             <div>
-                <h1 class="page-title" id="pageTitle">Bütçe Tercih Detay</h1>
-                <p class="page-subtitle">Bütçe > Bütçe Tercihleri > <span id="breadcrumbAction">Görüntüle</span></p>
+                <h1 class="page-title" id="pageTitle">Budget Tercih Detay</h1>
+                <p class="page-subtitle">Budget > Bütçe Tercihleri > <span id="breadcrumbAction">Görüntüle</span></p>
             </div>
             <div class="page-actions">
                 <a href="budget-preference.html" class="btn btn-outline">← Listeye Dön</a>
@@ -111,7 +184,7 @@
         <!-- Preference Form -->
         <div class="card">
             <div class="card-header">
-                <h3 id="formTitle">Bütçe Tercih Bilgileri</h3>
+                <h3 id="formTitle">Budget Preference Information</h3>
             </div>
             <div class="card-body">
                 <form id="preferenceForm">
@@ -125,10 +198,12 @@
                             <label>Budget Approval Request Type <span class="required">*</span></label>
                             <select class="form-control" id="approvalRequestType" required>
                                 <option value="">Seçiniz...</option>
-                                <option value="AUTO">Otomatik Onay</option>
-                                <option value="MANUAL">Manuel Onay</option>
-                                <option value="HYBRID">Hibrit (Miktar Bazlı)</option>
-                                <option value="MULTI_LEVEL">Çok Seviyeli Onay</option>
+                                <option value="1">1 - SL Approval</option>
+                                <option value="2">2 - SL over budget approval</option>
+                                <option value="3">3 - Manager approval</option>
+                                <option value="4">4 - Manager Over budget Approval</option>
+                                <option value="5">5 - Only TL and above material request</option>
+                                <option value="6">6 - Budget approval doesn't required</option>
                             </select>
                             <small class="form-text">Onay sürecinin tipi</small>
                         </div>
@@ -136,8 +211,8 @@
                             <label>Department Code <span class="required">*</span></label>
                             <select class="form-control" id="departmentCode" required>
                                 <option value="">Seçiniz...</option>
-                                <option value="BAKIM">BAKIM - Bakım Departmanı</option>
-                                <option value="URETIM">URETIM - Üretim Departmanı</option>
+                                <option value="BAKIM">BAKIM - Bakım Departmentı</option>
+                                <option value="URETIM">URETIM - Üretim Departmentı</option>
                                 <option value="KALITE">KALITE - Kalite Kontrol</option>
                                 <option value="LOJISTIK">LOJISTIK - Lojistik</option>
                                 <option value="ARASTIRMA">ARASTIRMA - Ar-Ge</option>
@@ -148,12 +223,12 @@
 
                     <div class="form-row">
                         <div class="form-group col-4" id="thresholdGroup">
-                            <label>Eşik Değer (EUR)</label>
+                            <label>Threshold Value</label>
                             <input type="number" class="form-control" id="thresholdValue">
                             <small class="form-text">Hibrit tip için limit değeri</small>
                         </div>
                         <div class="form-group col-4">
-                            <label>Aktif Durum</label>
+                            <label>Active Status</label>
                             <select class="form-control" id="activeStatus">
                                 <option value="ACTIVE" selected>Aktif</option>
                                 <option value="INACTIVE">Pasif</option>
@@ -161,7 +236,7 @@
                             <small class="form-text">Tercih durumu</small>
                         </div>
                         <div class="form-group col-4">
-                            <label>Geçerlilik Başlangıç</label>
+                            <label>Validity Start Date</label>
                             <input type="date" class="form-control" id="validFrom" value="2025-01-01">
                             <small class="form-text">Tercih başlangıç tarihi</small>
                         </div>
@@ -177,21 +252,8 @@
         </div>
 
         <!-- Info Note -->
-        <div class="dev-note info">
-            <h4>Bütçe Onay Talep Tipleri</h4>
-            <ul>
-                <li><strong>Otomatik Onay (AUTO):</strong> Belirlenen eşik değerin altındaki tüm talepler otomatik onaylanır</li>
-                <li><strong>Manuel Onay (MANUAL):</strong> Tüm talepler departman yöneticisi onayına gider</li>
-                <li><strong>Hibrit (HYBRID):</strong> Eşik değere göre otomatik veya manuel onay yapılır</li>
-                <li><strong>Çok Seviyeli Onay (MULTI_LEVEL):</strong> Miktar arttıkça birden fazla seviye onay gerekir</li>
-            </ul>
-        </div>
 
         <!-- Database Schema -->
-        <div class="dev-note success">
-            <h4>Veritabanı Yapısı (Data Structure IMMA.xlsx)</h4>
-            <p><strong>Budget Preference Tablosu:</strong> Budget Preference Id, Budget Approval request Type, Department code</p>
-        </div>
     </main>
 
     <style>
@@ -216,22 +278,23 @@
 
     <script>
         // Sample data (backend'den gelecek)
+        // Budget Approval Request Type: 1-6 arası değerler (IMMA Data Structure)
         const budgetPreferences = {
             'BP-2025-001': {
                 id: 'BP-2025-001',
                 departmentCode: 'BAKIM',
-                departmentName: 'Bakım Departmanı',
-                approvalType: 'HYBRID',
-                thresholdValue: 5000,
+                departmentName: 'Bakım Departmentı',
+                approvalType: '1',
+                thresholdValue: null,
                 status: 'ACTIVE',
                 validFrom: '2025-01-01'
             },
             'BP-2025-002': {
                 id: 'BP-2025-002',
                 departmentCode: 'URETIM',
-                departmentName: 'Üretim Departmanı',
-                approvalType: 'AUTO',
-                thresholdValue: 3000,
+                departmentName: 'Üretim Departmentı',
+                approvalType: '2',
+                thresholdValue: null,
                 status: 'ACTIVE',
                 validFrom: '2025-01-01'
             },
@@ -239,7 +302,7 @@
                 id: 'BP-2025-003',
                 departmentCode: 'KALITE',
                 departmentName: 'Kalite Kontrol',
-                approvalType: 'MANUAL',
+                approvalType: '3',
                 thresholdValue: null,
                 status: 'ACTIVE',
                 validFrom: '2025-01-01'
@@ -248,8 +311,8 @@
                 id: 'BP-2025-004',
                 departmentCode: 'LOJISTIK',
                 departmentName: 'Lojistik',
-                approvalType: 'MULTI_LEVEL',
-                thresholdValue: 10000,
+                approvalType: '5',
+                thresholdValue: null,
                 status: 'ACTIVE',
                 validFrom: '2025-01-01'
             },
@@ -257,8 +320,8 @@
                 id: 'BP-2024-099',
                 departmentCode: 'ARASTIRMA',
                 departmentName: 'Ar-Ge',
-                approvalType: 'HYBRID',
-                thresholdValue: 7500,
+                approvalType: '6',
+                thresholdValue: null,
                 status: 'INACTIVE',
                 validFrom: '2024-01-01'
             }
@@ -280,9 +343,9 @@
 
             switch(mode) {
                 case 'view':
-                    document.getElementById('pageTitle').textContent = 'Bütçe Tercih Görüntüle';
+                    document.getElementById('pageTitle').textContent = 'Budget Tercih Görüntüle';
                     document.getElementById('breadcrumbAction').textContent = 'Görüntüle';
-                    document.getElementById('formTitle').textContent = 'Bütçe Tercih Bilgileri (Salt Okunur)';
+                    document.getElementById('formTitle').textContent = 'Budget Preference Information (Read Only)';
                     document.getElementById('editModeBtn').style.display = 'inline-block';
                     document.getElementById('formActions').style.display = 'none';
 
@@ -302,9 +365,9 @@
                     break;
 
                 case 'edit':
-                    document.getElementById('pageTitle').textContent = 'Bütçe Tercih Düzenle';
+                    document.getElementById('pageTitle').textContent = 'Budget Tercih Düzenle';
                     document.getElementById('breadcrumbAction').textContent = 'Düzenle';
-                    document.getElementById('formTitle').textContent = 'Bütçe Tercih Düzenleme';
+                    document.getElementById('formTitle').textContent = 'Budget Tercih Düzenleme';
                     document.getElementById('editModeBtn').style.display = 'none';
                     document.getElementById('formActions').style.display = 'flex';
 
@@ -321,9 +384,9 @@
                     break;
 
                 case 'create':
-                    document.getElementById('pageTitle').textContent = 'Yeni Bütçe Tercihi Oluştur';
+                    document.getElementById('pageTitle').textContent = 'Yeni Budget Tercihi Oluştur';
                     document.getElementById('breadcrumbAction').textContent = 'Yeni';
-                    document.getElementById('formTitle').textContent = 'Yeni Bütçe Tercihi';
+                    document.getElementById('formTitle').textContent = 'Yeni Budget Tercihi';
                     document.getElementById('editModeBtn').style.display = 'none';
                     document.getElementById('formActions').style.display = 'flex';
 
@@ -386,12 +449,12 @@
             };
 
             if (!preferenceData.approvalType || !preferenceData.departmentCode) {
-                alert('Lütfen zorunlu alanları doldurun!\n\n- Bütçe Onay Talep Tipi\n- Departman Kodu');
+                alert('Lütfen zorunlu alanları doldurun!\n\n- Budget Onay Talep Tipi\n- Department Kodu');
                 return;
             }
 
             const action = mode === 'create' ? 'oluşturuldu' : 'güncellendi';
-            alert(`Bütçe Tercihi ${action}!\n\nTercih ID: ${preferenceData.id}\nDepartman: ${preferenceData.departmentCode}\nOnay Tipi: ${preferenceData.approvalType}\n\n(Backend entegrasyonu ile çalışacak)`);
+            alert(`Budget Tercihi ${action}!\n\nTercih ID: ${preferenceData.id}\nDepartment: ${preferenceData.departmentCode}\nOnay Tipi: ${preferenceData.approvalType}\n\n(Backend entegrasyonu ile çalışacak)`);
 
             // Liste sayfasına dön
             window.location.href = 'budget-preference.html';
@@ -399,6 +462,81 @@
 
         // Sayfa yüklendiğinde başlat
         document.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+
+    <!-- DEVELOPER DOCUMENTATION PANEL -->
+    <div id="devDocsPanel" class="dev-docs-panel">
+        <button class="dev-docs-toggle" onclick="toggleDevDocs()">📋 Geliştirici Dokümantasyonu</button>
+        <div class="dev-docs-content" id="devDocsContent">
+            <div class="dev-docs-header">
+                <h2>📋 15 BP - Budget Preference (Detail)</h2>
+                <button class="dev-docs-close" onclick="toggleDevDocs()">✕</button>
+            </div>
+            <div class="dev-docs-body">
+                <div class="dev-docs-tabs">
+                    <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
+                </div>
+                <div id="dataStructure" class="dev-tab-content active">
+                    <h3>Budget Preference Tablosu</h3>
+                    <table class="dev-table"><thead><tr><th>Field Name</th><th>Type</th><th>Length</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td>Budget Preference Id</td><td>int</td><td>8</td><td>Primary key</td></tr>
+                            <tr><td>Budget Approval request Type</td><td>char</td><td>1</td><td>Onay tipi kodu (1-6)</td></tr>
+                            <tr><td>Department code</td><td>text</td><td>8</td><td>Departman kodu (unique)</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Budget Approval Request Types</h3>
+                    <table class="dev-table"><thead><tr><th>Kod</th><th>Tip Adı</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>1</td><td>SL Approval</td><td>Her talep için SL onayı</td></tr>
+                            <tr><td>2</td><td>SL over budget approval</td><td>Sadece bütçe aşımında SL onayı</td></tr>
+                            <tr><td>3</td><td>Manager approval</td><td>Her talep için yönetici onayı</td></tr>
+                            <tr><td>4</td><td>Manager Over budget Approval</td><td>Sadece bütçe aşımında yönetici</td></tr>
+                            <tr><td>5</td><td>Only TL and above</td><td>Sadece TL ve üstü talep yapabilir</td></tr>
+                            <tr><td>6</td><td>Not required</td><td>Bütçe onayı gerekmez</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="businessRules" class="dev-tab-content">
+                    <h3>İş Kuralları</h3>
+                    <div class="rules-section">
+                        <ul>
+                            <li>Her departman için <strong>tek bir preference</strong> olabilir</li>
+                            <li>Department code benzersiz olmalı (unique)</li>
+                            <li>Approval Type departmanın tüm talep akışlarını belirler</li>
+                            <li>Geçerlilik başlangıç tarihi belirlenebilir</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>
+        .dev-docs-panel{position:fixed;bottom:0;left:0;right:0;z-index:9999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+        .dev-docs-toggle{position:absolute;bottom:100%;right:20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;padding:10px 20px;border-radius:8px 8px 0 0;cursor:pointer;font-weight:600;font-size:14px;box-shadow:0 -2px 10px rgba(0,0,0,0.2)}
+        .dev-docs-content{display:none;background:#1a1a2e;color:#eee;max-height:60vh;overflow-y:auto;box-shadow:0 -5px 20px rgba(0,0,0,0.3)}
+        .dev-docs-content.active{display:block}
+        .dev-docs-header{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);position:sticky;top:0}
+        .dev-docs-header h2{margin:0;font-size:18px}
+        .dev-docs-close{background:rgba(255,255,255,0.2);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px}
+        .dev-docs-body{padding:20px}
+        .dev-docs-tabs{display:flex;gap:10px;margin-bottom:20px;border-bottom:1px solid #333;padding-bottom:10px}
+        .dev-tab{background:#2d2d44;color:#aaa;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;transition:all 0.3s}
+        .dev-tab:hover,.dev-tab.active{background:#667eea;color:#fff}
+        .dev-tab-content{display:none}
+        .dev-tab-content.active{display:block}
+        .dev-table{width:100%;border-collapse:collapse;margin:15px 0;font-size:13px}
+        .dev-table th,.dev-table td{padding:10px;text-align:left;border:1px solid #333}
+        .dev-table th{background:#2d2d44;color:#667eea;font-weight:600}
+        .dev-table tr:nth-child(even){background:#252538}
+        .dev-docs-body h3{color:#667eea;margin:20px 0 10px;font-size:16px;border-bottom:1px solid #333;padding-bottom:5px}
+        .dev-docs-body ul{margin:0 0 15px 20px;line-height:1.8}
+        .rules-section{background:#252538;padding:15px;border-radius:8px}
+    </style>
+    <script>
+        function toggleDevDocs(){document.getElementById('devDocsContent').classList.toggle('active')}
+        function showDevTab(tabId){document.querySelectorAll('.dev-tab-content').forEach(c=>c.classList.remove('active'));document.querySelectorAll('.dev-tab').forEach(t=>t.classList.remove('active'));document.getElementById(tabId).classList.add('active');event.target.classList.add('active')}
     </script>
 </body>
 </html>

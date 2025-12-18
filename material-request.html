@@ -81,8 +81,352 @@
             align-items: center;
             gap: 5px;
         }
+        /* Material Selection Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-content {
+            background: #fff;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 900px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            padding: 0;
+            line-height: 1;
+        }
+        .modal-close:hover {
+            color: #333;
+        }
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        .modal-search {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .modal-search input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .modal-search input:focus {
+            outline: none;
+            border-color: #0066cc;
+        }
+        .modal-search button {
+            padding: 10px 20px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .modal-search button:hover {
+            background: #0055aa;
+        }
+        .material-list {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .material-list-header {
+            display: grid;
+            grid-template-columns: 50px 150px 1fr 100px 100px 100px;
+            background: #f5f5f5;
+            padding: 12px 15px;
+            font-weight: 600;
+            font-size: 13px;
+            color: #333;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .material-list-item {
+            display: grid;
+            grid-template-columns: 50px 150px 1fr 100px 100px 100px;
+            padding: 12px 15px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 13px;
+        }
+        .material-list-item:hover {
+            background: #f8f9fa;
+        }
+        .material-list-item.selected {
+            background: #e7f3ff;
+            border-color: #b6d4fe;
+        }
+        .material-list-item:last-child {
+            border-bottom: none;
+        }
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .modal-footer .btn-cancel {
+            padding: 10px 20px;
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .modal-footer .btn-select {
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .modal-footer .btn-select:hover {
+            background: #218838;
+        }
+        .modal-footer .btn-select:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .no-results {
+            padding: 40px;
+            text-align: center;
+            color: #666;
+        }
     </style>
 </head>
+<!--
+================================================================================
+IMMA DEVELOPER DOCUMENTATION
+================================================================================
+
+SCREEN: 16 MR - Material Requests
+FILE: material-request.html
+LAST UPDATED: 2025-12-18
+
+--------------------------------------------------------------------------------
+RELATED DATABASE TABLES
+--------------------------------------------------------------------------------
+
+TABLE: Material Request Header
+| Field Name                    | Type     | Length | Description                           |
+|-------------------------------|----------|--------|---------------------------------------|
+| Material request header Id    | int      | 12     | Primary key - Otomatik oluşturulur    |
+| SL user info                  | int      | 8      | Shift Leader kullanıcı ID             |
+| Created by user info          | int      | 8      | Talebi oluşturan kullanıcı ID         |
+| Created for user info         | int      | 8      | Talep kimin için oluşturuldu          |
+| Creation date time            | datetime | -      | Oluşturma tarihi/saati                |
+| Selected week number          | int      | 2      | Seçilen hafta numarası (1-52)         |
+| Selected weeks first day      | date     | -      | Haftanın ilk günü (Pazartesi)         |
+| Description for the request   | text     | 256    | Talep açıklaması ZORUNLU              |
+| Requesting department         | text     | 8      | Talep eden departman kodu             |
+| Requesting user info          | int      | 8      | Talep eden kullanıcı ID               |
+| Cost Center Code              | text     | 10     | Masraf merkezi kodu                   |
+| Total Euro Value of request   | float    | 15     | READONLY - Otomatik hesaplanır        |
+| Delivery Location 1 id        | text     | 8      | Teslimat lokasyonu 1                  |
+| Delivery Location 2 id        | text     | 8      | Teslimat lokasyonu 2                  |
+| Delivery Location 3 id        | text     | 8      | Teslimat lokasyonu 3                  |
+| Delivery Location 4 id        | text     | 8      | Teslimat lokasyonu 4                  |
+| Delivery Location 5 id        | text     | 8      | Teslimat lokasyonu 5                  |
+| Other Location text           | text     | 64     | Alternatif teslimat lokasyonu         |
+| Over budget value             | float    | 14     | Bütçe aşım miktarı (EUR)              |
+| Request total value           | float    | 14     | Talep toplam değeri (EUR)             |
+| SL approval check             | bool     | -      | SL onayı verildi mi?                  |
+| SL approval no required check | bool     | -      | SL onayı gerekmez flag                |
+| SL approver user info         | int      | 8      | SL onayı veren kullanıcı ID           |
+| SL approval date time         | datetime | -      | SL onay tarihi/saati                  |
+| SL approved by user info      | int      | 8      | Onaylayan SL kullanıcı ID             |
+| over budget check             | bool     | -      | Bütçe aşımı var mı?                   |
+| Budget Id                     | int      | 8      | İlişkili bütçe kaydı ID               |
+| Approval finish date time     | datetime | -      | Onay tamamlanma tarihi                |
+
+TABLE: Material Request Item
+| Field Name                    | Type     | Length | Description                           |
+|-------------------------------|----------|--------|---------------------------------------|
+| Material Request item id      | int      | 12     | Primary key                           |
+| Material request header Id    | int      | 8      | Header referansı (FK)                 |
+| Material request item no      | int      | 4      | Satır numarası                        |
+| Material number               | text     | 13     | Malzeme numarası (FK)                 |
+| Requested Quantity            | float    | 15     | Talep edilen miktar                   |
+| Priority                      | bool     | -      | Öncelikli mi? (checkbox)              |
+| Delivered quantity            | float    | 15     | Teslim edilen miktar                  |
+| Material delivery finalized   | bool     | -      | Teslimat tamamlandı mı?               |
+| Item total Euro value         | float    | 14     | Satır toplam değeri (EUR)             |
+| Selected to transfer          | bool     | -      | Transfer için seçildi mi?             |
+| Rollback initiated check      | bool     | -      | Geri alma başlatıldı mı?              |
+
+--------------------------------------------------------------------------------
+BUSINESS RULES (İş Kuralları)
+--------------------------------------------------------------------------------
+
+HAFTA SEÇİMİ:
+1. Selected week number ZORUNLU alan
+2. Varsayılan: Oluşturma haftası
+3. Hafta seçildiğinde "Selected weeks first day" otomatik hesaplanır
+4. Haftalık bütçe bu hafta numarasına göre kontrol edilir
+
+MALZEME SEÇİMİ:
+1. 3 karakter sonra AUTOSUGGEST aktif olur
+2. Sadece Active (1) ve Preparing to discontinuation (5) statuslü malzemeler seçilebilir
+3. Blocked (2) ve Inactive (3) malzemeler LİSTELENMEZ
+4. Preparing to be used (4) malzemeler görünür ama SEÇİLEMEZ
+5. Stoktan FAZLA miktar talep EDİLEMEZ
+
+FIFO KURALI (KRİTİK):
+1. Stok çıkışlarında en ESKİ (en düşük Cost ID) stok önce kullanılır
+2. Talep birden fazla cost kaydından karşılanabilir (ayrı satırlar oluşur)
+3. Manuel stok seçimi YAPILAMAZ - sistem otomatik atar
+4. FIFO kuralı KESİNLİKLE uygulanır
+
+MALİYET GÖRÜNÜRLÜĞÜ:
+1. Maliyet (EUR değeri) talep sahibine GÖRÜNÜR olmalı
+2. Total Euro Value of request otomatik hesaplanır
+3. Her satır için Item total Euro value gösterilir
+4. Over budget value bütçe aşımı durumunda gösterilir
+
+BÜTÇE KONTROLÜ:
+1. Talep kaydedilmeden önce haftalık SL bütçesi kontrol edilir
+2. Bütçe aşımı varsa over_budget_check = true
+3. Budget Preference'a göre onay süreci başlatılır:
+   - Type 1: SL onayı gerekli
+   - Type 2: Sadece bütçe aşımında SL onayı
+   - Type 3: Manager onayı gerekli
+   - Type 4: Sadece bütçe aşımında manager onayı
+   - Type 5: Sadece TL ve üstü talep yapabilir
+   - Type 6: Bütçe onayı gerekmez
+
+TESLİMAT LOKASYONLARI:
+1. En az 1 teslimat lokasyonu seçilmeli (veya Other Location doldurulmalı)
+2. Maksimum 5 predefined lokasyon seçilebilir
+3. Other Location text (maxlength=64) alternatif olarak kullanılabilir
+
+ÖNCELİK (PRIORITY):
+1. Priority=true olan satırlar öncelikli işlenir
+2. Transfer listesinde öncelikli öğeler VURGULANIR
+3. Öncelikli öğeler transfer sıralamasında üstte gösterilir
+
+--------------------------------------------------------------------------------
+FIELD VALIDATIONS
+--------------------------------------------------------------------------------
+
+- Material request header Id: maxlength=12, READONLY, otomatik oluşturulur
+- Selected week number: 1-52 arası, ZORUNLU
+- Description for the request: maxlength=256, min 10 karakter, ZORUNLU
+- Requesting department: maxlength=8, ZORUNLU
+- Cost Center Code: maxlength=10, ZORUNLU
+- Other Location text: maxlength=64
+- Requested Quantity: > 0, stoktan fazla olamaz
+- Material number: ##.#####-#### formatı, ZORUNLU
+
+Hesaplanan alanlar (READONLY):
+- Total Euro Value of request: Sum(Item total Euro value)
+- Over budget value: Request total - Available budget (if positive)
+- Selected weeks first day: Week number'dan hesaplanır
+
+--------------------------------------------------------------------------------
+WORKFLOW / PROCESS FLOW
+--------------------------------------------------------------------------------
+
+CREATE MODE:
+1. Kullanıcı "Yeni Malzeme Talebi" ekranını açar
+2. Hafta numarası seçer (varsayılan: mevcut hafta)
+3. Departman ve Cost Center seçer
+4. Talep açıklaması yazar (min 10 karakter)
+5. Teslimat lokasyonu seçer (en az 1)
+6. "+ Malzeme Ekle" ile malzeme seçim modalı açılır
+7. Malzeme aranır (3 karakter sonra autosuggest)
+8. Miktar girilir (stok kontrolü yapılır)
+9. Priority checkbox ile öncelik belirlenir
+10. Kaydet → Budget kontrolü yapılır
+11. Budget OK → Talep kaydedilir, SL onayına gider
+12. Budget AŞIM → Over budget warning, onay gerekebilir
+
+VIEW MODE:
+1. Tüm alanlar READONLY
+2. Status badge gösterilir (Beklemede, Onaylandı, Teslim, Reddedildi, İptal)
+3. Onay geçmişi görüntülenebilir
+4. Teslimat detayları görünür
+
+EDIT MODE:
+1. Sadece "Beklemede" statusündeki talepler düzenlenebilir
+2. Onaylanmış/Teslim edilmiş/Reddedilmiş/İptal talepler READONLY
+3. Düzenleme sonrası yeniden budget kontrolü yapılır
+
+APPROVAL FLOW:
+1. Talep oluşturulur → Status: Beklemede
+2. SL onayı (Budget Preference'a göre) → Status: SL Onaylandı
+3. Manager onayı (gerekirse) → Status: Onaylandı
+4. Transfer listesine eklenir
+5. Kısmi/Tam teslimat → Status: Teslim Edildi
+
+--------------------------------------------------------------------------------
+INTEGRATION NOTES
+--------------------------------------------------------------------------------
+
+Budget Integration:
+- Haftalık SL bütçesinden düşüm yapılır
+- Budget Id ile bütçe kaydına referans verilir
+- Over budget value hesaplanır ve gösterilir
+- Consumed value bütçe tablosunda güncellenir
+
+Transfer Integration:
+- Onaylanan talepler transfer listesine eklenir
+- Selected to transfer flag ile transfer için seçim yapılır
+- Approval finish date time transfer sıralamasında kullanılır
+
+Stock Integration:
+- FIFO ile cost kayıtları otomatik atanır
+- Birden fazla cost kaydından karşılama yapılabilir
+- Delivered quantity teslimat sonrası güncellenir
+- Material delivery finalized teslimat tamamlandığında true
+
+Notification Integration:
+- Talep oluşturulunca SL'ye bildirim gider
+- Bütçe aşımında manager'a bildirim gider
+- Onay/Red durumunda talep sahibine bildirim gider
+
+================================================================================
+-->
 <body>
     <!-- NAVBAR - Top Navigation (Maximo Style) -->
     <nav class="modern-navbar">
@@ -134,7 +478,7 @@
                 <li class="nav-item">
                     <a href="budget-management.html" class="nav-link">
                         <span class="nav-icon">💰</span>
-                        Bütçe
+                        Budget
                     </a>
                     <div class="dropdown-menu">
                         <a href="budget-management.html" class="dropdown-item">Bütçe Yönetimi</a>
@@ -153,7 +497,7 @@
                 <li class="nav-item">
                     <a href="transfer-list.html" class="nav-link">
                         <span class="nav-icon">🏭</span>
-                        Stok
+                        Stock
                     </a>
                     <div class="dropdown-menu">
                         <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
@@ -191,77 +535,59 @@
         </div>
 
         <!-- Developer Notes - Main -->
-        <div class="dev-note info">
-            <h4>Ekran Bilgisi: 16 MR - Material Requests</h4>
-            <p><strong>URL Modes:</strong></p>
-            <ul>
-                <li><strong>?mode=create</strong> - Yeni talep oluşturma (default)</li>
-                <li><strong>?id=xxx&mode=edit</strong> - Talep düzenleme</li>
-                <li><strong>?id=xxx&mode=view</strong> - Talep görüntüleme (read-only)</li>
-            </ul>
-            <p><strong>Fonksiyonlar:</strong></p>
-            <ul>
-                <li>1) Malzeme Talebi Oluşturma (Create)</li>
-                <li>2) Talep Görüntüleme (View)</li>
-                <li>3) Talep Düzenleme (Edit - taslak durumundayken)</li>
-                <li>4) Haftalık talep yönetimi</li>
-                <li>5) Bütçe kontrolü ve rezervasyonu</li>
-                <li>6) Teslimat lokasyonu yönetimi (5 sabit + diğer)</li>
-            </ul>
-        </div>
 
         <!-- Request Form Section -->
         <div id="requestFormSection">
             <!-- Request Header -->
             <div class="card">
                 <div class="card-header">
-                    <h3>Talep Başlığı</h3>
+                    <h3>Request Header</h3>
                 </div>
                 <div class="card-body">
                     <div class="form-row">
                         <div class="form-group col-3">
-                            <label>Talep Numarası</label>
-                            <input type="text" class="form-control" id="requestNumber" value="MR-2025-001234" readonly>
+                            <label>Material Request header Id</label>
+                            <input type="text" class="form-control" id="requestNumber" maxlength="12" value="Material Request-2025-001234" readonly>
                             <small class="form-hint">Otomatik oluşturulur</small>
                         </div>
                         <div class="form-group col-3">
-                            <label>Oluşturma Tarihi</label>
+                            <label>Creation date time</label>
                             <input type="datetime-local" class="form-control" id="creationDateTime" value="2025-12-15T09:30" readonly>
                         </div>
                         <div class="form-group col-3">
-                            <label>Seçili Hafta Numarası <span class="required">*</span></label>
+                            <label>Selected week number <span class="required">*</span></label>
                             <select class="form-control" id="weekNumber">
                                 <option value="">Seçiniz...</option>
                                 <option value="50">50. Hafta (9-15 Aralık)</option>
                                 <option value="51" selected>51. Hafta (16-22 Aralık)</option>
                                 <option value="52">52. Hafta (23-29 Aralık)</option>
-                                <option value="1">1. Hafta 2026 (30 Ara - 5 Oca)</option>
+                                <option value="1">1. Hafta 2026 (30 Dec - 5 Jan)</option>
                             </select>
                         </div>
                         <div class="form-group col-3">
-                            <label>Haftanın İlk Günü</label>
+                            <label>Selected weeks first day</label>
                             <input type="date" class="form-control" id="weekFirstDay" value="2025-12-16" readonly>
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group col-4">
-                            <label>Bölüm Lideri (SL)</label>
+                            <label>SL User info (SL)</label>
                             <input type="text" class="form-control" id="slUser" value="Mehmet Yılmaz - Bakım Bölümü" readonly>
                         </div>
                         <div class="form-group col-4">
-                            <label>Oluşturan</label>
+                            <label>Created by user info</label>
                             <input type="text" class="form-control" id="createdBy" value="Ali Yıldız - Bakım Teknisyeni" readonly>
                         </div>
                         <div class="form-group col-4">
-                            <label>Talep Edilen Kişi</label>
+                            <label>Created for user info</label>
                             <input type="text" class="form-control" id="createdFor" value="Ali Yıldız" readonly>
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group col-4">
-                            <label>Talep Eden Departman <span class="required">*</span></label>
+                            <label>Requesting department <span class="required">*</span></label>
                             <select class="form-control" id="requestingDepartment">
                                 <option value="">Seçiniz...</option>
                                 <option value="BAKIM" selected>Bakım - Mekanik</option>
@@ -271,7 +597,7 @@
                             </select>
                         </div>
                         <div class="form-group col-4">
-                            <label>Masraf Merkezi Kodu <span class="required">*</span></label>
+                            <label>Cost Center Code <span class="required">*</span></label>
                             <select class="form-control" id="costCenterCode">
                                 <option value="">Seçiniz...</option>
                                 <option value="CC-001">CC-001</option>
@@ -280,18 +606,18 @@
                             </select>
                         </div>
                         <div class="form-group col-4">
-                            <label>Masraf Merkezi Adı</label>
+                            <label>Cost Center Title</label>
                             <input type="text" class="form-control" id="costCenterTitle" value="Bakım Bölümü" readonly>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label>Talep Açıklaması <span class="required">*</span></label>
-                        <textarea class="form-control" id="requestDescription" rows="2" placeholder="Talep sebebini ve detaylarını açıklayın...">Boyahane hattındaki konveyör sistemi için planlı bakım. Motor rulmanları değişimi ve yağ filtresi yenilenmesi gerekiyor.</textarea>
+                        <label>Description for the request <span class="required">*</span></label>
+                        <textarea class="form-control" id="requestDescription" rows="2" maxlength="256" placeholder="Talep sebebini ve detaylarını açıklayın...">Boyahane hattındaki konveyör sistemi için planlı bakım. Motor rulmanları değişimi ve yağ filtresi yenilenmesi gerekiyor.</textarea>
                     </div>
 
                     <div class="form-group">
-                        <label>Toplam Euro Değeri</label>
+                        <label>Total Euro Value of request</label>
                         <input type="text" class="form-control" id="totalEuroValue" value="1.250,00 EUR" readonly>
                         <small class="form-hint">Otomatik hesaplanır</small>
                     </div>
@@ -301,38 +627,38 @@
             <!-- Delivery Locations -->
             <div class="card">
                 <div class="card-header">
-                    <h3>Teslimat Lokasyonları</h3>
+                    <h3>Teslimat Locationları</h3>
                 </div>
                 <div class="card-body">
                     <div class="form-group">
-                        <label>Teslimat Yerleri <span class="required">*</span></label>
+                        <label>Delivery Locations <span class="required">*</span></label>
                         <div class="delivery-locations">
                             <div class="delivery-location-item">
                                 <input type="checkbox" id="loc1" name="deliveryLocation" value="1">
-                                <label for="loc1">Lokasyon 1 - Ana Depo</label>
+                                <label for="loc1">Location 1 - Ana Storage</label>
                             </div>
                             <div class="delivery-location-item">
                                 <input type="checkbox" id="loc2" name="deliveryLocation" value="2" checked>
-                                <label for="loc2">Lokasyon 2 - Boyahane</label>
+                                <label for="loc2">Location 2 - Boyahane</label>
                             </div>
                             <div class="delivery-location-item">
                                 <input type="checkbox" id="loc3" name="deliveryLocation" value="3">
-                                <label for="loc3">Lokasyon 3 - Montaj Hattı</label>
+                                <label for="loc3">Location 3 - Montaj Hattı</label>
                             </div>
                             <div class="delivery-location-item">
                                 <input type="checkbox" id="loc4" name="deliveryLocation" value="4">
-                                <label for="loc4">Lokasyon 4 - Kalite Lab</label>
+                                <label for="loc4">Location 4 - Kalite Lab</label>
                             </div>
                             <div class="delivery-location-item">
                                 <input type="checkbox" id="loc5" name="deliveryLocation" value="5">
-                                <label for="loc5">Lokasyon 5 - Sevkiyat</label>
+                                <label for="loc5">Location 5 - Sevkiyat</label>
                             </div>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label>Diğer Lokasyon</label>
-                        <input type="text" class="form-control" id="otherLocation" placeholder="Farklı bir teslimat noktası belirtiniz...">
+                        <label>Other Location text</label>
+                        <input type="text" class="form-control" id="otherLocation" maxlength="64" placeholder="Farklı bir teslimat noktası belirtiniz...">
                         <small class="form-hint">Yukarıdaki lokasyonlardan hiçbiri uygun değilse buraya yazınız</small>
                     </div>
                 </div>
@@ -341,7 +667,7 @@
             <!-- Request Items -->
             <div class="card">
                 <div class="card-header">
-                    <h3>Talep Edilen Malzemeler</h3>
+                    <h3>Requested Materials</h3>
                     <div class="card-header-actions">
                         <button class="btn btn-primary btn-sm" id="addMaterialBtn">+ Malzeme Ekle</button>
                     </div>
@@ -351,11 +677,11 @@
                         <thead>
                             <tr>
                                 <th style="width: 50px;">#</th>
-                                <th>Malzeme No <span class="required">*</span></th>
-                                <th>Malzeme Açıklaması</th>
-                                <th>Talep Miktarı <span class="required">*</span></th>
-                                <th>Birim</th>
-                                <th>Öncelik <span class="required">*</span></th>
+                                <th>Material number <span class="required">*</span></th>
+                                <th>Material description</th>
+                                <th>Requested Quantity <span class="required">*</span></th>
+                                <th>Unit of measure</th>
+                                <th>Priority</th>
                                 <th style="width: 80px;">İşlem</th>
                             </tr>
                         </thead>
@@ -371,14 +697,7 @@
                                 <td>Rulman 6205-2RS</td>
                                 <td><input type="number" class="form-control form-control-sm" value="5" min="1" style="width: 90px;"></td>
                                 <td>AD</td>
-                                <td>
-                                    <select class="form-control form-control-sm" style="width: 120px;">
-                                        <option value="low">Düşük</option>
-                                        <option value="normal" selected>Normal</option>
-                                        <option value="high">Yüksek</option>
-                                        <option value="critical">Kritik</option>
-                                    </select>
-                                </td>
+                                <td><input type="checkbox" class="priority-checkbox"></td>
                                 <td><button class="btn btn-sm btn-danger">Sil</button></td>
                             </tr>
                             <tr>
@@ -392,14 +711,7 @@
                                 <td>Elektrik Motoru 5.5kW</td>
                                 <td><input type="number" class="form-control form-control-sm" value="2" min="1" style="width: 90px;"></td>
                                 <td>AD</td>
-                                <td>
-                                    <select class="form-control form-control-sm" style="width: 120px;">
-                                        <option value="low">Düşük</option>
-                                        <option value="normal">Normal</option>
-                                        <option value="high" selected>Yüksek</option>
-                                        <option value="critical">Kritik</option>
-                                    </select>
-                                </td>
+                                <td><input type="checkbox" class="priority-checkbox" checked></td>
                                 <td><button class="btn btn-sm btn-danger">Sil</button></td>
                             </tr>
                             <tr>
@@ -413,28 +725,12 @@
                                 <td>Hidrolik Yağ ISO 46</td>
                                 <td><input type="number" class="form-control form-control-sm" value="20" min="1" style="width: 90px;"></td>
                                 <td>LT</td>
-                                <td>
-                                    <select class="form-control form-control-sm" style="width: 120px;">
-                                        <option value="low" selected>Düşük</option>
-                                        <option value="normal">Normal</option>
-                                        <option value="high">Yüksek</option>
-                                        <option value="critical">Kritik</option>
-                                    </select>
-                                </td>
+                                <td><input type="checkbox" class="priority-checkbox"></td>
                                 <td><button class="btn btn-sm btn-danger">Sil</button></td>
                             </tr>
                         </tbody>
                     </table>
 
-                    <div class="dev-note info" style="margin-top: 15px;">
-                        <h4>Öncelik Seviyeleri</h4>
-                        <ul>
-                            <li><strong>Düşük:</strong> Rutin bakım, zamanlaması esnek</li>
-                            <li><strong>Normal:</strong> Planlı bakım, standart teslimat</li>
-                            <li><strong>Yüksek:</strong> Acil ihtiyaç, hızlı teslimat gerekli</li>
-                            <li><strong>Kritik:</strong> Üretim durmuş, anında teslimat</li>
-                        </ul>
-                    </div>
                 </div>
             </div>
         </div>
@@ -451,33 +747,41 @@
         </div>
 
         <!-- Developer Notes -->
-        <div class="dev-note success" style="margin-top: 20px;">
-            <h4>API ve Veritabanı İşlemleri</h4>
-            <p><strong>Talep Oluşturma:</strong> POST /api/material-requests</p>
-            <p><strong>Kayıt Sırası:</strong></p>
-            <ol>
-                <li><strong>MR_Request</strong> - Ana talep kaydı (tüm header bilgileri)</li>
-                <li><strong>MR_RequestItem</strong> - Her kalem için detay (material number, title, quantity, UOM, priority)</li>
-                <li><strong>MR_RequestDeliveryLocation</strong> - Teslimat lokasyonları (1-5 + other)</li>
-                <li><strong>MR_RequestApproval</strong> - Onay akışı kayıtları</li>
-            </ol>
-            <p><strong>Talep Görüntüleme:</strong> GET /api/material-requests/:id</p>
-            <p><strong>Talep Düzenleme:</strong> PUT /api/material-requests/:id (sadece draft/beklemede durumunda)</p>
-        </div>
 
-        <div class="dev-note warning">
-            <h4>Validasyon Kuralları</h4>
-            <ul>
-                <li>En az 1 malzeme seçilmeli</li>
-                <li>Talep miktarı > 0 olmalı</li>
-                <li>Hafta numarası seçilmeli</li>
-                <li>En az 1 teslimat lokasyonu seçilmeli (5 sabit lokasyondan veya "diğer")</li>
-                <li>Departman ve masraf merkezi zorunlu</li>
-                <li>Talep açıklaması minimum 10 karakter olmalı</li>
-                <li>Her malzeme için öncelik belirtilmeli (low/normal/high/critical)</li>
-            </ul>
-        </div>
     </main>
+
+    <!-- Material Selection Modal -->
+    <div class="modal-overlay" id="materialModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Material Selection</h3>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-search">
+                    <input type="text" id="materialSearch" placeholder="Malzeme numarası veya açıklaması ile arayın...">
+                    <button id="searchBtn">Ara</button>
+                </div>
+                <div class="material-list">
+                    <div class="material-list-header">
+                        <span></span>
+                        <span>Material No</span>
+                        <span>Material Description</span>
+                        <span>Unit</span>
+                        <span>Stock</span>
+                        <span>Group</span>
+                    </div>
+                    <div id="materialListBody">
+                        <!-- Materials will be populated here -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" id="modalCancelBtn">İptal</button>
+                <button class="btn-select" id="modalSelectBtn" disabled>Seç ve Ekle</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         // ======================================
@@ -489,35 +793,35 @@
 
         // Simulated request data (in real app, this would come from API)
         const requestData = {
-            'MR-2025-001234': {
+            'Material Request-2025-001234': {
                 status: 'beklemede',
                 statusText: 'Onay Bekliyor',
                 editable: true,
-                requestNumber: 'MR-2025-001234'
+                requestNumber: 'Material Request-2025-001234'
             },
-            'MR-2025-001233': {
+            'Material Request-2025-001233': {
                 status: 'onaylandi',
                 statusText: 'Onaylandı',
                 editable: false,
-                requestNumber: 'MR-2025-001233'
+                requestNumber: 'Material Request-2025-001233'
             },
-            'MR-2025-001232': {
+            'Material Request-2025-001232': {
                 status: 'teslim',
                 statusText: 'Teslim Edildi',
                 editable: false,
-                requestNumber: 'MR-2025-001232'
+                requestNumber: 'Material Request-2025-001232'
             },
-            'MR-2025-001231': {
+            'Material Request-2025-001231': {
                 status: 'reddedildi',
                 statusText: 'Reddedildi',
                 editable: false,
-                requestNumber: 'MR-2025-001231'
+                requestNumber: 'Material Request-2025-001231'
             },
-            'MR-2025-001230': {
+            'Material Request-2025-001230': {
                 status: 'iptal',
                 statusText: 'İptal Edildi',
                 editable: false,
-                requestNumber: 'MR-2025-001230'
+                requestNumber: 'Material Request-2025-001230'
             }
         };
 
@@ -641,9 +945,181 @@
             document.getElementById('costCenterTitle').value = titleMapping[this.value] || '';
         });
 
-        // Add material button
-        document.getElementById('addMaterialBtn').addEventListener('click', function() {
-            alert('Malzeme arama modalı açılacak\n\nMalzeme listesinden seçim yapabilirsiniz.');
+        // ======================================
+        // Material Data and Modal Handling
+        // ======================================
+        const materialData = [
+            { id: '01.00001-0001', description: 'Elektrik Motoru 5.5kW', unit: 'AD', stock: 12, group: 'ELK' },
+            { id: '01.00002-0001', description: 'Rulman 6205-2RS', unit: 'AD', stock: 45, group: 'MEK' },
+            { id: '01.00003-0001', description: 'Hidrolik Yağ ISO 46', unit: 'LT', stock: 200, group: 'YAG' },
+            { id: '01.00004-0001', description: 'Kayış V-Belt A68', unit: 'AD', stock: 28, group: 'MEK' },
+            { id: '01.00005-0001', description: 'Filtre Hava Kompresör', unit: 'AD', stock: 15, group: 'FLT' },
+            { id: '01.00006-0001', description: 'Conta Seti Pompa', unit: 'TK', stock: 8, group: 'MEK' },
+            { id: '01.00007-0001', description: 'Sigorta 10A', unit: 'AD', stock: 100, group: 'ELK' },
+            { id: '01.00008-0001', description: 'Kontaktör 25A', unit: 'AD', stock: 22, group: 'ELK' },
+            { id: '01.00009-0001', description: 'Sensör Proximity M18', unit: 'AD', stock: 35, group: 'ELK' },
+            { id: '01.00010-0001', description: 'Pnömatik Silindir 50x100', unit: 'AD', stock: 6, group: 'PNO' },
+            { id: '01.00011-0001', description: 'Valf Solenoid 24V', unit: 'AD', stock: 18, group: 'PNO' },
+            { id: '01.00012-0001', description: 'Gres Yağı EP2', unit: 'KG', stock: 50, group: 'YAG' },
+            { id: '01.00013-0001', description: 'Mil Keçesi 40x55x7', unit: 'AD', stock: 40, group: 'MEK' },
+            { id: '01.00014-0001', description: 'Dişli Kutusu Yağı', unit: 'LT', stock: 80, group: 'YAG' },
+            { id: '01.00015-0001', description: 'Kablo NYY 3x2.5', unit: 'MT', stock: 500, group: 'ELK' }
+        ];
+
+        let selectedMaterial = null;
+        const modal = document.getElementById('materialModal');
+        const materialListBody = document.getElementById('materialListBody');
+        const searchInput = document.getElementById('materialSearch');
+        const selectBtn = document.getElementById('modalSelectBtn');
+
+        function renderMaterialList(materials) {
+            if (materials.length === 0) {
+                materialListBody.innerHTML = '<div class="no-results">Arama kriterlerine uygun malzeme bulunamadı.</div>';
+                return;
+            }
+
+            materialListBody.innerHTML = materials.map(m => `
+                <div class="material-list-item" data-id="${m.id}" data-desc="${m.description}" data-unit="${m.unit}">
+                    <span><input type="radio" name="materialSelect" value="${m.id}"></span>
+                    <span>${m.id}</span>
+                    <span>${m.description}</span>
+                    <span>${m.unit}</span>
+                    <span>${m.stock}</span>
+                    <span>${m.group}</span>
+                </div>
+            `).join('');
+
+            // Add click handlers
+            materialListBody.querySelectorAll('.material-list-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    // Remove previous selection
+                    materialListBody.querySelectorAll('.material-list-item').forEach(i => i.classList.remove('selected'));
+                    // Select this item
+                    this.classList.add('selected');
+                    this.querySelector('input[type="radio"]').checked = true;
+                    selectedMaterial = {
+                        id: this.dataset.id,
+                        description: this.dataset.desc,
+                        unit: this.dataset.unit
+                    };
+                    selectBtn.disabled = false;
+                });
+            });
+        }
+
+        function openModal() {
+            selectedMaterial = null;
+            selectBtn.disabled = true;
+            searchInput.value = '';
+            renderMaterialList(materialData);
+            modal.classList.add('active');
+            searchInput.focus();
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+            window.replacingRow = null;
+            selectBtn.textContent = 'Seç ve Ekle';
+        }
+
+        function searchMaterials() {
+            const query = searchInput.value.toLowerCase().trim();
+            if (!query) {
+                renderMaterialList(materialData);
+                return;
+            }
+            const filtered = materialData.filter(m =>
+                m.id.toLowerCase().includes(query) ||
+                m.description.toLowerCase().includes(query) ||
+                m.group.toLowerCase().includes(query)
+            );
+            renderMaterialList(filtered);
+        }
+
+        function addMaterialToTable() {
+            if (!selectedMaterial) return;
+
+            const tbody = document.querySelector('#materialsTable tbody');
+            const rowCount = tbody.querySelectorAll('tr').length + 1;
+
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td>${rowCount}</td>
+                <td>
+                    <div class="input-group">
+                        <input type="text" class="form-control form-control-sm" value="${selectedMaterial.id}" readonly>
+                        <button class="btn btn-sm btn-outline" title="Değiştir">🔄</button>
+                    </div>
+                </td>
+                <td>${selectedMaterial.description}</td>
+                <td><input type="number" class="form-control form-control-sm" value="1" min="1" style="width: 90px;"></td>
+                <td>${selectedMaterial.unit}</td>
+                <td><input type="checkbox" class="priority-checkbox"></td>
+                <td><button class="btn btn-sm btn-danger">Sil</button></td>
+            `;
+
+            tbody.appendChild(newRow);
+
+            // Add delete handler
+            newRow.querySelector('.btn-danger').addEventListener('click', function() {
+                const row = this.closest('tr');
+                const materialNo = row.querySelector('input').value;
+                const materialDesc = row.cells[2].textContent;
+                if (confirm('Item number silinecek:\n\n' + materialNo + ' - ' + materialDesc + '\n\nDevam etmek istiyor musunuz?')) {
+                    row.style.transition = 'opacity 0.3s';
+                    row.style.opacity = '0';
+                    setTimeout(function() {
+                        row.remove();
+                        // Renumber rows
+                        document.querySelectorAll('#materialsTable tbody tr').forEach((r, idx) => {
+                            r.cells[0].textContent = idx + 1;
+                        });
+                    }, 300);
+                }
+            });
+
+            // Add change material handler
+            newRow.querySelector('.btn-outline').addEventListener('click', function() {
+                openModal();
+            });
+
+            closeModal();
+        }
+
+        // Add material button - opens modal
+        document.getElementById('addMaterialBtn').addEventListener('click', openModal);
+
+        // Modal close button
+        document.getElementById('modalClose').addEventListener('click', closeModal);
+
+        // Modal cancel button
+        document.getElementById('modalCancelBtn').addEventListener('click', closeModal);
+
+        // Modal select button
+        document.getElementById('modalSelectBtn').addEventListener('click', addMaterialToTable);
+
+        // Search button
+        document.getElementById('searchBtn').addEventListener('click', searchMaterials);
+
+        // Search on enter key
+        searchInput.addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') {
+                searchMaterials();
+            }
+        });
+
+        // Close modal on overlay click
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                closeModal();
+            }
         });
 
         // Save button
@@ -680,8 +1156,8 @@
             let actionText = mode === 'create' ? 'oluşturulacak' : 'güncellenecek';
             let confirmText = mode === 'create' ? 'Malzeme Talebi oluşturulacak!' : 'Malzeme Talebi güncellenecek!';
 
-            if (confirm(confirmText + '\n\nTalep No: ' + requestNo + '\nHafta: ' + weekNum + '\n\nDevam etmek istiyor musunuz?')) {
-                alert('Talep başarıyla kaydedildi!\n\nTalep No: ' + requestNo);
+            if (confirm(confirmText + '\n\nSRM Request number: ' + requestNo + '\nHafta: ' + weekNum + '\n\nDevam etmek istiyor musunuz?')) {
+                alert('Talep başarıyla kaydedildi!\n\nSRM Request number: ' + requestNo);
                 window.location.href = 'material-request-list.html';
             }
         });
@@ -700,23 +1176,212 @@
                 const materialNo = row.querySelector('input').value;
                 const materialDesc = row.cells[2].textContent;
 
-                if (confirm('Kalem silinecek:\n\n' + materialNo + ' - ' + materialDesc + '\n\nDevam etmek istiyor musunuz?')) {
+                if (confirm('Item number silinecek:\n\n' + materialNo + ' - ' + materialDesc + '\n\nDevam etmek istiyor musunuz?')) {
                     row.style.transition = 'opacity 0.3s';
                     row.style.opacity = '0';
                     setTimeout(function() {
                         row.remove();
-                        alert('Kalem silindi');
+                        alert('Item number silindi');
                     }, 300);
                 }
             });
         });
 
-        // Change material buttons
+        // Change material buttons - open modal for replacement
         document.querySelectorAll('#materialsTable tbody .btn-outline').forEach(function(btn) {
             btn.addEventListener('click', function() {
-                alert('Malzeme değiştirme modalı açılacak\n\nFarklı bir malzeme seçebilirsiniz.');
+                const row = this.closest('tr');
+                // Store reference to current row for replacement
+                window.replacingRow = row;
+                openModalForReplacement();
             });
         });
+
+        // Open modal for material replacement
+        function openModalForReplacement() {
+            selectedMaterial = null;
+            selectBtn.disabled = true;
+            selectBtn.textContent = 'Seç ve Değiştir';
+            searchInput.value = '';
+            renderMaterialList(materialData);
+            modal.classList.add('active');
+            searchInput.focus();
+        }
+
+        // Override select button for replacement mode
+        const originalSelectHandler = addMaterialToTable;
+        document.getElementById('modalSelectBtn').removeEventListener('click', addMaterialToTable);
+        document.getElementById('modalSelectBtn').addEventListener('click', function() {
+            if (!selectedMaterial) return;
+
+            if (window.replacingRow) {
+                // Replacement mode - update existing row
+                const row = window.replacingRow;
+                row.querySelector('input[type="text"]').value = selectedMaterial.id;
+                row.cells[2].textContent = selectedMaterial.description;
+                row.cells[4].textContent = selectedMaterial.unit;
+                window.replacingRow = null;
+                selectBtn.textContent = 'Seç ve Ekle';
+                closeModal();
+            } else {
+                // Add new material
+                addMaterialToTable();
+            }
+        });
+
+    </script>
+
+    <!-- DEVELOPER DOCUMENTATION PANEL -->
+    <div id="devDocsPanel" class="dev-docs-panel">
+        <button class="dev-docs-toggle" onclick="toggleDevDocs()">📋 Geliştirici Dokümantasyonu</button>
+        <div class="dev-docs-content" id="devDocsContent">
+            <div class="dev-docs-header">
+                <h2>📋 16 MR - Material Request</h2>
+                <button class="dev-docs-close" onclick="toggleDevDocs()">✕</button>
+            </div>
+            <div class="dev-docs-body">
+                <div class="dev-docs-tabs">
+                    <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
+                    <button class="dev-tab" onclick="showDevTab('validations')">Validasyonlar</button>
+                </div>
+                <div id="dataStructure" class="dev-tab-content active">
+                    <h3>Material Request Header</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Field Name</th><th>Type</th><th>Length</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td>Material request header Id</td><td>int</td><td>12</td><td>Primary key</td></tr>
+                            <tr><td>SL user info</td><td>int</td><td>8</td><td>SL kullanıcı ID</td></tr>
+                            <tr><td>Created by user info</td><td>int</td><td>8</td><td>Oluşturan kullanıcı</td></tr>
+                            <tr><td>Created for user info</td><td>int</td><td>8</td><td>Kimin için oluşturuldu</td></tr>
+                            <tr><td>Creation date time</td><td>datetime</td><td>-</td><td>Oluşturma tarihi</td></tr>
+                            <tr><td>Selected week number</td><td>int</td><td>2</td><td>Seçilen hafta numarası (zorunlu)</td></tr>
+                            <tr><td>Selected weeks first day</td><td>date</td><td>-</td><td>Haftanın ilk günü</td></tr>
+                            <tr><td>Description for the request</td><td>text</td><td>256</td><td>Talep açıklaması</td></tr>
+                            <tr><td>Requesting department</td><td>text</td><td>8</td><td>Talep eden departman</td></tr>
+                            <tr><td>Requesting user info</td><td>int</td><td>8</td><td>Talep eden kullanıcı</td></tr>
+                            <tr><td>Cost Center Code</td><td>text</td><td>10</td><td>Masraf merkezi kodu</td></tr>
+                            <tr><td>Total Euro Value of request</td><td>float</td><td>15</td><td>Toplam Euro değeri</td></tr>
+                            <tr><td>Delivery Location 1-5 id</td><td>text</td><td>8</td><td>Teslimat lokasyonları (5 adet)</td></tr>
+                            <tr><td>Other Location text</td><td>text</td><td>64</td><td>Diğer lokasyon açıklaması</td></tr>
+                            <tr><td>Over budget value</td><td>float</td><td>14</td><td>Bütçe aşım miktarı</td></tr>
+                            <tr><td>Request total value</td><td>float</td><td>14</td><td>Talep toplam değeri</td></tr>
+                            <tr><td>SL approval check</td><td>bool</td><td>-</td><td>SL onayı gerekli mi?</td></tr>
+                            <tr><td>SL approval no required check</td><td>bool</td><td>-</td><td>SL onayı gerekmez</td></tr>
+                            <tr><td>SL approver user info</td><td>int</td><td>8</td><td>SL onaylayıcı kullanıcı</td></tr>
+                            <tr><td>SL approval date time</td><td>datetime</td><td>-</td><td>SL onay tarihi</td></tr>
+                            <tr><td>over budget check</td><td>bool</td><td>-</td><td>Bütçe aşımı var mı?</td></tr>
+                            <tr><td>Budget Id</td><td>int</td><td>8</td><td>Bağlı bütçe ID</td></tr>
+                            <tr><td>Approval finish date time</td><td>datetime</td><td>-</td><td>Onay tamamlanma tarihi</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Material Request Item</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Field Name</th><th>Type</th><th>Length</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td>Material Request item id</td><td>int</td><td>12</td><td>Primary key</td></tr>
+                            <tr><td>Material request header Id</td><td>int</td><td>8</td><td>Header FK</td></tr>
+                            <tr><td>Material request item no</td><td>int</td><td>4</td><td>Satır numarası</td></tr>
+                            <tr><td>Material number</td><td>text</td><td>13</td><td>Malzeme numarası</td></tr>
+                            <tr><td>Requested Quantity</td><td>float</td><td>15</td><td>Talep edilen miktar</td></tr>
+                            <tr><td>Priority</td><td>bool</td><td>-</td><td>Öncelikli mi?</td></tr>
+                            <tr><td>Delivered quantity</td><td>float</td><td>15</td><td>Teslim edilen miktar</td></tr>
+                            <tr><td>Material delivery finalized</td><td>bool</td><td>-</td><td>Teslimat tamamlandı mı?</td></tr>
+                            <tr><td>Item total Euro value</td><td>float</td><td>14</td><td>Satır Euro değeri</td></tr>
+                            <tr><td>Selected to transfer</td><td>bool</td><td>-</td><td>Transfer için seçildi mi?</td></tr>
+                            <tr><td>Rollback initiated check</td><td>bool</td><td>-</td><td>Geri alma başlatıldı mı?</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="businessRules" class="dev-tab-content">
+                    <h3>İş Kuralları</h3>
+                    <div class="rules-section">
+                        <h4>📦 Stok ve FIFO Kuralları</h4>
+                        <ul>
+                            <li><strong>FIFO kuralı katıdır:</strong> Stok çıkışlarında en eski (en düşük Cost ID) stok önce kullanılır</li>
+                            <li>Stok OTOMATIK atanır, manuel değiştirilemez</li>
+                            <li>Talep birden fazla stok kaydından karşılanabilir (ayrı satırlar oluşur)</li>
+                            <li>Stoktan fazla miktar talep edilemez</li>
+                        </ul>
+                        <h4>🔒 Malzeme Durum Kuralları</h4>
+                        <ul>
+                            <li><strong>Bloklu malzemeler:</strong> Listede görünür ancak SEÇİLEMEZ</li>
+                            <li><strong>Status=4 (Preparing to be used):</strong> Talep YAPILAMAZ</li>
+                            <li><strong>Status=5 (Preparing to discontinuation):</strong> Talep YAPILABİLİR</li>
+                        </ul>
+                        <h4>💰 Bütçe Kuralları</h4>
+                        <ul>
+                            <li>Maliyet değeri talep sahibine GÖRÜNÜR olmalı</li>
+                            <li>Haftalık bütçe kontrolü yapılır</li>
+                            <li>Bütçe aşımında onay gerekebilir (Budget Preference'a göre)</li>
+                            <li>Tüm değerler Euro cinsindendir</li>
+                        </ul>
+                        <h4>📅 Hafta Seçimi</h4>
+                        <ul>
+                            <li>Hafta numarası ZORUNLUDUR</li>
+                            <li>Varsayılan: Oluşturma haftası</li>
+                            <li>Hafta iki aya denk gelirse günlere göre bölünür (Pazar hariç 6 gün)</li>
+                        </ul>
+                        <h4>🔍 Arama Kuralları</h4>
+                        <ul>
+                            <li>3 karakter sonra otosuggest aktif olur</li>
+                            <li>Malzeme numarası, başlık ve açıklama alanlarında arama yapılır</li>
+                        </ul>
+                    </div>
+                </div>
+                <div id="validations" class="dev-tab-content">
+                    <h3>Alan Validasyonları</h3>
+                    <ul>
+                        <li><strong>Selected week number:</strong> Zorunlu, 1-52 arası</li>
+                        <li><strong>Description:</strong> maxlength=256</li>
+                        <li><strong>Requesting department:</strong> maxlength=8</li>
+                        <li><strong>Cost Center Code:</strong> maxlength=10</li>
+                        <li><strong>Material number:</strong> maxlength=13, format: ##.#####-####</li>
+                        <li><strong>Requested Quantity:</strong> > 0, ≤ mevcut stok</li>
+                        <li><strong>Other Location text:</strong> maxlength=64</li>
+                    </ul>
+                    <h3>Onay Tipleri (Budget Preference)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Kod</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>1</td><td>SL Approval</td><td>Her talep için SL onayı gerekli</td></tr>
+                            <tr><td>2</td><td>SL over budget approval</td><td>Sadece bütçe aşımında SL onayı</td></tr>
+                            <tr><td>3</td><td>Manager approval</td><td>Her talep için yönetici onayı</td></tr>
+                            <tr><td>4</td><td>Manager Over budget Approval</td><td>Sadece bütçe aşımında yönetici onayı</td></tr>
+                            <tr><td>5</td><td>Only TL and above</td><td>Sadece TL ve üstü talep yapabilir</td></tr>
+                            <tr><td>6</td><td>Not required</td><td>Bütçe onayı gerekmez</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>
+        .dev-docs-panel{position:fixed;bottom:0;left:0;right:0;z-index:9999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+        .dev-docs-toggle{position:absolute;bottom:100%;right:20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;padding:10px 20px;border-radius:8px 8px 0 0;cursor:pointer;font-weight:600;font-size:14px;box-shadow:0 -2px 10px rgba(0,0,0,0.2)}
+        .dev-docs-content{display:none;background:#1a1a2e;color:#eee;max-height:60vh;overflow-y:auto;box-shadow:0 -5px 20px rgba(0,0,0,0.3)}
+        .dev-docs-content.active{display:block}
+        .dev-docs-header{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);position:sticky;top:0}
+        .dev-docs-header h2{margin:0;font-size:18px}
+        .dev-docs-close{background:rgba(255,255,255,0.2);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px}
+        .dev-docs-body{padding:20px}
+        .dev-docs-tabs{display:flex;gap:10px;margin-bottom:20px;border-bottom:1px solid #333;padding-bottom:10px}
+        .dev-tab{background:#2d2d44;color:#aaa;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;transition:all 0.3s}
+        .dev-tab:hover,.dev-tab.active{background:#667eea;color:#fff}
+        .dev-tab-content{display:none}
+        .dev-tab-content.active{display:block}
+        .dev-table{width:100%;border-collapse:collapse;margin:15px 0;font-size:13px}
+        .dev-table th,.dev-table td{padding:10px;text-align:left;border:1px solid #333}
+        .dev-table th{background:#2d2d44;color:#667eea;font-weight:600}
+        .dev-table tr:nth-child(even){background:#252538}
+        .dev-docs-body h3{color:#667eea;margin:20px 0 10px;font-size:16px;border-bottom:1px solid #333;padding-bottom:5px}
+        .dev-docs-body h4{color:#9580ff;margin:15px 0 8px;font-size:14px}
+        .dev-docs-body ul{margin:0 0 15px 20px;line-height:1.8}
+        .rules-section{background:#252538;padding:15px;border-radius:8px}
+    </style>
+    <script>
+        function toggleDevDocs(){document.getElementById('devDocsContent').classList.toggle('active')}
+        function showDevTab(tabId){document.querySelectorAll('.dev-tab-content').forEach(c=>c.classList.remove('active'));document.querySelectorAll('.dev-tab').forEach(t=>t.classList.remove('active'));document.getElementById(tabId).classList.add('active');event.target.classList.add('active')}
     </script>
 </body>
 </html>

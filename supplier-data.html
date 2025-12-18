@@ -6,6 +6,58 @@
     <title>Tedarikçi Yönetimi - IMMA</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
+<!--
+================================================================================
+IMMA DEVELOPER DOCUMENTATION
+================================================================================
+
+SCREEN: 7 MS - Maintain Supplier
+FILE: supplier-data.html
+LAST UPDATED: 2025-12-18
+
+--------------------------------------------------------------------------------
+RELATED DATABASE TABLES
+--------------------------------------------------------------------------------
+
+TABLE: Supplier
+| Field Name                           | Type     | Length | Description                    |
+|--------------------------------------|----------|--------|--------------------------------|
+| Supplier Id                          | int      | 8      | Primary key                    |
+| Supplier SAP no                      | int      | 10     | SAP tedarikçi numarası         |
+| Supplier title 1                     | text     | 50     | Tedarikçi adı 1                |
+| Supplier title 2                     | text     | 50     | Tedarikçi adı 2                |
+| Created by user info                 | int      | 8      | Oluşturan kullanıcı            |
+| Creation date time                   | datetime | -      | Oluşturma tarihi               |
+| Supplier status id                   | char     | 1      | 1:Active, 2:Disqualified, 3:Inactive |
+| Average delivery time as business days| int     | 4      | Ortalama teslimat süresi (gün) |
+
+TABLE: Supplier Status
+| Code | Description                    |
+|------|--------------------------------|
+| 1    | Active - Normal kullanımda     |
+| 2    | Disqualified - Diskalifiye     |
+| 3    | Inactive - Kullanım dışı       |
+
+--------------------------------------------------------------------------------
+BUSINESS RULES (İş Kuralları)
+--------------------------------------------------------------------------------
+
+1. Supplier SAP no: SAP sisteminden gelen tedarikçi numarası
+2. Disqualified (2): Kalite problemleri nedeniyle askıya alınmış
+3. Inactive (3): Artık iş yapılmayan tedarikçi
+4. Average delivery time: MRP hesaplamalarında kullanılır
+
+--------------------------------------------------------------------------------
+FIELD VALIDATIONS
+--------------------------------------------------------------------------------
+
+- Supplier SAP no: maxlength=10, ZORUNLU
+- Supplier title 1: maxlength=50, ZORUNLU
+- Supplier title 2: maxlength=50
+- Average delivery time: >= 0
+
+================================================================================
+-->
 <body>
     <!-- NAVBAR - Top Navigation (Maximo Style) -->
     <nav class="modern-navbar">
@@ -57,7 +109,7 @@
                 <li class="nav-item">
                     <a href="budget-management.html" class="nav-link">
                         <span class="nav-icon">💰</span>
-                        Bütçe
+                        Budget
                     </a>
                     <div class="dropdown-menu">
                         <a href="budget-management.html" class="dropdown-item">Bütçe Yönetimi</a>
@@ -76,7 +128,7 @@
                 <li class="nav-item">
                     <a href="transfer-list.html" class="nav-link">
                         <span class="nav-icon">🏭</span>
-                        Stok
+                        Stock
                     </a>
                     <div class="dropdown-menu">
                         <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
@@ -105,18 +157,6 @@
         </div>
 
         <!-- Developer Notes -->
-        <div class="dev-note info">
-            <h4>Ekran Bilgisi: 7 MS - Maintain Supplier</h4>
-            <p><strong>Amaç:</strong> CVCD pattern ile tedarikçi verilerinin oluşturma, görüntüleme ve düzenleme işlemleri.</p>
-            <p><strong>Fonksiyonlar:</strong></p>
-            <ul>
-                <li>Tedarikçi Oluştur (Create) - URL: ?mode=create</li>
-                <li>Tedarikçi Görüntüle (View) - URL: ?id=xxx&mode=view</li>
-                <li>Tedarikçi Düzenle (Change/Edit) - URL: ?id=xxx&mode=edit</li>
-            </ul>
-            <p><strong>Excel Spec:</strong> "7 MS - Maintain Supplier"</p>
-            <p><strong>Not:</strong> Liste görünümü supplier-list.html sayfasındadır.</p>
-        </div>
 
         <!-- CREATE/EDIT/VIEW FORM SECTION -->
         <div class="card">
@@ -131,7 +171,7 @@
                         <small class="form-hint">Otomatik oluşturulur</small>
                     </div>
                     <div class="form-group col-3">
-                        <label>SAP Tedarikçi No <span class="required">*</span></label>
+                        <label>SAP Supplier number <span class="required">*</span></label>
                         <input type="text" class="form-control" id="supplierSapNo" maxlength="10" placeholder="1000012345">
                     </div>
                     <div class="form-group col-6">
@@ -142,32 +182,32 @@
                 <div class="form-row">
                     <div class="form-group col-6">
                         <label>Tedarikçi Ünvanı 2</label>
-                        <input type="text" class="form-control" id="supplierTitle2" maxlength="50" placeholder="Şube veya ek bilgi (opsiyonel)">
+                        <input type="text" class="form-control" id="supplierTitle2" maxlength="50" placeholder="Febe veya ek bilgi (opsiyonel)">
                     </div>
                     <div class="form-group col-3">
-                        <label>Tedarikçi Durumu <span class="required">*</span></label>
+                        <label>Supplier status id <span class="required">*</span></label>
                         <!-- Dropdown for create/edit mode -->
                         <select class="form-control" id="supplierStatusNo">
                             <option value="">Seçiniz...</option>
-                            <option value="1">Aktif</option>
-                            <option value="2">Diskalifiye</option>
-                            <option value="3">Pasif</option>
+                            <option value="1">Active</option>
+                            <option value="2">Disqualified</option>
+                            <option value="3">Inactive</option>
                         </select>
                         <!-- Input display for view mode -->
                         <input type="text" class="form-control" id="supplierStatusText" readonly style="display: none;">
                     </div>
                     <div class="form-group col-3">
-                        <label>Ortalama Teslim Süresi (İş Günü)</label>
+                        <label>Average delivery time as business days</label>
                         <input type="number" class="form-control" id="avgDeliveryTime" min="0" placeholder="7">
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group col-6">
-                        <label>Oluşturan</label>
+                        <label>Created by user info</label>
                         <input type="text" class="form-control" id="createdBy" readonly value="-">
                     </div>
                     <div class="form-group col-6">
-                        <label>Oluşturma Tarihi</label>
+                        <label>Creation date time</label>
                         <input type="text" class="form-control" id="creationDate" readonly value="-">
                     </div>
                 </div>
@@ -185,36 +225,6 @@
         </div>
 
         <!-- Database Operations - Data Structure IMMA.xlsx -->
-        <div class="dev-note success">
-            <h4>✅ Veritabanı İşlemleri (Data Structure IMMA.xlsx)</h4>
-            <p><strong>API Endpoints:</strong></p>
-            <ul>
-                <li>POST /api/suppliers - Yeni tedarikçi oluştur</li>
-                <li>PUT /api/suppliers/{id} - Tedarikçi güncelle</li>
-                <li>GET /api/suppliers/{id} - Tedarikçi detay görüntüle</li>
-            </ul>
-            <p><strong>Kayıt Tabloları (Data Structure IMMA.xlsx - "Supplier" sheet):</strong></p>
-            <ol>
-                <li><strong>Supplier</strong> - Ana tedarikçi kaydı</li>
-            </ol>
-            <p><strong>Supplier Tablo Alanları:</strong></p>
-            <ul>
-                <li>Supplier Id (int, 8) - Sistem otomatik oluşturur</li>
-                <li>Supplier SAP no (int, 10) - Kullanıcı girişi (zorunlu)</li>
-                <li>Supplier title 1 (text, 50) - Ana ünvan (zorunlu)</li>
-                <li>Supplier title 2 (text, 50) - Ek ünvan (opsiyonel)</li>
-                <li>Supplier status id (char, 1) - Durum kodu</li>
-                <li>Average delivery time as business days (int, 4) - İş günü cinsinden</li>
-                <li>Created by user info (int, 8) - Oluşturan kullanıcı ID</li>
-                <li>Creation date time (datetime) - Oluşturma zamanı</li>
-            </ul>
-            <p><strong>Supplier Status Tablosu (Data Structure IMMA.xlsx - "Supplier Status" sheet):</strong></p>
-            <ul>
-                <li>1 = Active (Aktif)</li>
-                <li>2 = Disqualified (Diskalifiye)</li>
-                <li>3 = Inactive (Pasif)</li>
-            </ul>
-        </div>
     </main>
 
     <script>
@@ -236,7 +246,7 @@
                 supplierTitle1: 'ABC Rulman San. Tic. Ltd. Şti.',
                 supplierTitle2: 'ABC Bearings Industrial',
                 supplierStatusNo: '1',
-                supplierStatusTitle: 'Aktif',
+                supplierStatusTitle: 'Active',
                 avgDeliveryTime: 5,
                 createdBy: 'Fatma Şahin - Satın Alma Uzmanı',
                 creationDate: '10.12.2025 09:00'
@@ -247,7 +257,7 @@
                 supplierTitle1: 'XYZ Elektrik Malzemeleri A.Ş.',
                 supplierTitle2: 'XYZ Electrical Supplies Inc.',
                 supplierStatusNo: '1',
-                supplierStatusTitle: 'Aktif',
+                supplierStatusTitle: 'Active',
                 avgDeliveryTime: 7,
                 createdBy: 'Mehmet Yılmaz - Satın Alma Müdürü',
                 creationDate: '08.12.2025 14:30'
@@ -258,7 +268,7 @@
                 supplierTitle1: 'German Bearings GmbH',
                 supplierTitle2: 'Deutsche Lager Vertrieb',
                 supplierStatusNo: '1',
-                supplierStatusTitle: 'Aktif',
+                supplierStatusTitle: 'Active',
                 avgDeliveryTime: 14,
                 createdBy: 'Ayşe Demir - Satın Alma Uzmanı',
                 creationDate: '05.12.2025 11:20'
@@ -269,7 +279,7 @@
                 supplierTitle1: 'Konsinye Yedek Parça Ltd.',
                 supplierTitle2: 'Consignment Spare Parts',
                 supplierStatusNo: '1',
-                supplierStatusTitle: 'Aktif',
+                supplierStatusTitle: 'Active',
                 avgDeliveryTime: 3,
                 createdBy: 'Ali Kaya - Satın Alma Müdürü',
                 creationDate: '01.12.2025 16:45'
@@ -280,7 +290,7 @@
                 supplierTitle1: 'Pasif Tedarikçi A.Ş.',
                 supplierTitle2: 'Inactive Supplier Corp.',
                 supplierStatusNo: '3',
-                supplierStatusTitle: 'Pasif',
+                supplierStatusTitle: 'Inactive',
                 avgDeliveryTime: 10,
                 createdBy: 'Fatma Şahin - Satın Alma Uzmanı',
                 creationDate: '28.11.2025 10:00'
@@ -291,7 +301,7 @@
                 supplierTitle1: 'Diskalifiye Tedarikçi San. Ltd.',
                 supplierTitle2: 'Disqualified Supplier Industries',
                 supplierStatusNo: '2',
-                supplierStatusTitle: 'Diskalifiye',
+                supplierStatusTitle: 'Disqualified',
                 avgDeliveryTime: 0,
                 createdBy: 'Mehmet Yılmaz - Satın Alma Müdürü',
                 creationDate: '25.11.2025 09:15'
@@ -454,9 +464,9 @@
         // 1 = Active, 2 = Disqualified, 3 = Inactive
         function getStatusTitle(statusNo) {
             const statusMap = {
-                '1': 'Aktif',
-                '2': 'Diskalifiye',
-                '3': 'Pasif'
+                '1': 'Active',
+                '2': 'Disqualified',
+                '3': 'Inactive'
             };
             return statusMap[statusNo] || '';
         }
@@ -472,7 +482,7 @@
 
             // Validation
             if (!sapNo) {
-                alert('SAP Tedarikçi No zorunlu alandır.');
+                alert('SAP Supplier number zorunlu alandır.');
                 document.getElementById('supplierSapNo').focus();
                 return;
             }
@@ -482,7 +492,7 @@
                 return;
             }
             if (!statusNo) {
-                alert('Tedarikçi Durumu zorunlu alandır.');
+                alert('Tedarikçi Statusu zorunlu alandır.');
                 document.getElementById('supplierStatusNo').focus();
                 return;
             }
@@ -492,18 +502,18 @@
             // Determine action
             if (currentMode === 'create') {
                 // Create new supplier
-                if (confirm(`Yeni tedarikçi oluşturulacak:\n\nSAP No: ${sapNo}\nÜnvan: ${title1}\nDurum: ${statusTitle}\n\nDevam etmek istiyor musunuz?`)) {
+                if (confirm(`Yeni tedarikçi oluşturulacak:\n\nSAP No: ${sapNo}\nÜnvan: ${title1}\nStatus: ${statusTitle}\n\nDevam etmek istiyor musunuz?`)) {
                     // In real app: POST /api/suppliers
-                    alert(`✅ Tedarikçi başarıyla oluşturuldu!\n\nSAP No: ${sapNo}\nÜnvan: ${title1}\nDurum: ${statusTitle}`);
+                    alert(`✅ Tedarikçi başarıyla oluşturuldu!\n\nSAP No: ${sapNo}\nÜnvan: ${title1}\nStatus: ${statusTitle}`);
 
                     // Redirect to list
                     window.location.href = 'supplier-list.html';
                 }
             } else if (currentMode === 'edit') {
                 // Update existing supplier
-                if (confirm(`Tedarikçi güncellenecek:\n\nID: ${currentSupplierId}\nSAP No: ${sapNo}\nÜnvan: ${title1}\nDurum: ${statusTitle}\n\nDevam etmek istiyor musunuz?`)) {
+                if (confirm(`Tedarikçi güncellenecek:\n\nID: ${currentSupplierId}\nSAP No: ${sapNo}\nÜnvan: ${title1}\nStatus: ${statusTitle}\n\nDevam etmek istiyor musunuz?`)) {
                     // In real app: PUT /api/suppliers/{id}
-                    alert(`✅ Tedarikçi başarıyla güncellendi!\n\nID: ${currentSupplierId}\nSAP No: ${sapNo}\nÜnvan: ${title1}\nDurum: ${statusTitle}`);
+                    alert(`✅ Tedarikçi başarıyla güncellendi!\n\nID: ${currentSupplierId}\nSAP No: ${sapNo}\nÜnvan: ${title1}\nStatus: ${statusTitle}`);
 
                     // Redirect to list
                     window.location.href = 'supplier-list.html';
@@ -511,5 +521,67 @@
             }
         });
     </script>
+
+    <!-- DEVELOPER DOCUMENTATION PANEL -->
+    <div id="devDocsPanel" class="dev-docs-panel">
+        <button class="dev-docs-toggle" onclick="toggleDevDocs()">📋 Geliştirici Dokümantasyonu</button>
+        <div class="dev-docs-content" id="devDocsContent">
+            <div class="dev-docs-header">
+                <h2>📋 7 MS - Maintain Supplier</h2>
+                <button class="dev-docs-close" onclick="toggleDevDocs()">✕</button>
+            </div>
+            <div class="dev-docs-body">
+                <div class="dev-docs-tabs">
+                    <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
+                </div>
+                <div id="dataStructure" class="dev-tab-content active">
+                    <h3>Supplier Tablosu</h3>
+                    <table class="dev-table"><thead><tr><th>Field Name</th><th>Type</th><th>Length</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td>Supplier Id</td><td>int</td><td>8</td><td>Primary key</td></tr>
+                            <tr><td>Supplier SAP no</td><td>int</td><td>10</td><td>SAP tedarikçi numarası</td></tr>
+                            <tr><td>Supplier title 1</td><td>text</td><td>50</td><td>Tedarikçi adı 1</td></tr>
+                            <tr><td>Supplier title 2</td><td>text</td><td>50</td><td>Tedarikçi adı 2</td></tr>
+                            <tr><td>Created by user info</td><td>int</td><td>8</td><td>Oluşturan kullanıcı</td></tr>
+                            <tr><td>Creation date time</td><td>datetime</td><td>-</td><td>Oluşturma tarihi</td></tr>
+                            <tr><td>Supplier status id</td><td>char</td><td>1</td><td>1:Active, 2:Disqualified, 3:Inactive</td></tr>
+                            <tr><td>Average delivery time</td><td>int</td><td>4</td><td>Ortalama teslimat süresi (gün)</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Supplier Status Kodları</h3>
+                    <table class="dev-table"><thead><tr><th>Kod</th><th>Durum</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>1</td><td>Active</td><td>Normal kullanımda</td></tr>
+                            <tr><td>2</td><td>Disqualified</td><td>Kalite problemleri nedeniyle askıya alınmış</td></tr>
+                            <tr><td>3</td><td>Inactive</td><td>Artık iş yapılmayan tedarikçi</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="businessRules" class="dev-tab-content">
+                    <h3>İş Kuralları</h3>
+                    <div class="rules-section">
+                        <ul>
+                            <li><strong>Supplier SAP no</strong>: SAP sisteminden gelen tedarikçi numarası</li>
+                            <li><strong>Disqualified (2)</strong>: Kalite problemleri nedeniyle askıya alınmış</li>
+                            <li><strong>Inactive (3)</strong>: Artık iş yapılmayan tedarikçi</li>
+                            <li><strong>Average delivery time</strong>: MRP hesaplamalarında kullanılır</li>
+                        </ul>
+                    </div>
+                    <h3>Validasyonlar</h3>
+                    <div class="rules-section">
+                        <ul>
+                            <li>Supplier SAP no: maxlength=10, ZORUNLU</li>
+                            <li>Supplier title 1: maxlength=50, ZORUNLU</li>
+                            <li>Supplier title 2: maxlength=50</li>
+                            <li>Average delivery time: >= 0</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>.dev-docs-panel{position:fixed;bottom:0;left:0;right:0;z-index:9999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}.dev-docs-toggle{position:absolute;bottom:100%;right:20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;padding:10px 20px;border-radius:8px 8px 0 0;cursor:pointer;font-weight:600;font-size:14px;box-shadow:0 -2px 10px rgba(0,0,0,0.2)}.dev-docs-content{display:none;background:#1a1a2e;color:#eee;max-height:60vh;overflow-y:auto;box-shadow:0 -5px 20px rgba(0,0,0,0.3)}.dev-docs-content.active{display:block}.dev-docs-header{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);position:sticky;top:0}.dev-docs-header h2{margin:0;font-size:18px}.dev-docs-close{background:rgba(255,255,255,0.2);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px}.dev-docs-body{padding:20px}.dev-docs-tabs{display:flex;gap:10px;margin-bottom:20px;border-bottom:1px solid #333;padding-bottom:10px}.dev-tab{background:#2d2d44;color:#aaa;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;transition:all 0.3s}.dev-tab:hover,.dev-tab.active{background:#667eea;color:#fff}.dev-tab-content{display:none}.dev-tab-content.active{display:block}.dev-table{width:100%;border-collapse:collapse;margin:15px 0;font-size:13px}.dev-table th,.dev-table td{padding:10px;text-align:left;border:1px solid #333}.dev-table th{background:#2d2d44;color:#667eea;font-weight:600}.dev-table tr:nth-child(even){background:#252538}.dev-docs-body h3{color:#667eea;margin:20px 0 10px;font-size:16px;border-bottom:1px solid #333;padding-bottom:5px}.dev-docs-body ul{margin:0 0 15px 20px;line-height:1.8}.rules-section{background:#252538;padding:15px;border-radius:8px;margin-bottom:15px}</style>
+    <script>function toggleDevDocs(){document.getElementById('devDocsContent').classList.toggle('active')}function showDevTab(tabId){document.querySelectorAll('.dev-tab-content').forEach(c=>c.classList.remove('active'));document.querySelectorAll('.dev-tab').forEach(t=>t.classList.remove('active'));document.getElementById(tabId).classList.add('active');event.target.classList.add('active')}</script>
 </body>
 </html>

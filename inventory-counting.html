@@ -5,7 +5,213 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sayım İşlemleri - IMMA</title>
     <link rel="stylesheet" href="css/styles.css">
+    <style>
+        /* File Upload Modal Styles */
+        .file-upload-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .file-upload-modal-overlay.active {
+            display: flex;
+        }
+        .file-upload-modal-content {
+            background: #fff;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+        .file-upload-modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .file-upload-modal-header h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+        }
+        .file-upload-modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+        .file-upload-modal-body {
+            padding: 20px;
+        }
+        .file-upload-material-info {
+            background: #f5f5f5;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 13px;
+        }
+        .file-upload-material-info strong {
+            color: #333;
+        }
+        .file-upload-drop-zone {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .file-upload-drop-zone:hover,
+        .file-upload-drop-zone.dragover {
+            border-color: var(--primary, #e40045);
+            background: rgba(228, 0, 69, 0.05);
+        }
+        .file-upload-drop-zone .upload-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+        .file-upload-drop-zone p {
+            margin: 5px 0;
+            color: #666;
+            font-size: 14px;
+        }
+        .file-upload-drop-zone .formats {
+            font-size: 11px;
+            color: #999;
+        }
+        .file-upload-input {
+            display: none;
+        }
+        .file-upload-preview {
+            display: none;
+            margin-top: 15px;
+            padding: 12px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+        .file-upload-preview.has-file {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .file-upload-preview-icon {
+            font-size: 24px;
+        }
+        .file-upload-preview-info {
+            flex: 1;
+        }
+        .file-upload-preview-name {
+            font-weight: 500;
+            font-size: 13px;
+        }
+        .file-upload-preview-size {
+            font-size: 11px;
+            color: #666;
+        }
+        .file-upload-preview-remove {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        .file-upload-modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .file-upload-modal-footer .btn-cancel {
+            padding: 10px 20px;
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .file-upload-modal-footer .btn-upload {
+            padding: 10px 20px;
+            background: var(--primary, #e40045);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .file-upload-modal-footer .btn-upload:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
 </head>
+<!--
+================================================================================
+IMMA DEVELOPER DOCUMENTATION
+================================================================================
+
+SCREEN: 22 IC-C - Inventory Counting
+FILE: inventory-counting.html
+LAST UPDATED: 2025-12-18
+
+--------------------------------------------------------------------------------
+RELATED DATABASE TABLES
+--------------------------------------------------------------------------------
+
+TABLE: Inventory Counting Header
+| Field Name                    | Type     | Length | Description                    |
+|-------------------------------|----------|--------|--------------------------------|
+| Inventory Counting Header Id  | int      | 8      | Primary key                    |
+| Correction type               | char     | 1      | Sayım tipi                     |
+| Creation date time            | datetime | -      | Oluşturma tarihi               |
+| Created by user info          | int      | 8      | Oluşturan kullanıcı            |
+| Created for user info         | int      | 8      | Sayım sorumlusu                |
+| Counted by user info          | int      | 8      | Sayımı yapan kişi              |
+| Entered by user info          | int      | 8      | Sonuçları giren kişi           |
+| Document group Id             | int      | 8      | Doküman grubu                  |
+| Correction finalized check    | bool     | -      | Sayım tamamlandı mı?           |
+
+TABLE: Inventory Counting Item
+| Field Name                    | Type     | Length | Description                    |
+|-------------------------------|----------|--------|--------------------------------|
+| Inventory Counting item id    | int      | 8      | Primary key                    |
+| Inventory Counting item number| int      | 4      | Satır numarası                 |
+| Material number               | text     | 13     | Malzeme numarası               |
+| Stock record Id               | int      | 8      | Cost kaydı referansı           |
+| Stock quantity                | float    | 15     | Sistem stoğu                   |
+| Counting result quantity      | float    | 15     | Sayım sonucu                   |
+
+--------------------------------------------------------------------------------
+BUSINESS RULES (İş Kuralları)
+--------------------------------------------------------------------------------
+
+SAYIM TİPLERİ:
+- Dönemsel sayım (yıllık/aylık)
+- Rastgele sayım (spot check)
+- ABC analizi bazlı sayım
+
+FARK İŞLEME:
+1. Fark = Counting result - Stock quantity
+2. Pozitif fark → Material Movement Type 8 (Inventory positive)
+3. Negatif fark → Material Movement Type 9 (Inventory negative)
+4. FIFO kuralı uygulanır (negatif farklar için)
+
+ONAY SÜRECİ:
+1. Sayım sonuçları girilir
+2. Farklar hesaplanır
+3. Yetkili onayı gerekebilir (yüksek farklar için)
+4. Correction finalized = true ile kapatılır
+
+================================================================================
+-->
 <body>
     <!-- NAVBAR - Top Navigation (Maximo Style) -->
     <nav class="modern-navbar">
@@ -57,7 +263,7 @@
                 <li class="nav-item">
                     <a href="budget-management.html" class="nav-link">
                         <span class="nav-icon">💰</span>
-                        Bütçe
+                        Budget
                     </a>
                     <div class="dropdown-menu">
                         <a href="budget-management.html" class="dropdown-item">Bütçe Yönetimi</a>
@@ -76,7 +282,7 @@
                 <li class="nav-item">
                     <a href="transfer-list.html" class="nav-link active">
                         <span class="nav-icon">🏭</span>
-                        Stok
+                        Stock
                     </a>
                     <div class="dropdown-menu">
                         <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
@@ -100,91 +306,49 @@
         <div class="page-header">
             <div>
                 <h1 class="page-title">Sayım İşlemleri</h1>
-                <p class="page-subtitle">Stok > Sayım İşlemleri</p>
+                <p class="page-subtitle">Stock > Sayım İşlemleri</p>
             </div>
         </div>
 
         <!-- Developer Note -->
-        <div class="dev-note info">
-            <h4>📋 Dev Note: 22 IC - C - Inventory Counting</h4>
-            <p><strong>Pattern:</strong> Session-based workflow (Create → Count → Complete)</p>
-            <p><strong>Data Structure Alanlari (Screen 22 IC-C):</strong></p>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                <div>
-                    <p><strong>Header Bilgileri:</strong></p>
-                    <ul style="font-size: 12px;">
-                        <li>Inventory Counting Header Id</li>
-                        <li>Correction type</li>
-                        <li>Creation date time</li>
-                        <li>Created by user info</li>
-                        <li>Created for user info</li>
-                        <li>Counted by user info</li>
-                        <li>Entered by user info</li>
-                    </ul>
-                </div>
-                <div>
-                    <p><strong>Item Bilgileri:</strong></p>
-                    <ul style="font-size: 12px;">
-                        <li>Material number / Material title</li>
-                        <li>Stock record Id</li>
-                        <li>Stock quantity / Counting result Quantity</li>
-                        <li>Unit of measure / Currency</li>
-                        <li>Unit value / Total stock value</li>
-                        <li>Cost Id</li>
-                        <li>Storage / Location / Bin</li>
-                        <li>Open material/SRM/Purchasing requests</li>
-                        <li>Blocked for material request checked</li>
-                        <li>Differences by quantity/value/percentage</li>
-                        <li>Attachment group</li>
-                    </ul>
-                </div>
-            </div>
-            <p><strong>Workflow Steps:</strong></p>
-            <ol style="font-size: 12px;">
-                <li>Selecting the scope of the counting</li>
-                <li>Blocking material transfer requests</li>
-                <li>Entering counting results</li>
-                <li>Listing differences</li>
-            </ol>
-        </div>
 
         <!-- CREATE SECTION: New Counting Session -->
         <div class="card" id="createSection">
             <div class="card-header">
-                <h3>Yeni Sayım Oturumu</h3>
+                <h3>Yeni Counting Oturumu</h3>
             </div>
             <div class="card-body">
                 <div class="form-row">
                     <div class="form-group col-3">
-                        <label>Sayım Tipi <span class="required">*</span></label>
+                        <label>Counting Type <span class="required">*</span></label>
                         <select class="form-control" id="correctionType">
                             <option value="">Seçiniz...</option>
-                            <option value="counting">Counting (İlk Sayım)</option>
-                            <option value="recount">Recount (Tekrar Sayım)</option>
+                            <option value="counting">Counting (İlk Counting)</option>
+                            <option value="recount">Recount (Tekrar Counting)</option>
                             <option value="spotcheck">Spot Check (Nokta Kontrol)</option>
                         </select>
                     </div>
                     <div class="form-group col-3">
-                        <label>Depo <span class="required">*</span></label>
+                        <label>Storage <span class="required">*</span></label>
                         <select class="form-control" id="storage">
                             <option value="">Seçiniz...</option>
-                            <option value="central">Merkez Depo</option>
+                            <option value="central">Merkez Storage</option>
                             <option value="line1">Hat 1 Deposu</option>
                             <option value="line2">Hat 2 Deposu</option>
                             <option value="maintenance">Bakım Deposu</option>
                         </select>
                     </div>
                     <div class="form-group col-3">
-                        <label>Lokasyon</label>
+                        <label>Location</label>
                         <select class="form-control" id="location">
-                            <option value="">Tüm Lokasyonlar</option>
+                            <option value="">Tüm Locationlar</option>
                             <option value="A">A Bölgesi</option>
                             <option value="B">B Bölgesi</option>
                             <option value="C">C Bölgesi</option>
                         </select>
                     </div>
                     <div class="form-group col-3">
-                        <label>Bin Kodu</label>
+                        <label>Bin</label>
                         <select class="form-control" id="bin">
                             <option value="">Tüm Binler</option>
                             <option value="A-01">A-01</option>
@@ -196,17 +360,17 @@
                 </div>
                 <div class="form-row">
                     <div class="form-group col-4">
-                        <label>Sayım Sorumlusu <span class="required">*</span></label>
+                        <label>Counted by user info <span class="required">*</span></label>
                         <select class="form-control" id="createdFor">
                             <option value="">Seçiniz...</option>
-                            <option value="hasan.kara">Hasan Kara - Depo Sorumlusu</option>
-                            <option value="ayse.yilmaz">Ayşe Yılmaz - Stok Kontrolör</option>
-                            <option value="mehmet.demir">Mehmet Demir - Depo Müdürü</option>
+                            <option value="hasan.kara">Hasan Kara - Storage Sorumlusu</option>
+                            <option value="ayse.yilmaz">Ayşe Yılmaz - Stock Kontrolör</option>
+                            <option value="mehmet.demir">Mehmet Demir - Storage Müdürü</option>
                         </select>
                     </div>
                 </div>
                 <div class="form-actions">
-                    <button class="btn btn-primary" id="startSessionBtn">Sayım Başlat</button>
+                    <button class="btn btn-primary" id="startSessionBtn">Sayımı Başlat</button>
                     <button class="btn btn-outline" id="resetFormBtn">Temizle</button>
                 </div>
             </div>
@@ -217,12 +381,12 @@
             <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        <h3 style="margin: 0; color: white;">Aktif Sayım Oturumu</h3>
+                        <h3 style="margin: 0; color: white;">Aktif Counting Oturumu</h3>
                         <p style="margin: 5px 0 0 0; opacity: 0.95; font-size: 14px;">
                             <strong>ID:</strong> <span id="sessionId">-</span> |
                             <strong>Tip:</strong> <span id="sessionType">-</span> |
-                            <strong>Depo:</strong> <span id="sessionStorage">-</span> |
-                            <strong>Lokasyon:</strong> <span id="sessionLocation">-</span>
+                            <strong>Storage:</strong> <span id="sessionStorage">-</span> |
+                            <strong>Location:</strong> <span id="sessionLocation">-</span>
                         </p>
                     </div>
                     <div>
@@ -235,48 +399,48 @@
                 <!-- Session Info -->
                 <div class="session-info">
                     <div class="info-item">
-                        <label>Oluşturulma Tarihi</label>
+                        <label>Creation date time</label>
                         <div id="sessionCreationDate">-</div>
                     </div>
                     <div class="info-item">
-                        <label>Oluşturan</label>
+                        <label>Created by user info</label>
                         <div id="sessionCreatedBy">-</div>
                     </div>
                     <div class="info-item">
-                        <label>Sayım Sorumlusu</label>
+                        <label>Counted by user info</label>
                         <div id="sessionCreatedFor">-</div>
                     </div>
                     <div class="info-item">
-                        <label>Toplam Kalem</label>
+                        <label>Total Items</label>
                         <div id="sessionTotalItems" style="color: #667eea; font-weight: 700;">0</div>
                     </div>
                 </div>
 
                 <!-- Counting Items Table -->
-                <h4 style="margin: 25px 0 15px 0;">Sayım Kalemleri</h4>
+                <h4 style="margin: 25px 0 15px 0;">Counting Items</h4>
                 <div class="table-container" style="overflow-x: auto;">
                     <table class="table table-hover" style="min-width: 1600px;">
                         <thead>
                             <tr>
                                 <th style="width: 50px;">Item No</th>
-                                <th style="width: 110px;">Malzeme No</th>
-                                <th style="width: 150px;">Malzeme Adı</th>
+                                <th style="width: 110px;">Material number</th>
+                                <th style="width: 150px;">Material title</th>
                                 <th style="width: 90px;">Stock Rec ID</th>
                                 <th style="width: 80px;">Cost Id</th>
-                                <th style="width: 80px;">Depo</th>
-                                <th style="width: 60px;">Lok.</th>
+                                <th style="width: 80px;">Storage</th>
+                                <th style="width: 60px;">Location</th>
                                 <th style="width: 60px;">Bin</th>
                                 <th style="width: 80px;">Sistem Mik.</th>
-                                <th style="width: 100px;">Toplam Değer</th>
-                                <th style="width: 50px;">Brm</th>
-                                <th style="width: 70px;">Açık MR</th>
-                                <th style="width: 70px;">Açık SRM</th>
-                                <th style="width: 70px;">Açık PO</th>
-                                <th style="width: 60px;">Bloklu</th>
-                                <th style="width: 100px;">Sayılan Mik.</th>
-                                <th style="width: 60px;">Fark</th>
+                                <th style="width: 100px;">Total value</th>
+                                <th style="width: 50px;">Unit</th>
+                                <th style="width: 70px;">Açık Material Request</th>
+                                <th style="width: 70px;">Open SRM Request</th>
+                                <th style="width: 70px;">Open purchasing order</th>
+                                <th style="width: 60px;">Blocked for material request checked</th>
+                                <th style="width: 100px;">Counting result Quantity</th>
+                                <th style="width: 60px;">Differences by quantity</th>
                                 <th style="width: 60px;">%</th>
-                                <th style="width: 90px;">Fark Değ.</th>
+                                <th style="width: 90px;">Differences by percentage</th>
                                 <th style="width: 60px;">Ek</th>
                             </tr>
                         </thead>
@@ -289,19 +453,19 @@
                 <!-- Summary Stats -->
                 <div class="summary-stats">
                     <div class="stat-item">
-                        <label>Toplam Kalem</label>
+                        <label>Total Items</label>
                         <div class="stat-value" id="summaryTotal">0</div>
                     </div>
                     <div class="stat-item">
-                        <label>Sayılan</label>
+                        <label>Counting result Quantity</label>
                         <div class="stat-value" id="summaryCounted" style="color: #28a745;">0</div>
                     </div>
                     <div class="stat-item">
-                        <label>Fark Olan</label>
+                        <label>Differences</label>
                         <div class="stat-value" id="summaryDifference" style="color: #ffc107;">0</div>
                     </div>
                     <div class="stat-item">
-                        <label>Toplam Fark Değeri</label>
+                        <label>Toplam Differences by quantity Değeri</label>
                         <div class="stat-value" id="summaryDifferenceValue" style="color: #dc3545;">0 TRY</div>
                     </div>
                 </div>
@@ -311,21 +475,21 @@
         <!-- PAST SESSIONS: History List -->
         <div class="card">
             <div class="card-header">
-                <h3>Geçmiş Sayımlar</h3>
+                <h3>Geçmiş Countinglar</h3>
             </div>
             <div class="card-body" style="padding: 0;">
                 <div class="table-container" style="overflow-x: auto;">
                     <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th>Sayım ID</th>
-                            <th>Sayım Tipi</th>
-                            <th>Depo</th>
-                            <th>Lokasyon</th>
+                            <th>Counting document Id</th>
+                            <th>Counting Type</th>
+                            <th>Storage</th>
+                            <th>Location</th>
                             <th>Bin</th>
-                            <th>Oluşturma Tarihi</th>
-                            <th>Oluşturan</th>
-                            <th>Sayım Sorumlusu</th>
+                            <th>Creation date time</th>
+                            <th>Created by user info</th>
+                            <th>Counted by user info</th>
                             <th>İşlem</th>
                         </tr>
                     </thead>
@@ -333,7 +497,7 @@
                         <tr>
                             <td><strong>IC-HDR-2025-0012</strong></td>
                             <td>Counting</td>
-                            <td>Merkez Depo</td>
+                            <td>Merkez Storage</td>
                             <td>A</td>
                             <td>A-01</td>
                             <td>10.12.2025 09:30</td>
@@ -359,7 +523,7 @@
                         <tr>
                             <td><strong>IC-HDR-2025-0010</strong></td>
                             <td>Spot Check</td>
-                            <td>Merkez Depo</td>
+                            <td>Merkez Storage</td>
                             <td>C</td>
                             <td>C-01</td>
                             <td>05.12.2025 11:20</td>
@@ -372,7 +536,7 @@
                         <tr>
                             <td><strong>IC-HDR-2025-0009</strong></td>
                             <td>Counting</td>
-                            <td>Tüm Depolar</td>
+                            <td>Tüm Storagelar</td>
                             <td>-</td>
                             <td>-</td>
                             <td>01.12.2025 08:00</td>
@@ -389,48 +553,42 @@
         </div>
 
         <!-- Database Schema Note -->
-        <div class="dev-note success">
-            <h4>Database Schema - Inventory Counting</h4>
-            <p><strong>INV_CountingHeader:</strong></p>
-            <ul>
-                <li><strong>inventory_counting_header_id:</strong> PK, Unique counting session ID</li>
-                <li><strong>correction_type:</strong> Counting | Recount | Spot Check</li>
-                <li><strong>creation_date_time:</strong> Session creation timestamp</li>
-                <li><strong>created_by_user_id:</strong> FK to Users (creator)</li>
-                <li><strong>created_for_user_id:</strong> FK to Users (responsible person)</li>
-                <li><strong>storage_id:</strong> FK to Storage</li>
-                <li><strong>location:</strong> Location code (optional filter)</li>
-                <li><strong>bin:</strong> Bin code (optional filter)</li>
-                <li><strong>status:</strong> In Progress | Completed | Cancelled</li>
-                <li><strong>description:</strong> Session description</li>
-            </ul>
-            <p><strong>INV_CountingItem:</strong></p>
-            <ul>
-                <li><strong>inventory_counting_item_id:</strong> PK</li>
-                <li><strong>inventory_counting_header_id:</strong> FK to Header</li>
-                <li><strong>item_number:</strong> Line item sequence number</li>
-                <li><strong>material_id:</strong> FK to Materials</li>
-                <li><strong>stock_record_id:</strong> FK to StockRecords (snapshot reference)</li>
-                <li><strong>stock_quantity_system:</strong> System quantity at time of count</li>
-                <li><strong>unit_of_measure:</strong> PC, M, KG, L</li>
-                <li><strong>currency:</strong> TRY, USD, EUR</li>
-                <li><strong>unit_value:</strong> Unit cost/value</li>
-                <li><strong>storage, location, bin:</strong> Item location details</li>
-                <li><strong>counting_results:</strong> Actual counted quantity (user input)</li>
-                <li><strong>counted_by_user_id:</strong> FK to Users (who counted)</li>
-                <li><strong>counted_date_time:</strong> When counted</li>
-                <li><strong>difference:</strong> counting_results - stock_quantity_system</li>
-                <li><strong>difference_value:</strong> difference × unit_value</li>
-            </ul>
-            <p><strong>Stock Adjustment Process:</strong></p>
-            <ul>
-                <li>On "Sayımı Tamamla": Create INV_StockTransaction records for items with difference != 0</li>
-                <li>Transaction type: COUNTING_ADJUSTMENT</li>
-                <li>Update StockRecords.current_quantity based on counting_results</li>
-                <li>Link transactions to counting_item_id for audit trail</li>
-            </ul>
-        </div>
     </main>
+
+    <!-- File Upload Modal -->
+    <div class="file-upload-modal-overlay" id="fileUploadModal">
+        <div class="file-upload-modal-content">
+            <div class="file-upload-modal-header">
+                <h3>📎 Add File</h3>
+                <button class="file-upload-modal-close" onclick="closeFileUploadModal()">&times;</button>
+            </div>
+            <div class="file-upload-modal-body">
+                <div class="file-upload-material-info" id="fileUploadMaterialInfo">
+                    <strong>Malzeme:</strong> <span id="fileUploadMaterialNumber">-</span><br>
+                    <strong>Açıklama:</strong> <span id="fileUploadMaterialDesc">-</span>
+                </div>
+                <div class="file-upload-drop-zone" id="fileUploadDropZone">
+                    <div class="upload-icon">📄</div>
+                    <p><strong>Dosya seçmek için tıklayın</strong></p>
+                    <p>veya sürükleyip bırakın</p>
+                    <p class="formats">Desteklenen: PDF, JPG, PNG (Maks. 5MB)</p>
+                </div>
+                <input type="file" class="file-upload-input" id="fileUploadInput" accept=".pdf,.jpg,.jpeg,.png">
+                <div class="file-upload-preview" id="fileUploadPreview">
+                    <span class="file-upload-preview-icon">📄</span>
+                    <div class="file-upload-preview-info">
+                        <div class="file-upload-preview-name" id="fileUploadFileName">-</div>
+                        <div class="file-upload-preview-size" id="fileUploadFileSize">-</div>
+                    </div>
+                    <button class="file-upload-preview-remove" onclick="removeSelectedFile()">&times;</button>
+                </div>
+            </div>
+            <div class="file-upload-modal-footer">
+                <button class="btn-cancel" onclick="closeFileUploadModal()">İptal</button>
+                <button class="btn-upload" id="fileUploadBtn" disabled onclick="uploadFile()">Yükle</button>
+            </div>
+        </div>
+    </div>
 
     <style>
         /* Session Info Panel */
@@ -693,10 +851,10 @@
                 currency: 'TRY',
                 unitValue: 125.50,
                 totalStockValue: 5647.50,
-                storage: 'Merkez Depo',
+                storage: 'Merkez Storage',
                 location: 'A',
                 bin: 'A-01',
-                openMR: 2,
+                openMaterial Request: 2,
                 openSRM: 0,
                 openPO: 1,
                 blocked: false
@@ -712,10 +870,10 @@
                 currency: 'TRY',
                 unitValue: 85.00,
                 totalStockValue: 10200.00,
-                storage: 'Merkez Depo',
+                storage: 'Merkez Storage',
                 location: 'A',
                 bin: 'A-01',
-                openMR: 0,
+                openMaterial Request: 0,
                 openSRM: 1,
                 openPO: 0,
                 blocked: false
@@ -731,10 +889,10 @@
                 currency: 'TRY',
                 unitValue: 45.75,
                 totalStockValue: 9150.00,
-                storage: 'Merkez Depo',
+                storage: 'Merkez Storage',
                 location: 'A',
                 bin: 'A-02',
-                openMR: 1,
+                openMaterial Request: 1,
                 openSRM: 0,
                 openPO: 2,
                 blocked: true
@@ -750,10 +908,10 @@
                 currency: 'TRY',
                 unitValue: 245.00,
                 totalStockValue: 7840.00,
-                storage: 'Merkez Depo',
+                storage: 'Merkez Storage',
                 location: 'A',
                 bin: 'A-01',
-                openMR: 0,
+                openMaterial Request: 0,
                 openSRM: 0,
                 openPO: 0,
                 blocked: false
@@ -769,10 +927,10 @@
                 currency: 'TRY',
                 unitValue: 12.50,
                 totalStockValue: 1950.00,
-                storage: 'Merkez Depo',
+                storage: 'Merkez Storage',
                 location: 'A',
                 bin: 'A-02',
-                openMR: 3,
+                openMaterial Request: 3,
                 openSRM: 1,
                 openPO: 0,
                 blocked: false
@@ -788,10 +946,10 @@
                 currency: 'TRY',
                 unitValue: 185.00,
                 totalStockValue: 5180.00,
-                storage: 'Merkez Depo',
+                storage: 'Merkez Storage',
                 location: 'A',
                 bin: 'A-01',
-                openMR: 0,
+                openMaterial Request: 0,
                 openSRM: 0,
                 openPO: 1,
                 blocked: false
@@ -810,7 +968,7 @@
 
             // Validation
             if (!correctionType || !storage || !createdFor) {
-                alert('Lütfen zorunlu alanları doldurunuz:\n- Sayım Tipi\n- Depo\n- Sayım Sorumlusu');
+                alert('Lütfen zorunlu alanları doldurunuz:\n- Counting Type\n- Storage\n- Counted by user info');
                 return;
             }
 
@@ -885,7 +1043,7 @@
                     <td style="text-align: right; font-weight: 600;">${item.systemQty}</td>
                     <td style="text-align: right; font-size: 11px;">${item.totalStockValue.toFixed(2)}</td>
                     <td style="text-align: center;">${item.unit}</td>
-                    <td style="text-align: center;">${item.openMR > 0 ? '<span class="badge badge-warning" style="font-size: 10px;">' + item.openMR + '</span>' : '-'}</td>
+                    <td style="text-align: center;">${item.openMaterial Request > 0 ? '<span class="badge badge-warning" style="font-size: 10px;">' + item.openMaterial Request + '</span>' : '-'}</td>
                     <td style="text-align: center;">${item.openSRM > 0 ? '<span class="badge badge-info" style="font-size: 10px;">' + item.openSRM + '</span>' : '-'}</td>
                     <td style="text-align: center;">${item.openPO > 0 ? '<span class="badge badge-primary" style="font-size: 10px;">' + item.openPO + '</span>' : '-'}</td>
                     <td style="text-align: center;">${item.blocked ? '<span class="badge badge-danger" style="font-size: 10px;">🔒</span>' : '-'}</td>
@@ -914,11 +1072,131 @@
             });
         }
 
-        // Attachment handler
+        // ======================================
+        // File Upload Modal Handling
+        // ======================================
+        let currentUploadIndex = null;
+        let selectedUploadFile = null;
+
+        const fileUploadModal = document.getElementById('fileUploadModal');
+        const fileUploadDropZone = document.getElementById('fileUploadDropZone');
+        const fileUploadInput = document.getElementById('fileUploadInput');
+        const fileUploadPreview = document.getElementById('fileUploadPreview');
+        const fileUploadFileName = document.getElementById('fileUploadFileName');
+        const fileUploadFileSize = document.getElementById('fileUploadFileSize');
+        const fileUploadBtn = document.getElementById('fileUploadBtn');
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Attachment handler - opens modal
         function openAttachment(index) {
             const item = currentSession.items[index];
-            alert('Dosya Ekleme\n\nMalzeme: ' + item.materialNumber + '\n\nBu özellik henüz aktif değil.\n(Demo - Gerçek uygulamada dosya yükleme modalı açılacak)');
+            currentUploadIndex = index;
+
+            // Update modal with material info
+            document.getElementById('fileUploadMaterialNumber').textContent = item.materialNumber;
+            document.getElementById('fileUploadMaterialDesc').textContent = item.description;
+
+            // Reset modal state
+            selectedUploadFile = null;
+            fileUploadInput.value = '';
+            fileUploadPreview.classList.remove('has-file');
+            fileUploadBtn.disabled = true;
+
+            // Show modal
+            fileUploadModal.classList.add('active');
         }
+
+        function closeFileUploadModal() {
+            fileUploadModal.classList.remove('active');
+            currentUploadIndex = null;
+            selectedUploadFile = null;
+        }
+
+        // Drop zone click handler
+        fileUploadDropZone.addEventListener('click', () => fileUploadInput.click());
+
+        // Drag and drop handlers
+        fileUploadDropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUploadDropZone.classList.add('dragover');
+        });
+        fileUploadDropZone.addEventListener('dragleave', () => {
+            fileUploadDropZone.classList.remove('dragover');
+        });
+        fileUploadDropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUploadDropZone.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file) handleFileSelect(file);
+        });
+
+        // File input change handler
+        fileUploadInput.addEventListener('change', function() {
+            if (this.files[0]) handleFileSelect(this.files[0]);
+        });
+
+        function handleFileSelect(file) {
+            const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+            if (!allowedTypes.includes(file.type)) {
+                alert('Desteklenmeyen dosya formatı. Lütfen PDF, JPG veya PNG yükleyin.');
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Dosya boyutu 5MB\'dan büyük olamaz.');
+                return;
+            }
+            selectedUploadFile = file;
+            fileUploadFileName.textContent = file.name;
+            fileUploadFileSize.textContent = formatFileSize(file.size);
+            fileUploadPreview.classList.add('has-file');
+            fileUploadBtn.disabled = false;
+        }
+
+        function removeSelectedFile() {
+            selectedUploadFile = null;
+            fileUploadInput.value = '';
+            fileUploadPreview.classList.remove('has-file');
+            fileUploadBtn.disabled = true;
+        }
+
+        function uploadFile() {
+            if (selectedUploadFile && currentUploadIndex !== null) {
+                const item = currentSession.items[currentUploadIndex];
+                // Simulate upload
+                alert('✅ Dosya başarıyla yüklendi!\n\nMalzeme: ' + item.materialNumber + '\nDosya: ' + selectedUploadFile.name);
+
+                // Store file reference (in real app, this would be a URL)
+                if (!item.attachments) item.attachments = [];
+                item.attachments.push({
+                    name: selectedUploadFile.name,
+                    size: selectedUploadFile.size,
+                    uploadDate: new Date().toLocaleString('tr-TR')
+                });
+
+                closeFileUploadModal();
+            }
+        }
+
+        // Close modal on overlay click
+        fileUploadModal.addEventListener('click', function(e) {
+            if (e.target === fileUploadModal) {
+                closeFileUploadModal();
+            }
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && fileUploadModal.classList.contains('active')) {
+                closeFileUploadModal();
+            }
+        });
 
         // Handle counting input
         function handleCountingInput(e) {
@@ -1023,18 +1301,18 @@
             }, 0);
 
             // Confirm completion
-            let message = `Sayım tamamlanacak!\n\n`;
-            message += `Sayım ID: ${currentSession.sessionId}\n`;
+            let message = `Counting tamamlanacak!\n\n`;
+            message += `Counting document Id: ${currentSession.sessionId}\n`;
             message += `Tip: ${currentSession.correctionTypeText}\n`;
-            message += `Toplam Kalem: ${total}\n`;
-            message += `Sayılan: ${counted}\n`;
-            message += `Fark Olan: ${withDifference}\n`;
-            message += `Toplam Fark Değeri: ${totalDiffValue.toFixed(2)} TRY\n\n`;
-            message += `Stok düzeltmeleri uygulanacak.\n\nDevam etmek istiyor musunuz?`;
+            message += `Toplam Item number: ${total}\n`;
+            message += `Counting result Quantity: ${counted}\n`;
+            message += `Differences: ${withDifference}\n`;
+            message += `Toplam Differences by quantity Değeri: ${totalDiffValue.toFixed(2)} TRY\n\n`;
+            message += `Stock düzeltmeleri uygulanacak.\n\nDevam etmek istiyor musunuz?`;
 
             if (confirm(message)) {
                 // Success message
-                alert(`Sayım başarıyla tamamlandı!\n\nSayım ID: ${currentSession.sessionId}\n\nİşlemler:\n- ${withDifference} kalem için stok düzeltmesi yapıldı\n- INV_StockTransaction kayıtları oluşturuldu\n- Sayım durumu: Tamamlandı\n\nGeçmiş sayımlar listesinde görüntüleyebilirsiniz.`);
+                alert(`Counting başarıyla tamamlandı!\n\nCounting document Id: ${currentSession.sessionId}\n\nActions:\n- ${withDifference} kalem için stok düzeltmesi yapıldı\n- INV_StockTransaction kayıtları oluşturuldu\n- Counting durumu: Tamamlandı\n\nGeçmiş sayımlar listesinde görüntüleyebilirsiniz.`);
 
                 // Reset session
                 resetSession();
@@ -1043,8 +1321,8 @@
 
         // Cancel counting session
         document.getElementById('cancelBtn').addEventListener('click', function() {
-            if (confirm('Sayım oturumu iptal edilecek!\n\nGirilen tüm veriler kaybedilecek.\n\nDevam etmek istiyor musunuz?')) {
-                alert('Sayım oturumu iptal edildi.');
+            if (confirm('Counting oturumu iptal edilecek!\n\nGirilen tüm veriler kaybedilecek.\n\nDevam etmek istiyor musunuz?')) {
+                alert('Counting oturumu iptal edildi.');
                 resetSession();
             }
         });
@@ -1076,5 +1354,57 @@
         }
 
     </script>
+
+    <!-- DEVELOPER DOCUMENTATION PANEL -->
+    <div id="devDocsPanel" class="dev-docs-panel">
+        <button class="dev-docs-toggle" onclick="toggleDevDocs()">📋 Geliştirici Dokümantasyonu</button>
+        <div class="dev-docs-content" id="devDocsContent">
+            <div class="dev-docs-header">
+                <h2>📋 22 IC-C - Inventory Counting</h2>
+                <button class="dev-docs-close" onclick="toggleDevDocs()">✕</button>
+            </div>
+            <div class="dev-docs-body">
+                <div class="dev-docs-tabs">
+                    <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
+                </div>
+                <div id="dataStructure" class="dev-tab-content active">
+                    <h3>Inventory Counting Header</h3>
+                    <table class="dev-table"><thead><tr><th>Field Name</th><th>Type</th><th>Length</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td>Inventory Counting Header Id</td><td>int</td><td>8</td><td>Primary key</td></tr>
+                            <tr><td>Correction type</td><td>char</td><td>1</td><td>Düzeltme tipi</td></tr>
+                            <tr><td>Creation date time</td><td>datetime</td><td>-</td><td>Oluşturma tarihi</td></tr>
+                            <tr><td>Counted by user info</td><td>int</td><td>8</td><td>Sayan kullanıcı</td></tr>
+                            <tr><td>Entered by user info</td><td>int</td><td>8</td><td>Giren kullanıcı</td></tr>
+                            <tr><td>Correction finalized check</td><td>bool</td><td>-</td><td>Düzeltme tamamlandı mı?</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Inventory Counting Item</h3>
+                    <table class="dev-table"><thead><tr><th>Field Name</th><th>Type</th><th>Length</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td>Inventory Counting item id</td><td>int</td><td>8</td><td>Primary key</td></tr>
+                            <tr><td>Material number</td><td>text</td><td>13</td><td>Malzeme numarası</td></tr>
+                            <tr><td>Stock record Id</td><td>int</td><td>8</td><td>Stok kaydı referansı</td></tr>
+                            <tr><td>Stock quantity</td><td>float</td><td>15</td><td>Sistem stoğu</td></tr>
+                            <tr><td>Counting result quantity</td><td>float</td><td>15</td><td>Sayım sonucu</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="businessRules" class="dev-tab-content">
+                    <h3>İş Kuralları</h3>
+                    <div class="rules-section">
+                        <ul>
+                            <li>Sayım sonucu &gt; Sistem stoğu: Movement Type 8 (positive)</li>
+                            <li>Sayım sonucu &lt; Sistem stoğu: Movement Type 9 (negative)</li>
+                            <li>Fark varsa Cost kaydı güncellenir</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>.dev-docs-panel{position:fixed;bottom:0;left:0;right:0;z-index:9999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}.dev-docs-toggle{position:absolute;bottom:100%;right:20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;padding:10px 20px;border-radius:8px 8px 0 0;cursor:pointer;font-weight:600;font-size:14px;box-shadow:0 -2px 10px rgba(0,0,0,0.2)}.dev-docs-content{display:none;background:#1a1a2e;color:#eee;max-height:60vh;overflow-y:auto;box-shadow:0 -5px 20px rgba(0,0,0,0.3)}.dev-docs-content.active{display:block}.dev-docs-header{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);position:sticky;top:0}.dev-docs-header h2{margin:0;font-size:18px}.dev-docs-close{background:rgba(255,255,255,0.2);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px}.dev-docs-body{padding:20px}.dev-docs-tabs{display:flex;gap:10px;margin-bottom:20px;border-bottom:1px solid #333;padding-bottom:10px}.dev-tab{background:#2d2d44;color:#aaa;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;transition:all 0.3s}.dev-tab:hover,.dev-tab.active{background:#667eea;color:#fff}.dev-tab-content{display:none}.dev-tab-content.active{display:block}.dev-table{width:100%;border-collapse:collapse;margin:15px 0;font-size:13px}.dev-table th,.dev-table td{padding:10px;text-align:left;border:1px solid #333}.dev-table th{background:#2d2d44;color:#667eea;font-weight:600}.dev-table tr:nth-child(even){background:#252538}.dev-docs-body h3{color:#667eea;margin:20px 0 10px;font-size:16px;border-bottom:1px solid #333;padding-bottom:5px}.dev-docs-body ul{margin:0 0 15px 20px;line-height:1.8}.rules-section{background:#252538;padding:15px;border-radius:8px}</style>
+    <script>function toggleDevDocs(){document.getElementById('devDocsContent').classList.toggle('active')}function showDevTab(tabId){document.querySelectorAll('.dev-tab-content').forEach(c=>c.classList.remove('active'));document.querySelectorAll('.dev-tab').forEach(t=>t.classList.remove('active'));document.getElementById(tabId).classList.add('active');event.target.classList.add('active')}</script>
 </body>
 </html>

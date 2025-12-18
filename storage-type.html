@@ -6,6 +6,66 @@
     <title>Depo Tipi Yonetimi - IMMA</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
+<!--
+================================================================================
+IMMA DEVELOPER DOCUMENTATION
+================================================================================
+
+SCREEN: 3 STM - Storage Type Maintenance
+FILE: storage-type.html
+LAST UPDATED: 2025-12-18
+
+--------------------------------------------------------------------------------
+RELATED DATABASE TABLES
+--------------------------------------------------------------------------------
+
+TABLE: Storage Type
+| Field Name                    | Type     | Length | Description                    |
+|-------------------------------|----------|--------|--------------------------------|
+| Storage type Id               | int      | -      | Primary key                    |
+| Storage type                  | char     | 1      | 1:Storage, 2:Location, 3:Bin   |
+| Storage Code                  | text     | 12     | Depo/Lokasyon/Bin kodu         |
+| Storage Title                 | text     | 16     | Başlık/açıklama                |
+| Created By user info          | int      | 8      | Oluşturan kullanıcı            |
+| Creation date time            | datetime | -      | Oluşturma tarihi               |
+| Inactivation check box        | bool     | -      | İnaktif mi?                    |
+| Inactivation date time        | datetime | -      | İnaktivasyon tarihi            |
+| Inactivated by user info      | int      | 8      | İnaktif eden kullanıcı         |
+| Related Location Code         | text     | 12     | Üst lokasyon kodu              |
+| Default sub storage type code | text     | 12     | Varsayılan alt depo kodu       |
+
+Storage Type Values:
+- 1: Storage (Depo) - En üst seviye
+- 2: Location (Lokasyon) - Depo altında
+- 3: Bin (Raf) - Lokasyon altında
+
+--------------------------------------------------------------------------------
+BUSINESS RULES (İş Kuralları)
+--------------------------------------------------------------------------------
+
+HIYERARŞİ:
+1. Storage → Location → Bin (3 seviyeli)
+2. Location oluşturulurken Storage ZORUNLU
+3. Bin oluşturulurken Location ZORUNLU
+
+VARSAYILAN ATAMA:
+1. İlk Location otomatik olarak Storage'ın default'u olur
+2. İlk Bin otomatik olarak Location'ın default'u olur
+3. Default ayarı manuel değiştirilebilir
+
+BIN CODE LAYOUT:
+1. "-" karakteri ayırıcı olarak kullanılır
+2. "#" karakteri numara alanını temsil eder
+3. Örnek: "##-##" → 00-00, 00-01, ..., 99-99
+4. Bin oluştururken layout'a göre otomatik numara
+
+İNAKTİVASYON:
+1. İnaktif depodan malzeme ÇIKARILABİLİR
+2. İnaktif depoya malzeme KONULAMAZ
+3. İnaktivasyon üst seviyeyi de etkiler
+
+================================================================================
+-->
 <body>
     <nav class="modern-navbar">
         <div class="navbar-container">
@@ -56,7 +116,7 @@
                 <li class="nav-item">
                     <a href="budget-management.html" class="nav-link">
                         <span class="nav-icon">💰</span>
-                        Bütçe
+                        Budget
                     </a>
                     <div class="dropdown-menu">
                         <a href="budget-management.html" class="dropdown-item">Bütçe Yönetimi</a>
@@ -75,7 +135,7 @@
                 <li class="nav-item">
                     <a href="transfer-list.html" class="nav-link">
                         <span class="nav-icon">🏭</span>
-                        Stok
+                        Stock
                     </a>
                     <div class="dropdown-menu">
                         <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
@@ -103,23 +163,11 @@
         </div>
 
         <!-- Developer Notes - Screen Designs IMMA.xlsx "3 STM" -->
-        <div class="dev-note info">
-            <h4>Ekran Bilgisi: 3 STM - Storage Type Maintenance</h4>
-            <p><strong>Amaç:</strong> CVCD pattern ile depo tipi verilerinin oluşturma, görüntüleme ve düzenleme işlemleri.</p>
-            <p><strong>Fonksiyonlar:</strong></p>
-            <ul>
-                <li>Depo Tipi Oluştur (Create) - URL: ?mode=create</li>
-                <li>Depo Tipi Görüntüle (View) - URL: ?id=xxx&mode=view</li>
-                <li>Depo Tipi Düzenle (Change/Edit) - URL: ?id=xxx&mode=edit</li>
-            </ul>
-            <p><strong>Excel Spec:</strong> Screen Designs IMMA.xlsx - "3 STM"</p>
-            <p><strong>Not:</strong> Liste görünümü storage-type-list.html sayfasındadır.</p>
-        </div>
 
         <!-- STORAGE FORM - Data Structure IMMA.xlsx "Storage Type" sheet -->
         <div class="card">
             <div class="card-header">
-                <h3 id="formTitle">Yeni Depo Tipi Oluştur</h3>
+                <h3 id="formTitle">Create New Storage Type</h3>
             </div>
             <div class="card-body">
                 <!-- Row 1: Depo Tipi ID, Depo Tipi -->
@@ -133,33 +181,33 @@
                         <label>Depo Tipi <span class="required">*</span></label>
                         <select class="form-control" id="storageType" required>
                             <option value="">Seçiniz...</option>
-                            <option value="1">1 - Depo</option>
-                            <option value="2">2 - Lokasyon</option>
-                            <option value="3">3 - Raf</option>
+                            <option value="1">1 - Storage</option>
+                            <option value="2">2 - Location</option>
+                            <option value="3">3 - Bin</option>
                         </select>
                         <input type="text" class="form-control" id="storageTypeText" readonly style="display: none;">
-                        <small class="form-hint">char(1): 1=Depo, 2=Lokasyon, 3=Raf</small>
+                        <small class="form-hint">char(1): 1=Storage, 2=Location, 3=Bin</small>
                     </div>
                 </div>
 
-                <!-- Row 2: Depo Kodu, Depo Adı -->
+                <!-- Row 2: Storage Kodu, Storage Adı -->
                 <div class="form-row">
                     <div class="form-group col-3">
-                        <label>Depo Kodu <span class="required">*</span></label>
+                        <label>Storage Kodu <span class="required">*</span></label>
                         <input type="text" class="form-control" id="storageCode" maxlength="12" placeholder="Max 12 karakter" required>
                         <small class="form-hint">Text(12)</small>
                     </div>
                     <div class="form-group col-6">
-                        <label>Depo Adı <span class="required">*</span></label>
+                        <label>Storage Adı <span class="required">*</span></label>
                         <input type="text" class="form-control" id="storageTitle" maxlength="16" placeholder="Max 16 karakter" required>
                         <small class="form-hint">text(16)</small>
                     </div>
                 </div>
 
-                <!-- Row 3: İlişkili Lokasyon Kodu, Varsayılan Alt Depo Tipi Kodu -->
+                <!-- Row 3: İlişkili Location Kodu, Varsayılan Alt Depo Tipi Kodu -->
                 <div class="form-row">
                     <div class="form-group col-3">
-                        <label>İlişkili Lokasyon Kodu</label>
+                        <label>İlişkili Location Kodu</label>
                         <input type="text" class="form-control" id="relatedLocationCode" maxlength="12" placeholder="Max 12 karakter">
                         <small class="form-hint">Text(12)</small>
                     </div>
@@ -172,15 +220,15 @@
 
                 <hr style="margin: 20px 0;">
 
-                <!-- Row 4: Oluşturan Kullanıcı, Oluşturma Tarihi -->
+                <!-- Row 4: Created by user info, Creation date time -->
                 <div class="form-row">
                     <div class="form-group col-6">
-                        <label>Oluşturan Kullanıcı</label>
+                        <label>Created by user info</label>
                         <input type="text" class="form-control" id="createdByUserInfo" readonly value="-">
                         <small class="form-hint">int(8)</small>
                     </div>
                     <div class="form-group col-3">
-                        <label>Oluşturma Tarihi</label>
+                        <label>Creation date time</label>
                         <input type="text" class="form-control" id="creationDateTime" readonly value="-">
                         <small class="form-hint">datetime</small>
                     </div>
@@ -193,21 +241,21 @@
                     <div class="form-group col-3">
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <input type="checkbox" id="inactivationCheckBox" style="width: 18px; height: 18px;">
-                            <label for="inactivationCheckBox" style="margin: 0;">Pasif Yap</label>
+                            <label for="inactivationCheckBox" style="margin: 0;">Inactivation</label>
                         </div>
                         <small class="form-hint">bool</small>
                     </div>
                 </div>
 
-                <!-- Row 6: Pasif Yapan Kullanıcı, Pasif Yapma Tarihi -->
+                <!-- Row 6: Inactivated by user info, Inactivation date time -->
                 <div class="form-row">
                     <div class="form-group col-6">
-                        <label>Pasif Yapan Kullanıcı</label>
+                        <label>Inactivated by user info</label>
                         <input type="text" class="form-control" id="inactivatedByUserInfo" readonly value="-">
                         <small class="form-hint">int(8)</small>
                     </div>
                     <div class="form-group col-3">
-                        <label>Pasif Yapma Tarihi</label>
+                        <label>Inactivation date time</label>
                         <input type="text" class="form-control" id="inactivationDateTime" readonly value="-">
                         <small class="form-hint">datetime</small>
                     </div>
@@ -228,40 +276,7 @@
             </button>
         </div>
 
-        <!-- Veritabanı İşlemleri - Data Structure IMMA.xlsx "Storage Type" sheet -->
-        <div class="dev-note success">
-            <h4>✅ Veritabanı İşlemleri (Data Structure IMMA.xlsx - "Storage Type" sheet)</h4>
-            <p><strong>API Endpoints:</strong></p>
-            <ul>
-                <li>POST /api/storage-types - Yeni depo tipi oluştur</li>
-                <li>PUT /api/storage-types/{id} - Depo tipi güncelle</li>
-                <li>GET /api/storage-types/{id} - Depo tipi detay görüntüle</li>
-            </ul>
-            <p><strong>Kayıt Tablosu:</strong></p>
-            <ol>
-                <li><strong>Storage</strong> - Depo tipi kaydı</li>
-            </ol>
-            <p><strong>Storage Tablo Alanları (Data Structure IMMA.xlsx):</strong></p>
-            <ul>
-                <li>Storage type Id - Sistem otomatik oluşturur</li>
-                <li>Storage type (char, 1) - Depo tipi kodu</li>
-                <li>Storage Code (Text, 12) - Depo kodu</li>
-                <li>Storage Title (text, 16) - Depo adı</li>
-                <li>Created By user info (int, 8) - Oluşturan kullanıcı ID</li>
-                <li>Creation date time (datetime) - Oluşturma zamanı</li>
-                <li>Inactivation check box (bool) - Pasif checkbox</li>
-                <li>Inactivation date time (datetime) - Pasif yapma zamanı</li>
-                <li>Inactivated by user info (int, 8) - Pasif yapan kullanıcı ID</li>
-                <li>Related Location Code (Text, 12) - İlişkili lokasyon kodu</li>
-                <li>Default sub storage type code (Text, 12) - Varsayılan alt depo tipi kodu</li>
-            </ul>
-            <p><strong>Storage Types (Data Structure IMMA.xlsx):</strong></p>
-            <ul>
-                <li>1 = Storage (Depo)</li>
-                <li>2 = Location (Lokasyon)</li>
-                <li>3 = Bin (Raf)</li>
-            </ul>
-        </div>
+        <!-- Veritabanı Actionsi - Data Structure IMMA.xlsx "Storage Type" sheet -->
     </main>
 
     <script>
@@ -274,16 +289,16 @@
 
         // Demo storage data (simulating database - Storage table)
         // Storage type values per Data Structure IMMA.xlsx:
-        // 1 = Storage (Depo)
-        // 2 = Location (Lokasyon)
-        // 3 = Bin (Raf)
+        // 1 = Storage (Storage)
+        // 2 = Location (Location)
+        // 3 = Bin (Bin)
         const storageData = [
             {
                 storageTypeId: '1',
                 storageType: '1',
                 storageCode: 'MERKEZ',
-                storageTitle: 'Merkez Depo',
-                createdByUserInfo: 'Fatma Şahin - Depo Sorumlusu',
+                storageTitle: 'Merkez Storage',
+                createdByUserInfo: 'Fatma Şahin - Storage Sorumlusu',
                 creationDateTime: '10.11.2025 14:30',
                 inactivationCheckBox: false,
                 inactivationDateTime: '-',
@@ -296,7 +311,7 @@
                 storageType: '2',
                 storageCode: 'LOC-001',
                 storageTitle: 'A Blok 1. Kat',
-                createdByUserInfo: 'Fatma Şahin - Depo Sorumlusu',
+                createdByUserInfo: 'Fatma Şahin - Storage Sorumlusu',
                 creationDateTime: '10.11.2025 15:00',
                 inactivationCheckBox: false,
                 inactivationDateTime: '-',
@@ -309,7 +324,7 @@
                 storageType: '3',
                 storageCode: 'BIN-001',
                 storageTitle: 'A01-R01-K01',
-                createdByUserInfo: 'Fatma Şahin - Depo Sorumlusu',
+                createdByUserInfo: 'Fatma Şahin - Storage Sorumlusu',
                 creationDateTime: '10.11.2025 15:30',
                 inactivationCheckBox: false,
                 inactivationDateTime: '-',
@@ -375,7 +390,7 @@
             // Find storage
             const storage = storageData.find(s => s.storageTypeId === storageId);
             if (!storage) {
-                alert('Depo tipi bulunamadı!');
+                alert('Storage tipi bulunamadı!');
                 window.location.href = 'storage-type-list.html';
                 return;
             }
@@ -405,7 +420,7 @@
             // Find storage
             const storage = storageData.find(s => s.storageTypeId === storageId);
             if (!storage) {
-                alert('Depo tipi bulunamadı!');
+                alert('Storage tipi bulunamadı!');
                 window.location.href = 'storage-type-list.html';
                 return;
             }
@@ -489,12 +504,12 @@
 
         // Get storage type title from value
         // Per Data Structure IMMA.xlsx - Storage Types:
-        // 1 = Storage (Depo), 2 = Location (Lokasyon), 3 = Bin (Raf)
+        // 1 = Storage (Storage), 2 = Location (Location), 3 = Bin (Bin)
         function getStorageTypeTitle(typeValue) {
             const typeMap = {
-                '1': '1 - Depo',
-                '2': '2 - Lokasyon',
-                '3': '3 - Raf'
+                '1': '1 - Storage',
+                '2': '2 - Location',
+                '3': '3 - Bin'
             };
             return typeMap[typeValue] || '';
         }
@@ -535,12 +550,12 @@
                 return;
             }
             if (!storageCode) {
-                alert('Depo Kodu zorunlu alandır.');
+                alert('Storage Kodu zorunlu alandır.');
                 document.getElementById('storageCode').focus();
                 return;
             }
             if (!storageTitle) {
-                alert('Depo Adı zorunlu alandır.');
+                alert('Storage Adı zorunlu alandır.');
                 document.getElementById('storageTitle').focus();
                 return;
             }
@@ -550,18 +565,18 @@
             // Determine action
             if (currentMode === 'create') {
                 // Create new storage
-                if (confirm(`Yeni depo tipi oluşturulacak:\n\nDepo Tipi: ${storageTypeTitle}\nDepo Kodu: ${storageCode}\nDepo Adı: ${storageTitle}\n\nDevam etmek istiyor musunuz?`)) {
+                if (confirm(`Yeni depo tipi oluşturulacak:\n\nDepo Tipi: ${storageTypeTitle}\nStorage Kodu: ${storageCode}\nStorage Adı: ${storageTitle}\n\nDevam etmek istiyor musunuz?`)) {
                     // In real app: POST /api/storage-types
-                    alert(`Depo tipi başarıyla oluşturuldu!\n\nDepo Tipi: ${storageTypeTitle}\nDepo Kodu: ${storageCode}\nDepo Adı: ${storageTitle}`);
+                    alert(`Storage tipi başarıyla oluşturuldu!\n\nDepo Tipi: ${storageTypeTitle}\nStorage Kodu: ${storageCode}\nStorage Adı: ${storageTitle}`);
 
                     // Redirect to list
                     window.location.href = 'storage-type-list.html';
                 }
             } else if (currentMode === 'edit') {
                 // Update existing storage
-                if (confirm(`Depo tipi güncellenecek:\n\nID: ${currentId}\nDepo Tipi: ${storageTypeTitle}\nDepo Kodu: ${storageCode}\nDepo Adı: ${storageTitle}\n\nDevam etmek istiyor musunuz?`)) {
+                if (confirm(`Storage tipi güncellenecek:\n\nID: ${currentId}\nDepo Tipi: ${storageTypeTitle}\nStorage Kodu: ${storageCode}\nStorage Adı: ${storageTitle}\n\nDevam etmek istiyor musunuz?`)) {
                     // In real app: PUT /api/storage-types/{id}
-                    alert(`Depo tipi başarıyla güncellendi!\n\nID: ${currentId}\nDepo Tipi: ${storageTypeTitle}\nDepo Kodu: ${storageCode}\nDepo Adı: ${storageTitle}`);
+                    alert(`Storage tipi başarıyla güncellendi!\n\nID: ${currentId}\nDepo Tipi: ${storageTypeTitle}\nStorage Kodu: ${storageCode}\nStorage Adı: ${storageTitle}`);
 
                     // Redirect to list
                     window.location.href = 'storage-type-list.html';
@@ -569,5 +584,81 @@
             }
         });
     </script>
+
+    <!-- DEVELOPER DOCUMENTATION PANEL -->
+    <div id="devDocsPanel" class="dev-docs-panel">
+        <button class="dev-docs-toggle" onclick="toggleDevDocs()">📋 Geliştirici Dokümantasyonu</button>
+        <div class="dev-docs-content" id="devDocsContent">
+            <div class="dev-docs-header">
+                <h2>📋 3 STM - Storage Type Maintenance</h2>
+                <button class="dev-docs-close" onclick="toggleDevDocs()">✕</button>
+            </div>
+            <div class="dev-docs-body">
+                <div class="dev-docs-tabs">
+                    <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
+                </div>
+                <div id="dataStructure" class="dev-tab-content active">
+                    <h3>Storage Type Tablosu</h3>
+                    <table class="dev-table"><thead><tr><th>Field Name</th><th>Type</th><th>Length</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td>Storage type Id</td><td>int</td><td>-</td><td>Primary key</td></tr>
+                            <tr><td>Storage type</td><td>char</td><td>1</td><td>1:Storage, 2:Location, 3:Bin</td></tr>
+                            <tr><td>Storage Code</td><td>text</td><td>12</td><td>Depo/Lokasyon/Bin kodu</td></tr>
+                            <tr><td>Storage Title</td><td>text</td><td>16</td><td>Başlık/açıklama</td></tr>
+                            <tr><td>Created By user info</td><td>int</td><td>8</td><td>Oluşturan kullanıcı</td></tr>
+                            <tr><td>Creation date time</td><td>datetime</td><td>-</td><td>Oluşturma tarihi</td></tr>
+                            <tr><td>Inactivation check box</td><td>bool</td><td>-</td><td>İnaktif mi?</td></tr>
+                            <tr><td>Related Location Code</td><td>text</td><td>12</td><td>Üst lokasyon kodu</td></tr>
+                            <tr><td>Default sub storage type code</td><td>text</td><td>12</td><td>Varsayılan alt depo</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Storage Type Değerleri</h3>
+                    <table class="dev-table"><thead><tr><th>Kod</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>1</td><td>Storage (Depo)</td><td>En üst seviye</td></tr>
+                            <tr><td>2</td><td>Location (Lokasyon)</td><td>Depo altında</td></tr>
+                            <tr><td>3</td><td>Bin (Raf)</td><td>Lokasyon altında</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="businessRules" class="dev-tab-content">
+                    <h3>Hiyerarşi Kuralları</h3>
+                    <div class="rules-section">
+                        <ul>
+                            <li><strong>Storage → Location → Bin</strong> (3 seviyeli hiyerarşi)</li>
+                            <li>Location oluşturulurken <strong>Storage ZORUNLU</strong></li>
+                            <li>Bin oluşturulurken <strong>Location ZORUNLU</strong></li>
+                        </ul>
+                    </div>
+                    <h3>Varsayılan Atama</h3>
+                    <div class="rules-section">
+                        <ul>
+                            <li>İlk Location otomatik olarak Storage'ın default'u olur</li>
+                            <li>İlk Bin otomatik olarak Location'ın default'u olur</li>
+                            <li>Default ayarı manuel değiştirilebilir</li>
+                        </ul>
+                    </div>
+                    <h3>Bin Code Layout</h3>
+                    <div class="rules-section">
+                        <ul>
+                            <li>"-" karakteri ayırıcı olarak kullanılır</li>
+                            <li>"#" karakteri numara alanını temsil eder</li>
+                            <li>Örnek: "##-##" → 00-00, 00-01, ..., 99-99</li>
+                        </ul>
+                    </div>
+                    <h3>İnaktivasyon</h3>
+                    <div class="rules-section">
+                        <ul>
+                            <li>İnaktif depodan malzeme <strong>ÇIKARILABİLİR</strong></li>
+                            <li>İnaktif depoya malzeme <strong>KONULAMAZ</strong></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>.dev-docs-panel{position:fixed;bottom:0;left:0;right:0;z-index:9999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}.dev-docs-toggle{position:absolute;bottom:100%;right:20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;padding:10px 20px;border-radius:8px 8px 0 0;cursor:pointer;font-weight:600;font-size:14px;box-shadow:0 -2px 10px rgba(0,0,0,0.2)}.dev-docs-content{display:none;background:#1a1a2e;color:#eee;max-height:60vh;overflow-y:auto;box-shadow:0 -5px 20px rgba(0,0,0,0.3)}.dev-docs-content.active{display:block}.dev-docs-header{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);position:sticky;top:0}.dev-docs-header h2{margin:0;font-size:18px}.dev-docs-close{background:rgba(255,255,255,0.2);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px}.dev-docs-body{padding:20px}.dev-docs-tabs{display:flex;gap:10px;margin-bottom:20px;border-bottom:1px solid #333;padding-bottom:10px}.dev-tab{background:#2d2d44;color:#aaa;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;transition:all 0.3s}.dev-tab:hover,.dev-tab.active{background:#667eea;color:#fff}.dev-tab-content{display:none}.dev-tab-content.active{display:block}.dev-table{width:100%;border-collapse:collapse;margin:15px 0;font-size:13px}.dev-table th,.dev-table td{padding:10px;text-align:left;border:1px solid #333}.dev-table th{background:#2d2d44;color:#667eea;font-weight:600}.dev-table tr:nth-child(even){background:#252538}.dev-docs-body h3{color:#667eea;margin:20px 0 10px;font-size:16px;border-bottom:1px solid #333;padding-bottom:5px}.dev-docs-body ul{margin:0 0 15px 20px;line-height:1.8}.rules-section{background:#252538;padding:15px;border-radius:8px;margin-bottom:15px}</style>
+    <script>function toggleDevDocs(){document.getElementById('devDocsContent').classList.toggle('active')}function showDevTab(tabId){document.querySelectorAll('.dev-tab-content').forEach(c=>c.classList.remove('active'));document.querySelectorAll('.dev-tab').forEach(t=>t.classList.remove('active'));document.getElementById(tabId).classList.add('active');event.target.classList.add('active')}</script>
 </body>
 </html>

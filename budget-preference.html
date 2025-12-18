@@ -6,6 +6,70 @@
     <title>Bütçe Tercihleri - IMMA</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
+<!--
+================================================================================
+IMMA DEVELOPER DOCUMENTATION
+================================================================================
+
+SCREEN: 15 BP - Budget Preference
+FILE: budget-preference.html
+LAST UPDATED: 2025-12-18
+
+--------------------------------------------------------------------------------
+RELATED DATABASE TABLES
+--------------------------------------------------------------------------------
+
+TABLE: Budget Preference
+| Field Name                    | Type | Length | Description                 |
+|-------------------------------|------|--------|-----------------------------|
+| Budget Preference Id          | int  | 8      | Primary key                 |
+| Budget Approval request Type  | char | 1      | Onay tipi kodu (1-6)        |
+| Department code               | text | 8      | Departman kodu              |
+
+--------------------------------------------------------------------------------
+BUDGET APPROVAL REQUEST TYPES
+--------------------------------------------------------------------------------
+
+| Code | Type Name                           | Description                        |
+|------|-------------------------------------|------------------------------------|
+| 1    | SL Approval                         | Her talep için SL onayı gerekli    |
+| 2    | SL over budget approval             | Sadece bütçe aşımında SL onayı     |
+| 3    | Manager approval                    | Her talep için yönetici onayı      |
+| 4    | Manager Over budget Approval        | Sadece bütçe aşımında yönetici     |
+| 5    | Only TL and above material request  | Sadece TL ve üstü talep yapabilir  |
+| 6    | Budget approval doesn't required    | Bütçe onayı gerekmez               |
+
+--------------------------------------------------------------------------------
+BUSINESS RULES
+--------------------------------------------------------------------------------
+
+1. Her departman için bir Budget Preference tanımlanabilir
+2. Approval Type, Material Request akışını belirler
+3. Type 1: Tüm talepler SL onayına gider
+4. Type 2: Sadece bütçe aşan talepler SL onayına gider
+5. Type 3: Tüm talepler yönetici onayına gider
+6. Type 4: Sadece bütçe aşan talepler yönetici onayına gider
+7. Type 5: Sadece Team Leader ve üzeri pozisyonlar talep oluşturabilir
+8. Type 6: Onay gerekmez, talepler doğrudan işleme alınır
+
+--------------------------------------------------------------------------------
+USAGE IN SYSTEM
+--------------------------------------------------------------------------------
+
+- Material Request oluşturulurken departmanın Budget Preference'ı kontrol edilir
+- Approval Type'a göre onay akışı belirlenir
+- Over budget durumunda ek kontroller devreye girer
+
+--------------------------------------------------------------------------------
+INTEGRATION NOTES
+--------------------------------------------------------------------------------
+
+- Material Request Header'da "SL approval check" ve "over budget check" alanları
+  bu preference'a göre set edilir
+- Budget tablosuyla ilişki: Consumed value kontrolü için
+
+================================================================================
+-->
 <body>
     <!-- NAVBAR -->
     <nav class="modern-navbar">
@@ -39,7 +103,7 @@
                     </div>
                 </li>
                 <li class="nav-item">
-                    <a href="budget-management.html" class="nav-link active"><span class="nav-icon">💰</span>Bütçe</a>
+                    <a href="budget-management.html" class="nav-link active"><span class="nav-icon">💰</span>Budget</a>
                     <div class="dropdown-menu">
                         <a href="budget-management.html" class="dropdown-item">Bütçe Yönetimi</a>
                         <a href="budget-preference.html" class="dropdown-item active">Bütçe Tercihleri</a>
@@ -52,7 +116,7 @@
                     </div>
                 </li>
                 <li class="nav-item">
-                    <a href="transfer-list.html" class="nav-link"><span class="nav-icon">🏭</span>Stok</a>
+                    <a href="transfer-list.html" class="nav-link"><span class="nav-icon">🏭</span>Stock</a>
                     <div class="dropdown-menu">
                         <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
                         <a href="warehouse-transfer.html" class="dropdown-item">Depo Transferi</a>
@@ -75,7 +139,7 @@
         <div class="page-header">
             <div>
                 <h1 class="page-title">Bütçe Tercihleri</h1>
-                <p class="page-subtitle">Bütçe > Budget Preference (15 BP)</p>
+                <p class="page-subtitle">Budget > Budget Preference (15 BP)</p>
             </div>
             <div class="page-actions">
                 <button class="btn btn-primary" onclick="showCreateModal()">+ Yeni Tercih Ekle</button>
@@ -83,22 +147,11 @@
         </div>
 
         <!-- Developer Notes -->
-        <div class="dev-note info">
-            <h4>Ekran: 15 BP - Budget Preference</h4>
-            <p><strong>Açıklama:</strong> Her departman için bütçe onay tercihlerini tanımlar.</p>
-            <p><strong>Activities X Screens - Budget Management Maintenance:</strong></p>
-            <ul>
-                <li>a) Request SL Approval on Material Request (i. Only over budget request)</li>
-                <li>b) Request Manager Approval on Material Request (i. Only over budget request)</li>
-                <li>c) Only TLs and above allowed on the department to material request</li>
-                <li>d) Allow material request without budget control</li>
-            </ul>
-        </div>
 
         <!-- Budget Preference List - Data Structure'a göre sadece 3 alan -->
         <div class="card">
             <div class="card-header">
-                <h3>Bütçe Tercih Listesi</h3>
+                <h3>Budget Preference List</h3>
                 <span class="result-count" id="resultCount">5 kayıt</span>
             </div>
             <div class="card-body" style="padding: 0;">
@@ -109,7 +162,7 @@
                             <th>Budget Preference Id</th>
                             <th>Department Code</th>
                             <th>Budget Approval Request Type</th>
-                            <th>Açıklama</th>
+                            <th>Description</th>
                             <th>İşlem</th>
                         </tr>
                     </thead>
@@ -117,8 +170,8 @@
                         <tr data-id="10000001">
                             <td><strong>10000001</strong></td>
                             <td>URETIM</td>
-                            <td><span class="badge badge-info">A</span></td>
-                            <td>Request SL Approval on Material Request</td>
+                            <td><span class="badge badge-info">1</span></td>
+                            <td>SL Approval</td>
                             <td>
                                 <div class="table-actions">
                                     <button class="btn btn-xs btn-outline" onclick="viewPreference('10000001')">Görüntüle</button>
@@ -129,8 +182,8 @@
                         <tr data-id="10000002">
                             <td><strong>10000002</strong></td>
                             <td>BAKIM</td>
-                            <td><span class="badge badge-warning">B</span></td>
-                            <td>Request Manager Approval on Material Request</td>
+                            <td><span class="badge badge-warning">2</span></td>
+                            <td>SL over budget approval</td>
                             <td>
                                 <div class="table-actions">
                                     <button class="btn btn-xs btn-outline" onclick="viewPreference('10000002')">Görüntüle</button>
@@ -141,8 +194,8 @@
                         <tr data-id="10000003">
                             <td><strong>10000003</strong></td>
                             <td>KALITE</td>
-                            <td><span class="badge badge-success">C</span></td>
-                            <td>Only TLs and above allowed on the department</td>
+                            <td><span class="badge badge-success">3</span></td>
+                            <td>Manager approval</td>
                             <td>
                                 <div class="table-actions">
                                     <button class="btn btn-xs btn-outline" onclick="viewPreference('10000003')">Görüntüle</button>
@@ -153,8 +206,8 @@
                         <tr data-id="10000004">
                             <td><strong>10000004</strong></td>
                             <td>LOJISTIK</td>
-                            <td><span class="badge badge-secondary">D</span></td>
-                            <td>Allow material request without budget control</td>
+                            <td><span class="badge badge-secondary">5</span></td>
+                            <td>Only TL and above material request</td>
                             <td>
                                 <div class="table-actions">
                                     <button class="btn btn-xs btn-outline" onclick="viewPreference('10000004')">Görüntüle</button>
@@ -165,8 +218,8 @@
                         <tr data-id="10000005">
                             <td><strong>10000005</strong></td>
                             <td>ARASTIRMA</td>
-                            <td><span class="badge badge-info">A</span></td>
-                            <td>Request SL Approval on Material Request</td>
+                            <td><span class="badge badge-info">6</span></td>
+                            <td>Budget approval doesn't required</td>
                             <td>
                                 <div class="table-actions">
                                     <button class="btn btn-xs btn-outline" onclick="viewPreference('10000005')">Görüntüle</button>
@@ -180,50 +233,7 @@
         </div>
 
         <!-- Data Structure Reference -->
-        <div class="dev-note">
-            <h4>Data Structure IMMA.xlsx - Budget Preference Tablosu</h4>
-            <table class="table" style="font-size: 12px;">
-                <thead>
-                    <tr><th>Field Name</th><th>Type</th><th>Length</th><th>Açıklama</th></tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Budget Preference Id</td>
-                        <td>int</td>
-                        <td>8</td>
-                        <td>Birincil anahtar</td>
-                    </tr>
-                    <tr>
-                        <td>Budget Approval request Type</td>
-                        <td>char</td>
-                        <td>1</td>
-                        <td>A, B, C, D değerlerinden biri</td>
-                    </tr>
-                    <tr>
-                        <td>Department code</td>
-                        <td>text</td>
-                        <td>8</td>
-                        <td>Departman kodu</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
 
-        <div class="dev-note warning">
-            <h4>Budget Approval Request Type Değerleri</h4>
-            <table class="table" style="font-size: 12px;">
-                <thead>
-                    <tr><th>Kod</th><th>Açıklama (Activities X Screens'ten)</th></tr>
-                </thead>
-                <tbody>
-                    <tr><td><span class="badge badge-info">A</span></td><td>Request SL Approval on Material Request (Bölüm Lideri Onayı İste)</td></tr>
-                    <tr><td><span class="badge badge-warning">B</span></td><td>Request Manager Approval on Material Request (Yönetici Onayı İste)</td></tr>
-                    <tr><td><span class="badge badge-success">C</span></td><td>Only TLs and above allowed on the department (Sadece TL ve üstü)</td></tr>
-                    <tr><td><span class="badge badge-secondary">D</span></td><td>Allow material request without budget control (Bütçe kontrolsüz izin ver)</td></tr>
-                </tbody>
-            </table>
-            <p><strong>Not:</strong> "Only over budget request" seçeneği A ve B tipleri için ayrı bir flag olarak düşünülebilir, ancak Data Structure'da bu alan bulunmamaktadır.</p>
-        </div>
     </main>
 
     <!-- View Modal -->
@@ -252,7 +262,7 @@
                 </div>
                 <div class="form-row">
                     <div class="form-group col-12">
-                        <label>Açıklama</label>
+                        <label>Description</label>
                         <textarea class="form-control" id="viewDescription" rows="2" readonly></textarea>
                     </div>
                 </div>
@@ -290,10 +300,12 @@
                         <label>Budget Approval Request Type <span class="required">*</span></label>
                         <select class="form-control" id="editApprovalType">
                             <option value="">Seçiniz</option>
-                            <option value="A">A - Request SL Approval on Material Request</option>
-                            <option value="B">B - Request Manager Approval on Material Request</option>
-                            <option value="C">C - Only TLs and above allowed on the department</option>
-                            <option value="D">D - Allow material request without budget control</option>
+                            <option value="1">1 - SL Approval</option>
+                            <option value="2">2 - SL over budget approval</option>
+                            <option value="3">3 - Manager approval</option>
+                            <option value="4">4 - Manager Over budget Approval</option>
+                            <option value="5">5 - Only TL and above material request</option>
+                            <option value="6">6 - Budget approval doesn't required</option>
                         </select>
                     </div>
                 </div>
@@ -350,6 +362,14 @@
         .table-actions {
             display: flex;
             gap: 4px;
+            flex-wrap: nowrap;
+            min-width: 180px;
+        }
+
+        /* Table last column min-width */
+        .table th:last-child,
+        .table td:last-child {
+            min-width: 180px;
         }
         .btn-xs {
             padding: 2px 8px;
@@ -371,19 +391,22 @@
 
     <script>
         // Mock data - Data Structure'dan sadece 3 alan
+        // Budget Approval Request Type: 1-6 arası değerler
         const approvalTypes = {
-            'A': 'Request SL Approval on Material Request',
-            'B': 'Request Manager Approval on Material Request',
-            'C': 'Only TLs and above allowed on the department',
-            'D': 'Allow material request without budget control'
+            '1': 'SL Approval',
+            '2': 'SL over budget approval',
+            '3': 'Manager approval',
+            '4': 'Manager Over budget Approval',
+            '5': 'Only TL and above material request',
+            '6': 'Budget approval doesn\'t required'
         };
 
         const mockPreferences = {
-            '10000001': { id: '10000001', deptCode: 'URETIM', approvalType: 'A' },
-            '10000002': { id: '10000002', deptCode: 'BAKIM', approvalType: 'B' },
-            '10000003': { id: '10000003', deptCode: 'KALITE', approvalType: 'C' },
-            '10000004': { id: '10000004', deptCode: 'LOJISTIK', approvalType: 'D' },
-            '10000005': { id: '10000005', deptCode: 'ARASTIRMA', approvalType: 'A' }
+            '10000001': { id: '10000001', deptCode: 'URETIM', approvalType: '1' },
+            '10000002': { id: '10000002', deptCode: 'BAKIM', approvalType: '2' },
+            '10000003': { id: '10000003', deptCode: 'KALITE', approvalType: '3' },
+            '10000004': { id: '10000004', deptCode: 'LOJISTIK', approvalType: '5' },
+            '10000005': { id: '10000005', deptCode: 'ARASTIRMA', approvalType: '6' }
         };
 
         // View Preference
@@ -431,7 +454,7 @@
                 return;
             }
 
-            alert('Tercih kaydedildi:\n\nID: ' + (id || 'Yeni') + '\nDepartman: ' + deptCode + '\nOnay Tipi: ' + approvalType + '\n\n(Backend entegrasyonu ile çalışacak)');
+            alert('Tercih kaydedildi:\n\nID: ' + (id || 'Yeni') + '\nDepartment: ' + deptCode + '\nOnay Tipi: ' + approvalType + '\n\n(Backend entegrasyonu ile çalışacak)');
             closeEditModal();
         }
 
@@ -452,6 +475,80 @@
                 closeEditModal();
             }
         });
+    </script>
+
+    <!-- DEVELOPER DOCUMENTATION PANEL -->
+    <div id="devDocsPanel" class="dev-docs-panel">
+        <button class="dev-docs-toggle" onclick="toggleDevDocs()">📋 Geliştirici Dokümantasyonu</button>
+        <div class="dev-docs-content" id="devDocsContent">
+            <div class="dev-docs-header">
+                <h2>📋 15 BP - Budget Preference</h2>
+                <button class="dev-docs-close" onclick="toggleDevDocs()">✕</button>
+            </div>
+            <div class="dev-docs-body">
+                <div class="dev-docs-tabs">
+                    <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
+                </div>
+                <div id="dataStructure" class="dev-tab-content active">
+                    <h3>Budget Preference Tablosu</h3>
+                    <table class="dev-table"><thead><tr><th>Field Name</th><th>Type</th><th>Length</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td>Budget Preference Id</td><td>int</td><td>8</td><td>Primary key</td></tr>
+                            <tr><td>Budget Approval request Type</td><td>char</td><td>1</td><td>Onay tipi kodu (1-6)</td></tr>
+                            <tr><td>Department code</td><td>text</td><td>8</td><td>Departman kodu</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Budget Approval Request Types</h3>
+                    <table class="dev-table"><thead><tr><th>Kod</th><th>Tip Adı</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>1</td><td>SL Approval</td><td>Her talep için SL onayı</td></tr>
+                            <tr><td>2</td><td>SL over budget approval</td><td>Sadece bütçe aşımında SL onayı</td></tr>
+                            <tr><td>3</td><td>Manager approval</td><td>Her talep için yönetici onayı</td></tr>
+                            <tr><td>4</td><td>Manager Over budget Approval</td><td>Sadece bütçe aşımında yönetici</td></tr>
+                            <tr><td>5</td><td>Only TL and above</td><td>Sadece TL ve üstü talep yapabilir</td></tr>
+                            <tr><td>6</td><td>Not required</td><td>Bütçe onayı gerekmez</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="businessRules" class="dev-tab-content">
+                    <h3>İş Kuralları</h3>
+                    <div class="rules-section">
+                        <ul>
+                            <li>Her departman için <strong>tek bir Budget Preference</strong> tanımlanabilir</li>
+                            <li>Approval Type, Material Request onay akışını belirler</li>
+                            <li>Department code benzersiz olmalıdır (unique)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>
+        .dev-docs-panel{position:fixed;bottom:0;left:0;right:0;z-index:9999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+        .dev-docs-toggle{position:absolute;bottom:100%;right:20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;padding:10px 20px;border-radius:8px 8px 0 0;cursor:pointer;font-weight:600;font-size:14px;box-shadow:0 -2px 10px rgba(0,0,0,0.2)}
+        .dev-docs-content{display:none;background:#1a1a2e;color:#eee;max-height:60vh;overflow-y:auto;box-shadow:0 -5px 20px rgba(0,0,0,0.3)}
+        .dev-docs-content.active{display:block}
+        .dev-docs-header{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);position:sticky;top:0}
+        .dev-docs-header h2{margin:0;font-size:18px}
+        .dev-docs-close{background:rgba(255,255,255,0.2);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px}
+        .dev-docs-body{padding:20px}
+        .dev-docs-tabs{display:flex;gap:10px;margin-bottom:20px;border-bottom:1px solid #333;padding-bottom:10px}
+        .dev-tab{background:#2d2d44;color:#aaa;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;transition:all 0.3s}
+        .dev-tab:hover,.dev-tab.active{background:#667eea;color:#fff}
+        .dev-tab-content{display:none}
+        .dev-tab-content.active{display:block}
+        .dev-table{width:100%;border-collapse:collapse;margin:15px 0;font-size:13px}
+        .dev-table th,.dev-table td{padding:10px;text-align:left;border:1px solid #333}
+        .dev-table th{background:#2d2d44;color:#667eea;font-weight:600}
+        .dev-table tr:nth-child(even){background:#252538}
+        .dev-docs-body h3{color:#667eea;margin:20px 0 10px;font-size:16px;border-bottom:1px solid #333;padding-bottom:5px}
+        .dev-docs-body ul{margin:0 0 15px 20px;line-height:1.8}
+        .rules-section{background:#252538;padding:15px;border-radius:8px}
+    </style>
+    <script>
+        function toggleDevDocs(){document.getElementById('devDocsContent').classList.toggle('active')}
+        function showDevTab(tabId){document.querySelectorAll('.dev-tab-content').forEach(c=>c.classList.remove('active'));document.querySelectorAll('.dev-tab').forEach(t=>t.classList.remove('active'));document.getElementById(tabId).classList.add('active');event.target.classList.add('active')}
     </script>
 </body>
 </html>

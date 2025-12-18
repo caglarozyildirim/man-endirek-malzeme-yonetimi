@@ -3,9 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Malzeme Grubu Detay - IMMA</title>
+    <title>Material Group Code Detay - IMMA</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
+<!--
+================================================================================
+IMMA DEVELOPER DOCUMENTATION
+================================================================================
+
+SCREEN: 6 MMG - Maintain Material Group (Detail)
+FILE: material-group-detail.html
+LAST UPDATED: 2025-12-18
+
+--------------------------------------------------------------------------------
+RELATED DATABASE TABLES
+--------------------------------------------------------------------------------
+
+TABLE: Material Group
+| Field Name                 | Type     | Length | Description                    |
+|----------------------------|----------|--------|--------------------------------|
+| Id                         | int      | -      | Primary key (otomatik)         |
+| Code                       | int      | 6      | Malzeme grubu kodu (benzersiz) |
+| Title                      | text     | 64     | Malzeme grubu adı              |
+| Inactivation check         | bool     | -      | İnaktif durumu                 |
+| Inactivation datetime      | datetime | -      | İnaktif edilme tarihi          |
+| Inactivated by user Id     | int      | 8      | İnaktif eden kullanıcı ID      |
+| Reactivation date time     | datetime | -      | Yeniden aktif edilme tarihi    |
+| Reactivated by user info   | int      | 8      | Yeniden aktif eden kullanıcı   |
+
+--------------------------------------------------------------------------------
+BUSINESS RULES
+--------------------------------------------------------------------------------
+
+1. Malzeme grubu kodu 6 karakterlik sayısal değer olmalı (maxlength=6)
+2. Malzeme grubu kodu benzersiz olmalı - kayıtta kontrol edilmeli
+3. Title zorunlu alan (maxlength=64)
+4. Inactivation checkbox işaretlendiğinde:
+   - Inactivated by user Id otomatik set edilir
+   - Inactivation datetime otomatik set edilir
+5. İnaktif gruptan checkbox kaldırıldığında (reactivation):
+   - Reactivated by user info otomatik set edilir
+   - Reactivation date time otomatik set edilir
+6. Created by ve Creation datetime yeni kayıtta otomatik set edilir
+
+--------------------------------------------------------------------------------
+FORM MODES
+--------------------------------------------------------------------------------
+
+- view: Tüm alanlar disabled, sadece "Düzenle" butonu görünür
+- edit: Code ve Title alanları aktif, inactivation checkbox aktif
+- create: Yeni kayıt modu, ID otomatik oluşturulur
+
+URL Parametreleri:
+- mode: view | edit | create
+- id: Material Group ID (view/edit modları için)
+
+--------------------------------------------------------------------------------
+FIELD VALIDATIONS
+--------------------------------------------------------------------------------
+
+- Code: Zorunlu, maxlength=6, sadece sayı
+- Title: Zorunlu, maxlength=64
+
+================================================================================
+-->
 <body>
     <nav class="modern-navbar">
         <div class="navbar-container">
@@ -17,15 +78,73 @@
                 </div>
             </a>
             <ul class="navbar-menu">
-                <li class="nav-item"><a href="index.html" class="nav-link"><span class="nav-icon">📊</span>Dashboard</a></li>
                 <li class="nav-item">
-                    <a href="material-list.html" class="nav-link active"><span class="nav-icon">📦</span>Ana Veriler</a>
+                    <a href="index.html" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="material-list.html" class="nav-link active">
+                        <span class="nav-icon">📦</span>
+                        Ana Veriler
+                    </a>
                     <div class="dropdown-menu">
                         <a href="material-list.html" class="dropdown-item">Malzeme Listesi</a>
                         <a href="supplier-list.html" class="dropdown-item">Tedarikçi Listesi</a>
                         <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
                         <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
-                        <a href="material-group.html" class="dropdown-item active">Malzeme Grupları</a>
+                        <a href="material-group.html" class="dropdown-item active">Malzeme Gruplari</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="mrp.html" class="nav-link">
+                        <span class="nav-icon">📈</span>
+                        MRP
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="srm-list.html" class="nav-link">
+                        <span class="nav-icon">🛒</span>
+                        Satinalma
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="srm-list.html" class="dropdown-item">Talep Listesi</a>
+                        <a href="goods-receipt.html" class="dropdown-item">Mal Kabul</a>
+                        <a href="po-list.html" class="dropdown-item">Satinalma Siparisleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="budget-management.html" class="nav-link">
+                        <span class="nav-icon">💰</span>
+                        Budget
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="budget-management.html" class="dropdown-item">Budget Yonetimi</a>
+                        <a href="budget-preference.html" class="dropdown-item">Bütçe Tercihleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="material-request-list.html" class="nav-link">
+                        <span class="nav-icon">📋</span>
+                        Talepler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-request-list.html" class="dropdown-item">Talep Listesi</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="transfer-list.html" class="nav-link">
+                        <span class="nav-icon">🏭</span>
+                        Stock
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
+                        <a href="warehouse-transfer.html" class="dropdown-item">Depo Transferi</a>
+                        <a href="transfer-list.html" class="dropdown-item">Transfer Listesi</a>
+                        <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
+                        <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
+                        <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
                     </div>
                 </li>
             </ul>
@@ -39,7 +158,7 @@
     <main class="modern-container">
         <div class="page-header">
             <div>
-                <h1 class="page-title" id="pageTitle">Malzeme Grubu Detay</h1>
+                <h1 class="page-title" id="pageTitle">Material Group Code Detay</h1>
                 <p class="page-subtitle">Ana Veriler > Malzeme Grupları > <span id="breadcrumbAction">Görüntüle</span></p>
             </div>
             <div class="page-actions">
@@ -50,24 +169,24 @@
 
         <div class="card">
             <div class="card-header">
-                <h3 id="formTitle">Malzeme Grubu Bilgileri</h3>
+                <h3 id="formTitle">Material Group Information</h3>
             </div>
             <div class="card-body">
                 <form id="materialGroupForm">
                     <!-- Row 1: ID, Kod, Adı -->
                     <div class="form-row">
                         <div class="form-group col-4">
-                            <label>Malzeme Grubu ID</label>
+                            <label>Material Group Code ID</label>
                             <input type="text" id="materialGroupId" class="form-control" readonly>
                             <small class="form-text">Sistem otomatik oluşturur</small>
                         </div>
                         <div class="form-group col-4">
-                            <label>Malzeme Grubu Kodu <span class="required">*</span></label>
+                            <label>Material Group Code Kodu <span class="required">*</span></label>
                             <input type="text" id="materialGroupCode" class="form-control" maxlength="6" required>
                             <small class="form-text">int(6) - Benzersiz olmalı</small>
                         </div>
                         <div class="form-group col-4">
-                            <label>Malzeme Grubu Adı <span class="required">*</span></label>
+                            <label>Material Group Name <span class="required">*</span></label>
                             <input type="text" id="materialGroupTitle" class="form-control" maxlength="64" required>
                             <small class="form-text">text(64)</small>
                         </div>
@@ -75,39 +194,39 @@
 
                     <hr style="margin: 20px 0;">
 
-                    <!-- Row 2: Oluşturan Kullanıcı, Oluşturma Tarihi -->
+                    <!-- Row 2: Created by user info, Creation date time -->
                     <div class="form-row">
                         <div class="form-group col-6">
-                            <label>Oluşturan Kullanıcı</label>
+                            <label>Created by user info</label>
                             <input type="text" id="createdBy" class="form-control" readonly value="-">
                         </div>
                         <div class="form-group col-6">
-                            <label>Oluşturma Tarihi</label>
+                            <label>Creation date time</label>
                             <input type="text" id="createdDate" class="form-control" readonly value="-">
                         </div>
                     </div>
 
                     <hr style="margin: 20px 0;">
 
-                    <!-- Row 3: Pasif Checkbox -->
+                    <!-- Row 3: Inactivation Checkbox -->
                     <div class="form-row">
                         <div class="form-group col-12">
                             <label class="checkbox-label">
                                 <input type="checkbox" id="inactivationCheck">
-                                <span>Pasif Et</span>
+                                <span>Inactivation check</span>
                             </label>
                         </div>
                     </div>
 
-                    <!-- Row 4: Pasif Yapan, Pasif Tarihi -->
+                    <!-- Row 4: Inactivated by, Inactivation datetime -->
                     <div id="inactivationDetails" style="display: none;">
                         <div class="form-row">
                             <div class="form-group col-6">
-                                <label>Pasif Yapan Kullanıcı</label>
+                                <label>Inactivated by user Id</label>
                                 <input type="text" id="inactivatedBy" class="form-control" readonly>
                             </div>
                             <div class="form-group col-6">
-                                <label>Pasif Yapma Tarihi</label>
+                                <label>Inactivation datetime</label>
                                 <input type="text" id="inactivationDate" class="form-control" readonly>
                             </div>
                         </div>
@@ -117,11 +236,11 @@
                     <div id="reactivationDetails" style="display: none;">
                         <div class="form-row">
                             <div class="form-group col-6">
-                                <label>Reaktive Eden Kullanıcı</label>
+                                <label>Reactivated by user info</label>
                                 <input type="text" id="reactivatedBy" class="form-control" readonly>
                             </div>
                             <div class="form-group col-6">
-                                <label>Reaktivasyon Tarihi</label>
+                                <label>Reactivation Date</label>
                                 <input type="text" id="reactivationDate" class="form-control" readonly>
                             </div>
                         </div>
@@ -135,46 +254,8 @@
             </div>
         </div>
 
-        <!-- Veritabanı İşlemleri - Data Structure IMMA.xlsx + Screen Designs 6 MMG -->
-        <div class="dev-note success">
-            <h4>✅ Veritabanı İşlemleri (Data Structure IMMA.xlsx - "Material Group" sheet)</h4>
-            <p><strong>API Endpoints:</strong></p>
-            <ul>
-                <li>POST /api/material-groups - Yeni malzeme grubu oluştur</li>
-                <li>PUT /api/material-groups/{id} - Malzeme grubu güncelle</li>
-                <li>GET /api/material-groups/{id} - Malzeme grubu detay görüntüle</li>
-            </ul>
-            <p><strong>Kayıt Tablosu:</strong> Material Group</p>
-            <p><strong>Material Group Tablo Alanları (Data Structure IMMA.xlsx):</strong></p>
-            <ul>
-                <li>Id (int) - Sistem otomatik oluşturur</li>
-                <li>Code (int, 6) - Malzeme grubu kodu (benzersiz olmalı)</li>
-                <li>Title (text, 64) - Malzeme grubu adı</li>
-            </ul>
-            <p><strong>Ek Alanlar (Screen Designs 6 MMG):</strong></p>
-            <ul>
-                <li>Created By user info - Oluşturan kullanıcı</li>
-                <li>Creation datetime - Oluşturma tarihi</li>
-                <li>Inactivation check - Pasif checkbox</li>
-                <li>Inactivation datetime - Pasif yapma tarihi</li>
-                <li>Inactivated by user Id - Pasif yapan kullanıcı</li>
-                <li>Reactivation date time - Reaktivasyon tarihi</li>
-                <li>Reactivated by user info - Reaktive eden kullanıcı</li>
-            </ul>
-        </div>
+        <!-- Veritabanı Actionsi - Data Structure IMMA.xlsx + Screen Designs 6 MMG -->
 
-        <div class="dev-note info">
-            <h4>Ekran Bilgisi: 6 MMG - Maintain Material Group</h4>
-            <p><strong>Amaç:</strong> CVCD pattern ile malzeme grubu verilerinin oluşturma, görüntüleme ve düzenleme işlemleri.</p>
-            <p><strong>Fonksiyonlar:</strong></p>
-            <ul>
-                <li>Malzeme Grubu Oluştur (Create) - URL: ?mode=create</li>
-                <li>Malzeme Grubu Görüntüle (View) - URL: ?id=xxx&mode=view</li>
-                <li>Malzeme Grubu Düzenle (Change/Edit) - URL: ?id=xxx&mode=edit</li>
-            </ul>
-            <p><strong>Excel Spec:</strong> Screen Designs IMMA.xlsx - "6 MMG"</p>
-            <p><strong>Not:</strong> Liste görünümü material-group.html sayfasındadır.</p>
-        </div>
     </main>
 
     <style>
@@ -195,7 +276,7 @@
                 id: 'GRP-00001',
                 code: '200123',
                 title: 'Rulmanlar ve Yataklar',
-                createdBy: 'Fatma Şahin - Depo Sorumlusu',
+                createdBy: 'Fatma Şahin - Storage Sorumlusu',
                 createdDate: '05.01.2025 09:15',
                 isInactive: false,
                 inactivatedBy: '',
@@ -218,7 +299,7 @@
             'GRP-00003': {
                 id: 'GRP-00003',
                 code: '200345',
-                title: 'Kayış ve Kasnak Grupları',
+                title: 'Kayış ve Novnak Grupları',
                 createdBy: 'Mehmet Demir - Planlama',
                 createdDate: '10.01.2025 11:20',
                 isInactive: false,
@@ -231,7 +312,7 @@
                 id: 'GRP-00004',
                 code: '200456',
                 title: 'Hidrolik Parçalar',
-                createdBy: 'Fatma Şahin - Depo Sorumlusu',
+                createdBy: 'Fatma Şahin - Storage Sorumlusu',
                 createdDate: '12.01.2025 16:45',
                 isInactive: false,
                 inactivatedBy: '',
@@ -246,7 +327,7 @@
                 createdBy: 'Ali Yıldız - Bakım Mühendisi',
                 createdDate: '02.01.2025 08:30',
                 isInactive: true,
-                inactivatedBy: 'Fatma Şahin - Depo Sorumlusu',
+                inactivatedBy: 'Fatma Şahin - Storage Sorumlusu',
                 inactivationDate: '14.01.2025 15:20',
                 reactivatedBy: '',
                 reactivationDate: ''
@@ -264,7 +345,7 @@
 
             switch(mode) {
                 case 'view':
-                    document.getElementById('pageTitle').textContent = 'Malzeme Grubu Görüntüle';
+                    document.getElementById('pageTitle').textContent = 'Material Group Code Görüntüle';
                     document.getElementById('breadcrumbAction').textContent = 'Görüntüle';
                     document.getElementById('editModeBtn').style.display = 'inline-block';
                     document.getElementById('formActions').style.display = 'none';
@@ -277,7 +358,7 @@
                     if (id && materialGroups[id]) loadData(materialGroups[id]);
                     break;
                 case 'edit':
-                    document.getElementById('pageTitle').textContent = 'Malzeme Grubu Düzenle';
+                    document.getElementById('pageTitle').textContent = 'Material Group Code Düzenle';
                     document.getElementById('breadcrumbAction').textContent = 'Düzenle';
                     document.getElementById('editModeBtn').style.display = 'none';
                     document.getElementById('formActions').style.display = 'flex';
@@ -288,7 +369,7 @@
                     if (id && materialGroups[id]) loadData(materialGroups[id]);
                     break;
                 case 'create':
-                    document.getElementById('pageTitle').textContent = 'Yeni Malzeme Grubu';
+                    document.getElementById('pageTitle').textContent = 'Yeni Material Group Code';
                     document.getElementById('breadcrumbAction').textContent = 'Yeni';
                     document.getElementById('editModeBtn').style.display = 'none';
                     document.getElementById('formActions').style.display = 'flex';
@@ -356,7 +437,7 @@
             const title = document.getElementById('materialGroupTitle').value;
 
             if (!code || !title) {
-                alert('Malzeme Grubu Kodu ve Adı zorunlu alanlardır.');
+                alert('Material Group Code Kodu ve Adı zorunlu alanlardır.');
                 return;
             }
 
@@ -367,5 +448,72 @@
 
         document.addEventListener('DOMContentLoaded', initializePage);
     </script>
+
+    <!-- DEVELOPER DOCUMENTATION PANEL -->
+    <div id="devDocsPanel" class="dev-docs-panel">
+        <button class="dev-docs-toggle" onclick="toggleDevDocs()">📋 Geliştirici Dokümantasyonu</button>
+        <div class="dev-docs-content" id="devDocsContent">
+            <div class="dev-docs-header">
+                <h2>📋 6 MMG - Maintain Material Group (Detail)</h2>
+                <button class="dev-docs-close" onclick="toggleDevDocs()">✕</button>
+            </div>
+            <div class="dev-docs-body">
+                <div class="dev-docs-tabs">
+                    <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
+                    <button class="dev-tab" onclick="showDevTab('validations')">Validasyonlar</button>
+                </div>
+                <div id="dataStructure" class="dev-tab-content active">
+                    <h3>Material Group Tablosu</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Uzunluk</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Id</td><td>int</td><td>-</td><td>Primary key</td></tr>
+                            <tr><td>Code</td><td>int</td><td>6</td><td>Malzeme grubu kodu</td></tr>
+                            <tr><td>Title</td><td>text</td><td>64</td><td>Malzeme grubu başlığı</td></tr>
+                            <tr><td>Inactivation check</td><td>bool</td><td>-</td><td>İnaktif durumu</td></tr>
+                            <tr><td>Inactivation datetime</td><td>datetime</td><td>-</td><td>İnaktivasyon tarihi</td></tr>
+                            <tr><td>Inactivated by user Id</td><td>int</td><td>8</td><td>İnaktif eden kullanıcı</td></tr>
+                            <tr><td>Reactivation date time</td><td>datetime</td><td>-</td><td>Reaktivasyon tarihi</td></tr>
+                            <tr><td>Reactivated by user info</td><td>int</td><td>8</td><td>Reaktif eden kullanıcı</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="businessRules" class="dev-tab-content">
+                    <div class="rules-section">
+                        <h4>Malzeme Grubu Kuralları</h4>
+                        <ul>
+                            <li>Malzeme grubu kodu 6 haneli olmalıdır</li>
+                            <li>Grup kodu benzersiz olmalıdır</li>
+                            <li>İnaktif gruplara yeni malzeme atanamaz</li>
+                            <li>Aktif malzeme içeren gruplar inaktif yapılamaz</li>
+                            <li>İnaktif grup tekrar aktif edilebilir (reaktivasyon)</li>
+                            <li>İnaktivasyon ve reaktivasyon işlemleri loglanır</li>
+                        </ul>
+                    </div>
+                    <div class="rules-section">
+                        <h4>Sayfa Modları</h4>
+                        <ul>
+                            <li><strong>view:</strong> Sadece görüntüleme, alanlar disabled</li>
+                            <li><strong>edit:</strong> Düzenleme modu, kaydet butonu aktif</li>
+                            <li><strong>create:</strong> Yeni oluşturma, ID otomatik atanır</li>
+                        </ul>
+                    </div>
+                </div>
+                <div id="validations" class="dev-tab-content">
+                    <div class="rules-section">
+                        <h4>Alan Validasyonları</h4>
+                        <ul>
+                            <li><strong>Code:</strong> Zorunlu, int, max 6 hane</li>
+                            <li><strong>Title:</strong> Zorunlu, text, maxlength=64</li>
+                            <li><strong>Inactivation check:</strong> Checkbox, inaktif yapıldığında tarih ve kullanıcı otomatik dolar</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>.dev-docs-panel{position:fixed;bottom:0;left:0;right:0;z-index:9999;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}.dev-docs-toggle{width:100%;padding:12px 20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;cursor:pointer;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px}.dev-docs-toggle:hover{background:linear-gradient(135deg,#5a6fd6 0%,#6a4190 100%)}.dev-docs-content{display:none;background:#1a1a2e;color:#eee;max-height:70vh;overflow-y:auto}.dev-docs-content.active{display:block}.dev-docs-header{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;background:#16213e;border-bottom:2px solid #667eea}.dev-docs-header h2{margin:0;font-size:16px;color:#fff}.dev-docs-close{background:#e74c3c;color:#fff;border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px}.dev-docs-body{padding:20px}.dev-docs-tabs{display:flex;gap:10px;margin-bottom:20px;border-bottom:2px solid #333;padding-bottom:10px}.dev-tab{padding:8px 16px;background:#2d2d44;color:#aaa;border:none;border-radius:6px 6px 0 0;cursor:pointer;font-size:13px}.dev-tab.active,.dev-tab:hover{background:#667eea;color:#fff}.dev-tab-content{display:none}.dev-tab-content.active{display:block}.dev-table{width:100%;border-collapse:collapse;margin:15px 0;font-size:13px}.dev-table th,.dev-table td{padding:10px;text-align:left;border:1px solid #333}.dev-table th{background:#2d2d44;color:#667eea;font-weight:600}.dev-table tr:nth-child(even){background:#1f1f35}.rules-section{margin-bottom:20px}.rules-section h4{color:#667eea;margin-bottom:10px;font-size:14px}.rules-section ul{margin:0;padding-left:20px}.rules-section li{margin-bottom:6px;line-height:1.5;font-size:13px}</style>
+    <script>function toggleDevDocs(){document.getElementById('devDocsContent').classList.toggle('active')}function showDevTab(tabId){document.querySelectorAll('.dev-tab-content').forEach(c=>c.classList.remove('active'));document.querySelectorAll('.dev-tab').forEach(t=>t.classList.remove('active'));document.getElementById(tabId).classList.add('active');event.target.classList.add('active')}</script>
 </body>
 </html>

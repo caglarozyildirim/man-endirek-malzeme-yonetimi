@@ -3,9 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Depo Tipi Listesi - IMMA</title>
+    <title>Storage Type Listesi - IMMA</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
+<!--
+================================================================================
+IMMA DEVELOPER DOCUMENTATION
+================================================================================
+
+SCREEN: 4 STL - Storage Type List
+FILE: storage-type-list.html
+LAST UPDATED: 2025-12-18
+
+Aynı tablo yapısı storage-type.html ile aynıdır.
+Detaylar için storage-type.html dosyasına bakınız.
+
+LIST FEATURES:
+- Filtreleme: Storage type (Storage/Location/Bin), Status
+- Sıralama: Code, Title
+- Detay linki: storage-type.html?id=
+- Hiyerarşik görünüm desteklenir
+
+================================================================================
+-->
 <body>
     <!-- ============================================
          NAVBAR - Top Navigation (Maximo Style)
@@ -34,7 +54,7 @@
                     <div class="dropdown-menu">
                         <a href="material-list.html" class="dropdown-item">Malzeme Listesi</a>
                         <a href="supplier-list.html" class="dropdown-item">Tedarikçi Listesi</a>
-                        <a href="storage-type-list.html" class="dropdown-item active">Depo Tipi Listesi</a>
+                        <a href="storage-type-list.html" class="dropdown-item active">Storage Type Listesi</a>
                         <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
                         <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
                     </div>
@@ -59,7 +79,7 @@
                 <li class="nav-item">
                     <a href="budget-management.html" class="nav-link">
                         <span class="nav-icon">💰</span>
-                        Bütçe
+                        Budget
                     </a>
                     <div class="dropdown-menu">
                         <a href="budget-management.html" class="dropdown-item">Bütçe Yönetimi</a>
@@ -78,7 +98,7 @@
                 <li class="nav-item">
                     <a href="transfer-list.html" class="nav-link">
                         <span class="nav-icon">🏭</span>
-                        Stok
+                        Stock
                     </a>
                     <div class="dropdown-menu">
                         <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
@@ -104,82 +124,67 @@
         <!-- Page Header -->
         <div class="page-header">
             <div>
-                <h1 class="page-title">Depo Tipi Listesi</h1>
-                <p class="page-subtitle">Stok > Depo Tipi Listesi</p>
+                <h1 class="page-title">Storage Type Listesi</h1>
+                <p class="page-subtitle">Stock > Storage Type Listesi</p>
             </div>
             <div class="page-actions">
-                <button class="btn btn-primary" onclick="window.location.href='storage-type.html?mode=create'">+ Yeni Depo Ekle</button>
+                <button class="btn btn-primary" onclick="window.location.href='storage-type.html?mode=create'">+ Yeni Storage Ekle</button>
                 <button class="btn btn-secondary" onclick="exportToExcel()">Excel'e Aktar</button>
             </div>
         </div>
 
         <!-- Developer Notes Section - Screen Designs IMMA.xlsx "4 STL" -->
-        <div class="dev-note info">
-            <h4>Ekran Bilgisi: 4 STL - Storage Type List (Depo Tipi Listesi)</h4>
-            <p><strong>Amaç:</strong> Sistemdeki tüm depo tiplerinin listelenmesi, filtrelenmesi ve yönetilmesi.</p>
-            <p><strong>Tablo:</strong> Storage (Data Structure IMMA.xlsx - "Storage Type" sheet)</p>
-            <p><strong>Not:</strong> Bu sayfa sadece LİSTELEME içindir. Form işlemleri (oluştur/düzenle/görüntüle) storage-type.html sayfasındadır.</p>
-        </div>
 
-        <div class="dev-note">
-            <h4>🔧 Geliştirici Notları - Filtreleme</h4>
-            <ul>
-                <li><strong>Varsayılan Filtre:</strong> Sayfa açıldığında aktif depo tipleri gösterilir (StatusID = 1)</li>
-                <li><strong>Arama:</strong> Depo Kodu, Depo Adı, Depo Tipi alanlarında arama yapılabilir</li>
-                <li><strong>Performans:</strong> Sayfalama kullanılmalı, sayfa başına max 50 kayıt</li>
-                <li><strong>Sıralama:</strong> Varsayılan olarak depo koduna göre artan sırada</li>
-            </ul>
-        </div>
 
         <!-- Filter Section -->
         <div class="card">
             <div class="card-header">
-                <h3>Filtreler</h3>
+                <h3>Filters</h3>
                 <button class="btn btn-sm btn-outline" id="toggleFilters">Filtreleri Gizle/Göster</button>
             </div>
             <div class="card-body" id="filterSection">
                 <div class="form-row">
                     <div class="form-group col-3">
-                        <label>Depo Kodu</label>
-                        <input type="text" id="filterStorageCode" class="form-control" placeholder="Depo kodu ara...">
+                        <label>Storage Code</label>
+                        <input type="text" id="filterStorageCode" class="form-control" placeholder="Storage kodu ara...">
                     </div>
                     <div class="form-group col-3">
-                        <label>Depo Adı</label>
-                        <input type="text" id="filterStorageName" class="form-control" placeholder="Depo adı ara...">
+                        <label>Storage Name</label>
+                        <input type="text" id="filterStorageName" class="form-control" placeholder="Storage adı ara...">
                     </div>
                     <div class="form-group col-3">
-                        <label>Depo Tipi</label>
+                        <label>Storage Type</label>
                         <select id="filterStorageType" class="form-control">
                             <option value="">Tümü</option>
-                            <option value="1">Depo</option>
-                            <option value="2">Lokasyon</option>
-                            <option value="3">Raf</option>
+                            <option value="1">Storage</option>
+                            <option value="2">Location</option>
+                            <option value="3">Bin</option>
                         </select>
                     </div>
                     <div class="form-group col-3">
-                        <label>Durum</label>
+                        <label>Status</label>
                         <select id="filterStatus" class="form-control">
                             <option value="">Tümü</option>
-                            <option value="1" selected>Aktif</option>
-                            <option value="2">İnaktif</option>
+                            <option value="1" selected>Active</option>
+                            <option value="0">Inactive</option>
                         </select>
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group col-3">
-                        <label>Lokasyon Sayısı (Min)</label>
+                        <label>Location Count (Min)</label>
                         <input type="number" id="filterMinLocation" class="form-control" placeholder="Min. lokasyon">
                     </div>
                     <div class="form-group col-3">
-                        <label>Lokasyon Sayısı (Max)</label>
+                        <label>Location Count (Max)</label>
                         <input type="number" id="filterMaxLocation" class="form-control" placeholder="Max. lokasyon">
                     </div>
                     <div class="form-group col-3">
-                        <label>Raf Sayısı (Min)</label>
+                        <label>Minimum bin count</label>
                         <input type="number" id="filterMinShelf" class="form-control" placeholder="Min. raf">
                     </div>
                     <div class="form-group col-3">
-                        <label>Raf Sayısı (Max)</label>
+                        <label>Maximum bin count</label>
                         <input type="number" id="filterMaxShelf" class="form-control" placeholder="Max. raf">
                     </div>
                 </div>
@@ -191,21 +196,11 @@
         </div>
 
         <!-- Developer Note for Table -->
-        <div class="dev-note warning">
-            <h4>⚠️ Tablo Özellikleri</h4>
-            <ul>
-                <li><strong>Sıralama:</strong> Tüm sütunlar sıralanabilir olmalı (tıklanınca ASC/DESC)</li>
-                <li><strong>Görüntüle:</strong> storage-type.html?id={StorageTypeID}&mode=view</li>
-                <li><strong>Düzenle:</strong> storage-type.html?id={StorageTypeID}&mode=edit</li>
-                <li><strong>Durum Renkleri:</strong> Aktif=Yeşil, İnaktif=Gri</li>
-                <li><strong>İstatistikler:</strong> Lokasyon ve raf sayıları dinamik olarak hesaplanmalı</li>
-            </ul>
-        </div>
 
         <!-- Results Table -->
         <div class="card">
             <div class="card-header">
-                <h3>Depo Tipi Listesi</h3>
+                <h3>Storage Type List</h3>
                 <div class="card-header-actions">
                     <span class="result-count">8 kayıt bulundu</span>
                     <select class="form-control form-control-sm" style="width: auto;" onchange="changePageSize(this.value)">
@@ -220,14 +215,14 @@
                     <table class="table table-hover">
                         <thead>
                             <tr>
-                                <th class="sortable" data-sort="order">Sıra</th>
-                                <th class="sortable" data-sort="storageId">Depo ID</th>
-                                <th class="sortable" data-sort="storageType">Depo Tipi</th>
-                                <th class="sortable" data-sort="storageCode">Depo Kodu</th>
-                                <th class="sortable" data-sort="storageName">Depo Adı</th>
-                                <th class="sortable" data-sort="locationCount">Lokasyon Sayısı</th>
-                                <th class="sortable" data-sort="shelfCount">Raf Sayısı</th>
-                                <th class="sortable" data-sort="status">Durum</th>
+                                <th class="sortable" data-sort="order">#</th>
+                                <th class="sortable" data-sort="storageId">Storage ID</th>
+                                <th class="sortable" data-sort="storageType">Storage Type</th>
+                                <th class="sortable" data-sort="storageCode">Storage Code</th>
+                                <th class="sortable" data-sort="storageName">Storage Name</th>
+                                <th class="sortable" data-sort="locationCount">Location Count</th>
+                                <th class="sortable" data-sort="shelfCount">Bin count</th>
+                                <th class="sortable" data-sort="status">Status</th>
                                 <th>İşlem</th>
                             </tr>
                         </thead>
@@ -235,12 +230,12 @@
                             <tr>
                                 <td>1</td>
                                 <td>1</td>
-                                <td>Merkez Depo</td>
+                                <td>Merkez Storage</td>
                                 <td><a href="storage-type.html?id=1&mode=view" class="table-cell-primary">DEPO-01</a></td>
-                                <td>Merkez Ana Depo</td>
+                                <td>Merkez Ana Storage</td>
                                 <td>250</td>
                                 <td>1200</td>
-                                <td><span class="status-badge onaylandi">Aktif</span></td>
+                                <td><span class="status-badge onaylandi">Active</span></td>
                                 <td>
                                     <div class="table-actions">
                                         <button class="btn btn-sm btn-primary" onclick="viewStorage(1)">Görüntüle</button>
@@ -251,12 +246,12 @@
                             <tr>
                                 <td>2</td>
                                 <td>2</td>
-                                <td>Hat Kenarı Depo</td>
+                                <td>Hat Kenarı Storage</td>
                                 <td><a href="storage-type.html?id=2&mode=view" class="table-cell-primary">DEPO-02</a></td>
-                                <td>Hat Kenarı Depo 1</td>
+                                <td>Hat Kenarı Storage 1</td>
                                 <td>80</td>
                                 <td>320</td>
-                                <td><span class="status-badge onaylandi">Aktif</span></td>
+                                <td><span class="status-badge onaylandi">Active</span></td>
                                 <td>
                                     <div class="table-actions">
                                         <button class="btn btn-sm btn-primary" onclick="viewStorage(2)">Görüntüle</button>
@@ -267,12 +262,12 @@
                             <tr>
                                 <td>3</td>
                                 <td>3</td>
-                                <td>Hat Kenarı Depo</td>
+                                <td>Hat Kenarı Storage</td>
                                 <td><a href="storage-type.html?id=3&mode=view" class="table-cell-primary">DEPO-03</a></td>
-                                <td>Hat Kenarı Depo 2</td>
+                                <td>Hat Kenarı Storage 2</td>
                                 <td>65</td>
                                 <td>260</td>
-                                <td><span class="status-badge onaylandi">Aktif</span></td>
+                                <td><span class="status-badge onaylandi">Active</span></td>
                                 <td>
                                     <div class="table-actions">
                                         <button class="btn btn-sm btn-primary" onclick="viewStorage(3)">Görüntüle</button>
@@ -283,12 +278,12 @@
                             <tr>
                                 <td>4</td>
                                 <td>4</td>
-                                <td>Konsinye Depo</td>
+                                <td>Konsinye Storage</td>
                                 <td><a href="storage-type.html?id=4&mode=view" class="table-cell-primary">DEPO-04</a></td>
-                                <td>Konsinye Depo</td>
+                                <td>Konsinye Storage</td>
                                 <td>45</td>
                                 <td>180</td>
-                                <td><span class="status-badge onaylandi">Aktif</span></td>
+                                <td><span class="status-badge onaylandi">Active</span></td>
                                 <td>
                                     <div class="table-actions">
                                         <button class="btn btn-sm btn-primary" onclick="viewStorage(4)">Görüntüle</button>
@@ -299,12 +294,12 @@
                             <tr>
                                 <td>5</td>
                                 <td>5</td>
-                                <td>Karantina Depo</td>
+                                <td>Karantina Storage</td>
                                 <td><a href="storage-type.html?id=5&mode=view" class="table-cell-primary">DEPO-05</a></td>
-                                <td>Karantina Depo</td>
+                                <td>Karantina Storage</td>
                                 <td>30</td>
                                 <td>120</td>
-                                <td><span class="status-badge onaylandi">Aktif</span></td>
+                                <td><span class="status-badge onaylandi">Active</span></td>
                                 <td>
                                     <div class="table-actions">
                                         <button class="btn btn-sm btn-primary" onclick="viewStorage(5)">Görüntüle</button>
@@ -315,12 +310,12 @@
                             <tr>
                                 <td>6</td>
                                 <td>6</td>
-                                <td>Hurda Depo</td>
+                                <td>Hurda Storage</td>
                                 <td><a href="storage-type.html?id=6&mode=view" class="table-cell-primary">DEPO-06</a></td>
-                                <td>Hurda Depo</td>
+                                <td>Hurda Storage</td>
                                 <td>20</td>
                                 <td>80</td>
-                                <td><span class="status-badge onaylandi">Aktif</span></td>
+                                <td><span class="status-badge onaylandi">Active</span></td>
                                 <td>
                                     <div class="table-actions">
                                         <button class="btn btn-sm btn-primary" onclick="viewStorage(6)">Görüntüle</button>
@@ -331,12 +326,12 @@
                             <tr>
                                 <td>7</td>
                                 <td>7</td>
-                                <td>Merkez Depo</td>
+                                <td>Merkez Storage</td>
                                 <td><a href="storage-type.html?id=7&mode=view" class="table-cell-primary">DEPO-07</a></td>
                                 <td>Tehlikeli Madde Deposu</td>
                                 <td>15</td>
                                 <td>60</td>
-                                <td><span class="status-badge onaylandi">Aktif</span></td>
+                                <td><span class="status-badge onaylandi">Active</span></td>
                                 <td>
                                     <div class="table-actions">
                                         <button class="btn btn-sm btn-primary" onclick="viewStorage(7)">Görüntüle</button>
@@ -347,12 +342,12 @@
                             <tr>
                                 <td>8</td>
                                 <td>8</td>
-                                <td>Hat Kenarı Depo</td>
+                                <td>Hat Kenarı Storage</td>
                                 <td><a href="storage-type.html?id=8&mode=view" class="table-cell-primary">DEPO-08</a></td>
-                                <td>Eski Hat Kenarı (Kapatıldı)</td>
+                                <td>Old Line Side (Closed)</td>
                                 <td>0</td>
                                 <td>0</td>
-                                <td><span class="status-badge taslak">İnaktif</span></td>
+                                <td><span class="status-badge taslak">Inactive</span></td>
                                 <td>
                                     <div class="table-actions">
                                         <button class="btn btn-sm btn-primary" onclick="viewStorage(8)">Görüntüle</button>
@@ -375,53 +370,9 @@
             </div>
         </div>
 
-        <!-- Veritabanı İşlemleri - Data Structure IMMA.xlsx "Storage Type" sheet -->
-        <div class="dev-note success">
-            <h4>✅ Veritabanı İşlemleri (Data Structure IMMA.xlsx)</h4>
-            <p><strong>API Endpoint:</strong> GET /api/storage-types</p>
-            <p><strong>Kayıt Tablosu:</strong> Storage</p>
-            <p><strong>Storage Tablo Alanları:</strong></p>
-            <ul>
-                <li>Storage type Id - Sistem otomatik oluşturur</li>
-                <li>Storage type (char, 1) - Depo tipi kodu</li>
-                <li>Storage Code (Text, 12) - Depo kodu</li>
-                <li>Storage Title (text, 16) - Depo adı</li>
-                <li>Created By user info (int, 8) - Oluşturan kullanıcı ID</li>
-                <li>Creation date time (datetime) - Oluşturma zamanı</li>
-                <li>Inactivation check box (bool) - Pasif checkbox</li>
-                <li>Inactivation date time (datetime) - Pasif yapma zamanı</li>
-                <li>Inactivated by user info (int, 8) - Pasif yapan kullanıcı ID</li>
-                <li>Related Location Code (Text, 12) - İlişkili lokasyon kodu</li>
-                <li>Default sub storage type code (Text, 12) - Varsayılan alt depo tipi kodu</li>
-            </ul>
-            <p><strong>Storage Types (Data Structure IMMA.xlsx):</strong></p>
-            <ul>
-                <li>1 = Storage (Depo)</li>
-                <li>2 = Location (Lokasyon)</li>
-                <li>3 = Bin (Raf)</li>
-            </ul>
-        </div>
+        <!-- Veritabanı Actionsi - Data Structure IMMA.xlsx "Storage Type" sheet -->
 
-        <div class="dev-note warning">
-            <h4>⚠️ Yetki Kontrolleri</h4>
-            <ul>
-                <li><strong>Görüntüleme:</strong> Tüm kullanıcılar listeyi görebilir</li>
-                <li><strong>Yeni Depo Ekle:</strong> Sadece "WMS_CREATE" yetkisi olanlar</li>
-                <li><strong>Excel Export:</strong> "WMS_EXPORT" yetkisi gerekli</li>
-                <li><strong>Düzenleme:</strong> "WMS_EDIT" yetkisi + depo tipi yetkili lokasyonda olmalı</li>
-            </ul>
-        </div>
 
-        <div class="dev-note info">
-            <h4>💡 İş Kuralları</h4>
-            <ul>
-                <li><strong>Depo Kodu:</strong> Benzersiz olmalı, sistem genelinde tekil kod</li>
-                <li><strong>Lokasyon/Raf Sayıları:</strong> Dinamik olarak hesaplanır (COUNT)</li>
-                <li><strong>İnaktif Depo:</strong> İnaktif yapılmadan önce tüm stokların taşınması gerekir</li>
-                <li><strong>Silme İşlemi:</strong> Depo tipi direkt silinemez, sadece inaktif yapılabilir</li>
-                <li><strong>Kapasite Kontrolü:</strong> Maksimum kapasite kontrolü yapılmalı</li>
-            </ul>
-        </div>
     </main>
 
     <style>
@@ -430,11 +381,18 @@
             display: flex;
             gap: 4px;
             flex-wrap: nowrap;
+            min-width: 180px;
         }
         .table-actions .btn-sm {
             padding: 4px 8px;
             font-size: 11px;
             white-space: nowrap;
+        }
+
+        /* Table last column min-width */
+        .table th:last-child,
+        .table td:last-child {
+            min-width: 180px;
         }
     </style>
 
@@ -449,7 +407,7 @@
         document.querySelectorAll('.sortable').forEach(th => {
             th.style.cursor = 'pointer';
             th.addEventListener('click', function() {
-                alert('Sıralama: ' + this.dataset.sort + '\n\n(Backend entegrasyonu ile çalışacak)');
+                alert('#lama: ' + this.dataset.sort + '\n\n(Backend entegrasyonu ile çalışacak)');
             });
         });
 
@@ -522,5 +480,62 @@
             });
         });
     </script>
+
+    <!-- DEVELOPER DOCUMENTATION PANEL -->
+    <div id="devDocsPanel" class="dev-docs-panel">
+        <button class="dev-docs-toggle" onclick="toggleDevDocs()">📋 Geliştirici Dokümantasyonu</button>
+        <div class="dev-docs-content" id="devDocsContent">
+            <div class="dev-docs-header">
+                <h2>📋 4 STL - Storage Type List</h2>
+                <button class="dev-docs-close" onclick="toggleDevDocs()">✕</button>
+            </div>
+            <div class="dev-docs-body">
+                <div class="dev-docs-tabs">
+                    <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
+                </div>
+                <div id="dataStructure" class="dev-tab-content active">
+                    <h3>Storage Type Tablosu</h3>
+                    <table class="dev-table"><thead><tr><th>Field Name</th><th>Type</th><th>Length</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td>Storage type Id</td><td>int</td><td>-</td><td>Primary key</td></tr>
+                            <tr><td>Storage type</td><td>char</td><td>1</td><td>1:Storage, 2:Location, 3:Bin</td></tr>
+                            <tr><td>Storage Code</td><td>text</td><td>12</td><td>Depo/Lokasyon/Bin kodu</td></tr>
+                            <tr><td>Storage Title</td><td>text</td><td>16</td><td>Başlık/açıklama</td></tr>
+                            <tr><td>Inactivation check box</td><td>bool</td><td>-</td><td>İnaktif mi?</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Storage Type Değerleri</h3>
+                    <table class="dev-table"><thead><tr><th>Kod</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>1</td><td>Storage (Depo)</td><td>En üst seviye</td></tr>
+                            <tr><td>2</td><td>Location (Lokasyon)</td><td>Depo altında</td></tr>
+                            <tr><td>3</td><td>Bin (Raf)</td><td>Lokasyon altında</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="businessRules" class="dev-tab-content">
+                    <h3>Liste Özellikleri</h3>
+                    <div class="rules-section">
+                        <ul>
+                            <li>Filtreleme: Storage Code, Storage Name, Storage Type, Status</li>
+                            <li>Sıralama: Storage Code, Title</li>
+                            <li>Detay linki: storage-type.html?id=&mode=view</li>
+                        </ul>
+                    </div>
+                    <h3>Hiyerarşi</h3>
+                    <div class="rules-section">
+                        <ul>
+                            <li><strong>Storage → Location → Bin</strong> (3 seviyeli)</li>
+                            <li>İnaktif depodan malzeme <strong>ÇIKARILABİLİR</strong></li>
+                            <li>İnaktif depoya malzeme <strong>KONULAMAZ</strong></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>.dev-docs-panel{position:fixed;bottom:0;left:0;right:0;z-index:9999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}.dev-docs-toggle{position:absolute;bottom:100%;right:20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;padding:10px 20px;border-radius:8px 8px 0 0;cursor:pointer;font-weight:600;font-size:14px;box-shadow:0 -2px 10px rgba(0,0,0,0.2)}.dev-docs-content{display:none;background:#1a1a2e;color:#eee;max-height:60vh;overflow-y:auto;box-shadow:0 -5px 20px rgba(0,0,0,0.3)}.dev-docs-content.active{display:block}.dev-docs-header{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);position:sticky;top:0}.dev-docs-header h2{margin:0;font-size:18px}.dev-docs-close{background:rgba(255,255,255,0.2);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px}.dev-docs-body{padding:20px}.dev-docs-tabs{display:flex;gap:10px;margin-bottom:20px;border-bottom:1px solid #333;padding-bottom:10px}.dev-tab{background:#2d2d44;color:#aaa;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;transition:all 0.3s}.dev-tab:hover,.dev-tab.active{background:#667eea;color:#fff}.dev-tab-content{display:none}.dev-tab-content.active{display:block}.dev-table{width:100%;border-collapse:collapse;margin:15px 0;font-size:13px}.dev-table th,.dev-table td{padding:10px;text-align:left;border:1px solid #333}.dev-table th{background:#2d2d44;color:#667eea;font-weight:600}.dev-table tr:nth-child(even){background:#252538}.dev-docs-body h3{color:#667eea;margin:20px 0 10px;font-size:16px;border-bottom:1px solid #333;padding-bottom:5px}.dev-docs-body ul{margin:0 0 15px 20px;line-height:1.8}.rules-section{background:#252538;padding:15px;border-radius:8px;margin-bottom:15px}</style>
+    <script>function toggleDevDocs(){document.getElementById('devDocsContent').classList.toggle('active')}function showDevTab(tabId){document.querySelectorAll('.dev-tab-content').forEach(c=>c.classList.remove('active'));document.querySelectorAll('.dev-tab').forEach(t=>t.classList.remove('active'));document.getElementById(tabId).classList.add('active');event.target.classList.add('active')}</script>
 </body>
 </html>

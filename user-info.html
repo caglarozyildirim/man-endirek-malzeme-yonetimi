@@ -57,7 +57,7 @@
                 <li class="nav-item">
                     <a href="budget-management.html" class="nav-link">
                         <span class="nav-icon">💰</span>
-                        Bütçe
+                        Budget
                     </a>
                     <div class="dropdown-menu">
                         <a href="budget-management.html" class="dropdown-item">Bütçe Yönetimi</a>
@@ -76,7 +76,7 @@
                 <li class="nav-item">
                     <a href="transfer-list.html" class="nav-link">
                         <span class="nav-icon">🏭</span>
-                        Stok
+                        Stock
                     </a>
                     <div class="dropdown-menu">
                         <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
@@ -99,7 +99,7 @@
     <main class="modern-container">
         <div class="page-header">
             <div>
-                <h1 class="page-title">Kullanıcı Bilgileri</h1>
+                <h1 class="page-title">User Information</h1>
                 <p class="page-subtitle">Hesabım</p>
             </div>
                 <div class="header-actions">
@@ -110,28 +110,12 @@
             </header>
 
             <!-- Developer Notes - Main -->
-            <div class="dev-note info">
-                <h4>📋 Ekran Bilgisi: Kullanıcı Bilgileri (Screen 27 - UI)</h4>
-                <p><strong>Amaç:</strong> Oturum açmış kullanıcının bilgilerini ve yetkilerini görüntüleme.</p>
-                <p><strong>Kimlik Doğrulama:</strong> Windows Authentication (IAM) ile SAP entegrasyonu</p>
-                <p><strong>Kullanıcı Verisi:</strong> SAP HR modülünden otomatik senkronize edilir</p>
-            </div>
 
-            <div class="dev-note warning">
-                <h4>⚠️ Kimlik Doğrulama Akışı</h4>
-                <ol>
-                    <li>Kullanıcı Windows/AD hesabı ile oturum açar</li>
-                    <li>IAM sistemi kimliği doğrular</li>
-                    <li>SAP_User tablosundan kullanıcı bilgileri çekilir</li>
-                    <li>USR_UserRole ve USR_RolePermission tablolarından yetkiler alınır</li>
-                    <li>JWT token oluşturulur ve session başlar</li>
-                </ol>
-            </div>
 
             <!-- Kullanici Profil Karti -->
             <div class="card">
                 <div class="card-header">
-                    <h3>Profil Bilgileri</h3>
+                    <h3>Profile Information</h3>
                     <button class="btn btn-primary" onclick="switchToCommonUser()">
                         Ortak Kullaniciya Gec
                     </button>
@@ -173,18 +157,18 @@
                 </div>
             </div>
 
-            <!-- Kullanici Departman Atamalari -->
+            <!-- Kullanici Department Atamalari -->
             <div class="card">
                 <div class="card-header">
-                    <h3>Departman Atamalari</h3>
+                    <h3>Department Atamalari</h3>
                 </div>
                 <div class="card-body">
                     <table class="table table-sm">
                         <thead>
                             <tr>
-                                <th>Departman Kodu</th>
-                                <th>Departman Adi</th>
-                                <th>Departmandaki Rol</th>
+                                <th>Department Kodu</th>
+                                <th>Department Adi</th>
+                                <th>Departmentdaki Rol</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -214,26 +198,17 @@
                     <h3>Yetkilendirme Rolleri</h3>
                 </div>
                 <div class="card-body">
-                    <div class="dev-note">
-                        <h4>Rol Tabanli Yetki Sistemi (RBAC)</h4>
-                        <p>Kullaniciya roller atanir, roller ise yetkilere sahiptir.</p>
-                        <ul>
-                            <li><strong>Tablo:</strong> USR_User - USR_UserRole - USR_Role - USR_RolePermission - USR_Permission</li>
-                            <li>Bir kullanici birden fazla role sahip olabilir</li>
-                            <li>Yetkiler OR mantigi ile birlestirilir</li>
-                        </ul>
-                    </div>
 
                     <h4>Dogrudan Sahip Olunan Roller:</h4>
                     <div class="role-badges">
                         <span class="status-badge status-active">Malzeme Anahtar Kullanici</span>
                         <span class="status-badge status-active">SRM Talep Olusturucu</span>
-                        <span class="status-badge status-preparing">Butce Goruntuleyici</span>
+                        <span class="status-badge status-preparing">Budget Görüntüleyici</span>
                     </div>
 
                     <h4 style="margin-top: 20px;">Vekalet ile Kazanilan Roller:</h4>
                     <div class="role-badges">
-                        <span class="status-badge status-pending">Departman Onaylayici (Vekil)</span>
+                        <span class="status-badge status-pending">Department Onaylayici (Vekil)</span>
                     </div>
 
                     <h4 style="margin-top: 20px;">Yetkiler:</h4>
@@ -290,7 +265,7 @@
                                 <td class="text-danger">❌</td>
                             </tr>
                             <tr>
-                                <td>Stok İşlemleri</td>
+                                <td>Stock Actionsi</td>
                                 <td class="text-success">✅</td>
                                 <td class="text-danger">❌</td>
                                 <td class="text-danger">❌</td>
@@ -305,7 +280,7 @@
             <!-- Vekalet Bilgileri -->
             <div class="card">
                 <div class="card-header">
-                    <h3>Vekalet Bilgileri</h3>
+                    <h3>Delegation Information</h3>
                 </div>
                 <div class="card-body">
                     <div class="info-grid">
@@ -319,7 +294,7 @@
                         </div>
                     </div>
                     <button class="btn btn-secondary" style="margin-top: 16px;" onclick="showOnBehalfHistory()">
-                        Vekalet Gecmisini Goruntule
+                        Vekalet Geçmişini Görüntüle
                     </button>
                 </div>
             </div>
@@ -327,7 +302,7 @@
             <!-- Session Info -->
             <div class="card">
                 <div class="card-header">
-                    <h3>Oturum Bilgileri</h3>
+                    <h3>Session Information</h3>
                 </div>
                 <div class="card-body">
                     <div class="info-grid">
@@ -368,7 +343,7 @@
                     <table class="table table-sm">
                         <thead>
                             <tr>
-                                <th>Tarih/Saat</th>
+                                <th>Date/Saat</th>
                                 <th>İşlem</th>
                                 <th>Detay</th>
                             </tr>
@@ -377,7 +352,7 @@
                             <tr>
                                 <td>11.12.2025 14:30</td>
                                 <td>Malzeme Talebi Oluşturuldu</td>
-                                <td>MR-2025-001234</td>
+                                <td>Material Request-2025-001234</td>
                             </tr>
                             <tr>
                                 <td>11.12.2025 11:15</td>
@@ -400,58 +375,7 @@
             </div>
 
             <!-- Database Schema -->
-            <div class="dev-note success">
-                <h4>✅ Kullanıcı Veritabanı Yapısı</h4>
-                <table class="table table-sm">
-                    <thead>
-                        <tr>
-                            <th>Tablo</th>
-                            <th>Açıklama</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>SAP_User</strong></td>
-                            <td>SAP'den senkronize edilen kullanıcı bilgileri</td>
-                        </tr>
-                        <tr>
-                            <td><strong>USR_User</strong></td>
-                            <td>IMMA kullanıcı kaydı (SAP_UserID ile ilişkili)</td>
-                        </tr>
-                        <tr>
-                            <td><strong>USR_Role</strong></td>
-                            <td>Rol tanımları</td>
-                        </tr>
-                        <tr>
-                            <td><strong>USR_UserRole</strong></td>
-                            <td>Kullanıcı-Rol ilişkisi</td>
-                        </tr>
-                        <tr>
-                            <td><strong>USR_Permission</strong></td>
-                            <td>Yetki tanımları</td>
-                        </tr>
-                        <tr>
-                            <td><strong>USR_RolePermission</strong></td>
-                            <td>Rol-Yetki ilişkisi</td>
-                        </tr>
-                        <tr>
-                            <td><strong>USR_Session</strong></td>
-                            <td>Aktif oturum bilgileri</td>
-                        </tr>
-                        <tr>
-                            <td><strong>AUD_UserActivity</strong></td>
-                            <td>Kullanıcı aktivite logları</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
 
-            <div class="dev-note">
-                <h4>📊 Yetki Kontrol API'si</h4>
-                <p>Her API çağrısında yetki kontrolü yapılır:</p>
-                <code>GET /api/auth/check-permission?module=MaterialRequest&action=CREATE</code>
-                <p>Middleware katmanında JWT token decode edilir ve yetkiler kontrol edilir.</p>
-            </div>
         </main>
     </div>
 

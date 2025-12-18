@@ -6,6 +6,122 @@
     <title>Tekli Malzeme Sayımı - IMMA</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
+<!--
+================================================================================
+IMMA DEVELOPER DOCUMENTATION
+================================================================================
+
+SCREEN: 23 IC-SMC - Single Material Counting
+FILE: single-material-counting.html
+LAST UPDATED: 2025-12-18
+
+--------------------------------------------------------------------------------
+RELATED DATABASE TABLES
+--------------------------------------------------------------------------------
+
+TABLE: Inventory Counting Header (simplified for single)
+| Field Name                    | Type     | Length | Description                  |
+|-------------------------------|----------|--------|------------------------------|
+| Inventory Counting Header Id  | int      | 8      | Primary key (IC-SMC-XXXX)    |
+| Correction type               | char     | 1      | Düzeltme tipi                |
+| Creation date time            | datetime | -      | Oluşturma tarihi             |
+| Created by user info          | int      | 8      | Oluşturan kullanıcı          |
+| Counted by user info          | int      | 8      | Sayan kullanıcı              |
+| Correction finalized check    | bool     | -      | Düzeltme tamamlandı mı       |
+
+TABLE: Inventory Counting Item (single record)
+| Field Name                    | Type     | Length | Description                  |
+|-------------------------------|----------|--------|------------------------------|
+| Inventory Counting item id    | int      | 8      | Primary key                  |
+| Material number               | text     | 13     | Malzeme numarası             |
+| Stock record Id               | int      | 8      | Stok kaydı referansı         |
+| Stock quantity                | float    | 15     | Sistem stok miktarı          |
+| Counting result quantity      | float    | 15     | Sayım sonucu miktarı         |
+
+--------------------------------------------------------------------------------
+SINGLE MATERIAL COUNTING WORKFLOW
+--------------------------------------------------------------------------------
+
+1. SEARCH STEP:
+   - Malzeme arama (min 2 karakter)
+   - Storage ve Location filtreleri
+   - Autocomplete dropdown ile seçim
+
+2. COUNTING STEP:
+   - Seçilen malzeme bilgileri görüntülenir
+   - Fiziksel sayım değeri girilir
+   - Fark otomatik hesaplanır
+   - Fark varsa gerekçe zorunlu
+
+--------------------------------------------------------------------------------
+CORRECTION TYPES
+--------------------------------------------------------------------------------
+
+- spot_count: Spot Sayım
+- recount: Yeniden Sayım
+- discrepancy: Fark İncelemesi
+- emergency: Acil Düzeltme
+
+--------------------------------------------------------------------------------
+BUSINESS RULES
+--------------------------------------------------------------------------------
+
+1. Tek malzeme için hızlı sayım ekranı
+2. Malzeme arama: Malzeme numarası veya açıklama ile
+3. Min 2 karakter ile autocomplete aktif
+4. Storage ve Location filtreleri isteğe bağlı
+5. Sayım değeri girildiğinde fark otomatik hesaplanır
+6. Fark tespit edildiğinde gerekçe zorunlu
+7. "Sayımı Onayla" ile stok otomatik güncellenir
+8. "Taslak Kaydet" ile daha sonra devam edilebilir
+
+--------------------------------------------------------------------------------
+DISPLAYED FIELDS
+--------------------------------------------------------------------------------
+
+Material Information (Read-only):
+- Material number
+- Material description
+- Stock Record ID
+
+Stock Information (Read-only):
+- Storage / Location / Bin
+- System Stock Quantity
+- Unit of measure
+- Currency
+- Unit value (TRY/EUR)
+- Total Stock Value
+- Cost Center
+- Cost Date
+- Open Material Requests / SRM / PO
+- Goods Movement ID
+- Confirmed by / Date
+
+Correction Document (Editable):
+- Correction document Id (auto-generated)
+- Correction document title
+- Correction type
+
+Counting Input:
+- Counting value (kullanıcı girişi)
+- Differences by quantity (hesaplanan)
+- TRY/EUR differences value (hesaplanan)
+- Differences status (badge)
+- Differences reason (fark varsa zorunlu)
+- Counting Date
+- Counted by
+
+--------------------------------------------------------------------------------
+MOVEMENT TYPES
+--------------------------------------------------------------------------------
+
+| Code | Type                    | Description                    |
+|------|-------------------------|--------------------------------|
+| 8    | Inventory positive record| Sayım fazlası                 |
+| 9    | Inventory negative record| Sayım eksiği                  |
+
+================================================================================
+-->
 <body>
     <!-- NAVBAR - Top Navigation (Maximo Style) -->
     <nav class="modern-navbar">
@@ -57,7 +173,7 @@
                 <li class="nav-item">
                     <a href="budget-management.html" class="nav-link">
                         <span class="nav-icon">💰</span>
-                        Bütçe
+                        Budget
                     </a>
                     <div class="dropdown-menu">
                         <a href="budget-management.html" class="dropdown-item">Bütçe Yönetimi</a>
@@ -76,7 +192,7 @@
                 <li class="nav-item">
                     <a href="transfer-list.html" class="nav-link active">
                         <span class="nav-icon">🏭</span>
-                        Stok
+                        Stock
                     </a>
                     <div class="dropdown-menu">
                         <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
@@ -100,7 +216,7 @@
         <div class="page-header">
             <div>
                 <h1 class="page-title">Tekli Malzeme Sayımı</h1>
-                <p class="page-subtitle">Stok > Tekli Malzeme Sayımı</p>
+                <p class="page-subtitle">Stock > Tekli Malzeme Sayımı</p>
             </div>
             <div class="page-actions">
                 <button class="btn btn-outline" onclick="window.location.href='inventory-counting.html'">
@@ -110,55 +226,17 @@
         </div>
 
         <!-- Developer Notes - Main -->
-        <div class="dev-note info">
-            <h4>📋 Ekran Bilgisi: 23 IC-SMC - Single Material Counting</h4>
-            <p><strong>Amaç:</strong> Tek bir malzeme için hızlı sayım yapılması ve stok düzeltmesi.</p>
-            <p><strong>Data Structure Alanlari (Screen 23 IC-SMC):</strong></p>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                <ul style="font-size: 12px;">
-                    <li>Correction document Id</li>
-                    <li>Correction document title</li>
-                    <li>Correction type</li>
-                    <li>Material number / Material title</li>
-                    <li>Stock record Id</li>
-                    <li>Stock quantity / Counting result</li>
-                    <li>Unit of measure</li>
-                    <li>Currency</li>
-                </ul>
-                <ul style="font-size: 12px;">
-                    <li>Unit value / Unit Euro value / Unit TL value</li>
-                    <li>Total stock value</li>
-                    <li>Cost Id / Costing date</li>
-                    <li>Storage / Location / Bin</li>
-                    <li>Open material requests / SRM / PO</li>
-                    <li>Quantity difference / Value difference (EUR/TL)</li>
-                    <li>Confirmed by user id / datetime</li>
-                    <li>Goods movement id</li>
-                </ul>
-            </div>
-        </div>
 
-        <div class="dev-note warning">
-            <h4>⚠️ Tekli Sayım İş Akışı</h4>
-            <ol>
-                <li><strong>Malzeme Ara:</strong> Sayılacak malzeme aranır ve seçilir (CVCD Step 1)</li>
-                <li><strong>Stok Bilgileri:</strong> Mevcut stok, değer ve lokasyon bilgileri gösterilir</li>
-                <li><strong>Fiziksel Sayım:</strong> Depo müdürü fiziksel sayım yapar ve sonucu girer</li>
-                <li><strong>Fark Analizi:</strong> Sistem/sayım farkı otomatik hesaplanır</li>
-                <li><strong>Gerekçe:</strong> Fark varsa gerekçe girilir</li>
-                <li><strong>Onay & Düzelt:</strong> Depo müdürü onaylar, stok güncellenir</li>
-            </ol>
-        </div>
 
         <!-- Material Search Section (CVCD Step 1) -->
         <div class="card" id="searchSection">
             <div class="card-header">
-                <h3>Malzeme Ara ve Seç</h3>
+                <h3>Material Search and Select</h3>
             </div>
             <div class="card-body">
                 <div class="form-row">
                     <div class="form-group col-5">
-                        <label>Malzeme No / Tanım <span class="required">*</span></label>
+                        <label>Material number / Tanım <span class="required">*</span></label>
                         <div class="autocomplete-wrapper">
                             <input type="text" class="form-control autocomplete-input" id="materialSearch"
                                    placeholder="En az 2 karakter yazarak arayın..." autocomplete="off">
@@ -167,16 +245,16 @@
                         <small class="form-hint">Malzeme numarası veya açıklama yazarak arama yapın</small>
                     </div>
                     <div class="form-group col-3">
-                        <label>Depo</label>
+                        <label>Storage</label>
                         <select class="form-control" id="warehouseFilter">
-                            <option value="">Tüm Depolar</option>
-                            <option value="central">Merkez Depo</option>
+                            <option value="">Tüm Storagelar</option>
+                            <option value="central">Merkez Storage</option>
                             <option value="line1">Hat 1 Deposu</option>
                             <option value="line2">Hat 2 Deposu</option>
                         </select>
                     </div>
                     <div class="form-group col-3">
-                        <label>Lokasyon</label>
+                        <label>Location</label>
                         <select class="form-control" id="locationFilter">
                             <option value="">Tümü</option>
                             <option value="A">A Bölgesi</option>
@@ -191,24 +269,24 @@
         <!-- Counting Form Section (CVCD Step 2 - Hidden by default) -->
         <div class="card" id="countingSection" style="display: none;">
             <div class="card-header">
-                <h3>Malzeme Sayım Formu</h3>
-                <button class="btn btn-sm btn-outline" id="backToSearch">← Farklı Malzeme Seç</button>
+                <h3>Material Counting Form</h3>
+                <button class="btn btn-sm btn-outline" id="backToSearch">← Select Different Material</button>
             </div>
             <div class="card-body">
                 <!-- Material Info Display -->
                 <div class="info-section">
-                    <h4>Malzeme Bilgileri</h4>
+                    <h4>Material Information</h4>
                     <div class="form-row">
                         <div class="form-group col-3">
-                            <label>Malzeme No</label>
+                            <label>Material number</label>
                             <div class="form-control-static" id="displayMaterialNo">-</div>
                         </div>
                         <div class="form-group col-5">
-                            <label>Malzeme Tanımı</label>
+                            <label>Material description</label>
                             <div class="form-control-static" id="displayMaterialTitle">-</div>
                         </div>
                         <div class="form-group col-4">
-                            <label>Stok Kayıt No (Stock Record ID)</label>
+                            <label>Stock Kayıt No (Stock Record ID)</label>
                             <div class="form-control-static" id="displayStockRecordId">-</div>
                         </div>
                     </div>
@@ -216,14 +294,14 @@
 
                 <!-- Current Stock Information -->
                 <div class="info-section" style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin: 20px 0;">
-                    <h4>Mevcut Stok Bilgileri</h4>
+                    <h4>Stock Information</h4>
                     <div class="form-row">
                         <div class="form-group col-2">
-                            <label>Depo</label>
+                            <label>Storage</label>
                             <div class="form-control-static" id="displayStorage">-</div>
                         </div>
                         <div class="form-group col-2">
-                            <label>Lokasyon</label>
+                            <label>Location</label>
                             <div class="form-control-static" id="displayLocation">-</div>
                         </div>
                         <div class="form-group col-2">
@@ -231,51 +309,51 @@
                             <div class="form-control-static" id="displayBin">-</div>
                         </div>
                         <div class="form-group col-2">
-                            <label>Sistem Stok Miktarı</label>
+                            <label>System Stock Quantity</label>
                             <div class="form-control-static" id="displayStockQty" style="font-weight: bold; color: #0066cc;">-</div>
                         </div>
                         <div class="form-group col-2">
-                            <label>Birim</label>
+                            <label>Unit of measure</label>
                             <div class="form-control-static" id="displayUoM">-</div>
                         </div>
                         <div class="form-group col-2">
-                            <label>Maliyet Merkezi</label>
+                            <label>Cost Center</label>
                             <div class="form-control-static" id="displayCostId">-</div>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group col-2">
-                            <label>Para Birimi</label>
+                            <label>Currency</label>
                             <div class="form-control-static" id="displayCurrency">-</div>
                         </div>
                         <div class="form-group col-2">
-                            <label>Birim Değer (TRY)</label>
+                            <label>Unit value (TRY)</label>
                             <div class="form-control-static" id="displayUnitValue">-</div>
                         </div>
                         <div class="form-group col-2">
-                            <label>Birim Değer (EUR)</label>
+                            <label>Unit value (EUR)</label>
                             <div class="form-control-static" id="displayUnitValueEUR">-</div>
                         </div>
                         <div class="form-group col-2">
-                            <label>Toplam Stok Değeri</label>
+                            <label>Total Stock Value</label>
                             <div class="form-control-static" id="displayTotalValue" style="font-weight: bold; color: #28a745;">-</div>
                         </div>
                         <div class="form-group col-2">
-                            <label>Maliyet Tarihi</label>
+                            <label>Cost Date</label>
                             <div class="form-control-static" id="displayCostingDate">-</div>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group col-2">
-                            <label>Açık Mat. Talepleri</label>
-                            <div class="form-control-static" id="displayOpenMR">-</div>
+                            <label>Open material requests</label>
+                            <div class="form-control-static" id="displayOpenMaterial Request">-</div>
                         </div>
                         <div class="form-group col-2">
-                            <label>Açık SRM Talepleri</label>
+                            <label>Open SRM requests</label>
                             <div class="form-control-static" id="displayOpenSRM">-</div>
                         </div>
                         <div class="form-group col-2">
-                            <label>Açık PO Siparişleri</label>
+                            <label>Open purchasing orders</label>
                             <div class="form-control-static" id="displayOpenPO">-</div>
                         </div>
                         <div class="form-group col-3">
@@ -283,7 +361,7 @@
                             <div class="form-control-static" id="displayGoodsMovementId">-</div>
                         </div>
                         <div class="form-group col-3">
-                            <label>Onaylayan / Tarih</label>
+                            <label>Approved by user info / Date</label>
                             <div class="form-control-static" id="displayConfirmedBy">-</div>
                         </div>
                     </div>
@@ -291,25 +369,25 @@
 
                 <!-- Correction Document Info -->
                 <div class="info-section">
-                    <h4>Düzeltme Dokümanı Bilgileri</h4>
+                    <h4>Correction Document Information</h4>
                     <div class="form-row">
                         <div class="form-group col-3">
-                            <label>Düzeltme Doküman No <span class="required">*</span></label>
+                            <label>Correction document Id <span class="required">*</span></label>
                             <input type="text" class="form-control" id="correctionDocId"
                                    value="IC-SMC-2025-0001" readonly>
                         </div>
                         <div class="form-group col-5">
-                            <label>Düzeltme Doküman Başlığı <span class="required">*</span></label>
+                            <label>Correction document title <span class="required">*</span></label>
                             <input type="text" class="form-control" id="correctionDocTitle"
-                                   placeholder="Örn: Merkez Depo Spot Sayım - Motor Rulman">
+                                   placeholder="Örn: Merkez Storage Spot Counting - Motor Rulman">
                         </div>
                         <div class="form-group col-4">
-                            <label>Düzeltme Tipi <span class="required">*</span></label>
+                            <label>Correction type <span class="required">*</span></label>
                             <select class="form-control" id="correctionType">
                                 <option value="">Seçiniz...</option>
-                                <option value="spot_count">Spot Sayım</option>
-                                <option value="recount">Yeniden Sayım</option>
-                                <option value="discrepancy">Fark İncelemesi</option>
+                                <option value="spot_count">Spot Counting</option>
+                                <option value="recount">Yeniden Counting</option>
+                                <option value="discrepancy">Differences by quantity İncelemesi</option>
                                 <option value="emergency">Acil Düzeltme</option>
                             </select>
                         </div>
@@ -318,50 +396,50 @@
 
                 <!-- Counting Input -->
                 <div class="info-section" style="background: #fff3cd; padding: 20px; border-radius: 6px; border: 2px solid #ffc107;">
-                    <h4>Fiziksel Sayım (Depo Müdürü)</h4>
+                    <h4>Physical Counting (Warehouse Manager)</h4>
                     <div class="form-row">
                         <div class="form-group col-2">
-                            <label>Sayım Değeri <span class="required">*</span></label>
+                            <label>Counting value <span class="required">*</span></label>
                             <input type="number" class="form-control" id="countingValue"
-                                   placeholder="Sayım sonucu" step="0.01" min="0">
+                                   placeholder="Counting sonucu" step="0.01" min="0">
                         </div>
                         <div class="form-group col-2">
-                            <label>Fark (Miktar)</label>
+                            <label>Differences by quantity</label>
                             <input type="text" class="form-control" id="difference" readonly
                                    style="font-weight: bold; background: #e9ecef;">
                         </div>
                         <div class="form-group col-2">
-                            <label>Fark Değeri (TRY)</label>
+                            <label>TRY differences value</label>
                             <input type="text" class="form-control" id="differenceValue" readonly
                                    style="font-weight: bold; background: #e9ecef;">
                         </div>
                         <div class="form-group col-2">
-                            <label>Fark Değeri (EUR)</label>
+                            <label>Euro differences value</label>
                             <input type="text" class="form-control" id="differenceValueEUR" readonly
                                    style="font-weight: bold; background: #e9ecef;">
                         </div>
                         <div class="form-group col-4">
-                            <label>Fark Durumu</label>
+                            <label>Differences status</label>
                             <div class="form-control-static" id="differenceStatus">
-                                <span class="badge badge-secondary">Sayım bekleniyor</span>
+                                <span class="badge badge-secondary">Counting bekleniyor</span>
                             </div>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group col-12">
-                            <label>Fark Gerekçesi <span id="reasonRequired" style="display: none;" class="required">*</span></label>
+                            <label>Differences reason <span id="reasonRequired" style="display: none;" class="required">*</span></label>
                             <textarea class="form-control" id="countReason" rows="3"
-                                      placeholder="Fark tespit edildiğinde gerekçe giriniz..."></textarea>
+                                      placeholder="Differences by quantity tespit edildiğinde gerekçe giriniz..."></textarea>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group col-3">
-                            <label>Sayım Tarihi <span class="required">*</span></label>
+                            <label>Counting Date <span class="required">*</span></label>
                             <input type="datetime-local" class="form-control" id="countDate"
                                    value="2025-12-15T14:30">
                         </div>
                         <div class="form-group col-3">
-                            <label>Sayımı Yapan (Depo Müdürü)</label>
+                            <label>Counted by (Warehouse Manager)</label>
                             <input type="text" class="form-control" id="countedBy"
                                    value="Hasan Kara" readonly>
                         </div>
@@ -373,105 +451,16 @@
                     <button class="btn btn-outline" id="cancelButton">İptal</button>
                     <button class="btn btn-secondary" id="saveDraftButton">Taslak Kaydet</button>
                     <button class="btn btn-primary" id="submitCountButton">
-                        ✅ Sayımı Onayla ve Stoku Düzelt
+                        ✅ Sayımı Onayla ve Stocku Düzelt
                     </button>
                 </div>
             </div>
         </div>
 
         <!-- Database Operations -->
-        <div class="dev-note success">
-            <h4>✅ Veritabanı Yapısı - Tekli Malzeme Sayımı</h4>
-            <table class="table table-sm">
-                <thead>
-                    <tr>
-                        <th>Tablo</th>
-                        <th>Alan</th>
-                        <th>Açıklama</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td rowspan="8"><strong>INV_CountCorrection</strong></td>
-                        <td>CorrectionDocId</td>
-                        <td>Düzeltme doküman numarası (PK, Auto-increment)</td>
-                    </tr>
-                    <tr>
-                        <td>CorrectionDocTitle</td>
-                        <td>Düzeltme doküman başlığı</td>
-                    </tr>
-                    <tr>
-                        <td>CorrectionType</td>
-                        <td>Düzeltme tipi (spot_count, recount, discrepancy, emergency)</td>
-                    </tr>
-                    <tr>
-                        <td>MaterialNo</td>
-                        <td>Malzeme numarası (FK -> MAT_Material)</td>
-                    </tr>
-                    <tr>
-                        <td>StockRecordId</td>
-                        <td>Stok kayıt ID (FK -> INV_Stock)</td>
-                    </tr>
-                    <tr>
-                        <td>SystemQty</td>
-                        <td>Sistem stok miktarı (sayım öncesi)</td>
-                    </tr>
-                    <tr>
-                        <td>CountingValue</td>
-                        <td>Fiziksel sayım değeri (depo müdürü tarafından girilir)</td>
-                    </tr>
-                    <tr>
-                        <td>Difference, Reason, CountedBy, CountDate</td>
-                        <td>Fark, gerekçe, sayımı yapan, tarih</td>
-                    </tr>
-                    <tr>
-                        <td><strong>INV_Stock</strong></td>
-                        <td>Quantity</td>
-                        <td>Sayım onaylandığında CountingValue ile güncellenir</td>
-                    </tr>
-                    <tr>
-                        <td><strong>INV_StockTransaction</strong></td>
-                        <td>TransactionType</td>
-                        <td>'IC_ADJUST' tipinde işlem kaydı (fark için +/-)</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
 
-        <div class="dev-note">
-            <h4>📊 CVCD Pattern - Single Material Counting</h4>
-            <p><strong>Create-View-Create-Detail Pattern Açıklaması:</strong></p>
-            <ul>
-                <li><strong>Step 1 (View):</strong> Malzeme arama ve seçme ekranı</li>
-                <li><strong>Step 2 (Create-Detail):</strong> Seçilen malzeme için sayım formu</li>
-                <li><strong>Data Flow:</strong> Seçilen malzemenin stok bilgileri otomatik yüklenir</li>
-                <li><strong>Calculation:</strong> Fark = CountingValue - SystemQty (otomatik hesaplanır)</li>
-                <li><strong>Validation:</strong> Fark varsa gerekçe zorunlu</li>
-            </ul>
-        </div>
 
-        <div class="dev-note warning">
-            <h4>⚠️ İş Kuralları ve Validasyonlar</h4>
-            <ul>
-                <li><strong>Malzeme Seçimi:</strong> Sadece stok kaydı olan malzemeler seçilebilir</li>
-                <li><strong>Fark Kontrolü:</strong> Fark tespit edilirse gerekçe zorunludur</li>
-                <li><strong>Yetki:</strong> Sadece Depo Müdürü sayım yapabilir (role check)</li>
-                <li><strong>Onay Kuralı:</strong> Belirli tutarın üzerindeki farklar (örn: 10,000 TL) Finans onayı gerektirir</li>
-                <li><strong>Stok Kilidi:</strong> Sayım sırasında malzeme için işlem yapılamaz (pending count flag)</li>
-                <li><strong>Audit Trail:</strong> Tüm sayım işlemleri log tablosuna kaydedilir</li>
-                <li><strong>Notification:</strong> Büyük farklar için ilgili departmanlara bildirim gönderilir</li>
-            </ul>
-        </div>
 
-        <div class="dev-note info">
-            <h4>🔄 Backend API Endpoints</h4>
-            <ul>
-                <li><strong>POST /api/inventory/single-count/search:</strong> Malzeme arama</li>
-                <li><strong>GET /api/inventory/single-count/material/{id}:</strong> Malzeme detay ve stok bilgisi</li>
-                <li><strong>POST /api/inventory/single-count/submit:</strong> Sayım kaydetme ve stok düzeltme</li>
-                <li><strong>POST /api/inventory/single-count/draft:</strong> Taslak kaydetme</li>
-            </ul>
-        </div>
     </main>
 
     <style>
@@ -610,9 +599,9 @@
                 materialNo: 'MAT-2024-0156',
                 materialTitle: 'SKF 6208-2RS Rulman',
                 stockRecordId: 'STK-0156-001',
-                storage: 'Merkez Depo',
+                storage: 'Merkez Storage',
                 location: 'A-12',
-                bin: 'Raf-05',
+                bin: 'Bin-05',
                 stockQty: 45,
                 uom: 'Adet',
                 currency: 'TRY',
@@ -621,7 +610,7 @@
                 totalValue: 5647.50,
                 costId: 'CC-MAINT-001',
                 costingDate: '2025-12-01',
-                openMR: 3,
+                openMaterial Request: 3,
                 openSRM: 1,
                 openPO: 2,
                 goodsMovementId: null,
@@ -632,7 +621,7 @@
                 materialNo: 'MAT-2024-0089',
                 materialTitle: 'Tork Somunu M12x1.5',
                 stockRecordId: 'STK-0089-001',
-                storage: 'Merkez Depo',
+                storage: 'Merkez Storage',
                 location: 'B-08',
                 bin: 'Kutu-23',
                 stockQty: 320,
@@ -643,7 +632,7 @@
                 totalValue: 1200.00,
                 costId: 'CC-PROD-002',
                 costingDate: '2025-11-15',
-                openMR: 0,
+                openMaterial Request: 0,
                 openSRM: 2,
                 openPO: 0,
                 goodsMovementId: 'GM-2025-00456',
@@ -665,7 +654,7 @@
                 totalValue: 10200.00,
                 costId: 'CC-MAINT-001',
                 costingDate: '2025-12-05',
-                openMR: 1,
+                openMaterial Request: 1,
                 openSRM: 0,
                 openPO: 1,
                 goodsMovementId: null,
@@ -676,9 +665,9 @@
                 materialNo: 'MAT-2024-0345',
                 materialTitle: 'V-Kayış A-68',
                 stockRecordId: 'STK-0345-001',
-                storage: 'Merkez Depo',
+                storage: 'Merkez Storage',
                 location: 'A-05',
-                bin: 'Raf-12',
+                bin: 'Bin-12',
                 stockQty: 85,
                 uom: 'Adet',
                 currency: 'TRY',
@@ -687,7 +676,7 @@
                 totalValue: 3825.00,
                 costId: 'CC-MAINT-001',
                 costingDate: '2025-12-08',
-                openMR: 2,
+                openMaterial Request: 2,
                 openSRM: 0,
                 openPO: 1,
                 goodsMovementId: null,
@@ -709,7 +698,7 @@
                 totalValue: 25500.00,
                 costId: 'CC-MAINT-002',
                 costingDate: '2025-11-20',
-                openMR: 0,
+                openMaterial Request: 0,
                 openSRM: 1,
                 openPO: 0,
                 goodsMovementId: null,
@@ -722,7 +711,7 @@
                 stockRecordId: 'STK-0567-001',
                 storage: 'Hat 2 Deposu',
                 location: 'A-02',
-                bin: 'Raf-08',
+                bin: 'Bin-08',
                 stockQty: 15,
                 uom: 'Adet',
                 currency: 'TRY',
@@ -731,7 +720,7 @@
                 totalValue: 4800.00,
                 costId: 'CC-PROD-001',
                 costingDate: '2025-12-10',
-                openMR: 1,
+                openMaterial Request: 1,
                 openSRM: 0,
                 openPO: 2,
                 goodsMovementId: null,
@@ -753,7 +742,7 @@
                 totalValue: 5180.00,
                 costId: 'CC-ELEC-001',
                 costingDate: '2025-12-12',
-                openMR: 0,
+                openMaterial Request: 0,
                 openSRM: 0,
                 openPO: 0,
                 goodsMovementId: 'GM-2025-00789',
@@ -764,9 +753,9 @@
                 materialNo: 'MAT-2024-0789',
                 materialTitle: 'Sızdırmazlık Contası DN100',
                 stockRecordId: 'STK-0789-001',
-                storage: 'Merkez Depo',
+                storage: 'Merkez Storage',
                 location: 'C-08',
-                bin: 'Raf-22',
+                bin: 'Bin-22',
                 stockQty: 150,
                 uom: 'Adet',
                 currency: 'TRY',
@@ -775,7 +764,7 @@
                 totalValue: 4275.00,
                 costId: 'CC-MAINT-001',
                 costingDate: '2025-12-05',
-                openMR: 5,
+                openMaterial Request: 5,
                 openSRM: 1,
                 openPO: 0,
                 goodsMovementId: null,
@@ -794,7 +783,7 @@
 
         // Warehouse mapping
         const warehouseMap = {
-            'central': 'Merkez Depo',
+            'central': 'Merkez Storage',
             'line1': 'Hat 1 Deposu',
             'line2': 'Hat 2 Deposu'
         };
@@ -912,7 +901,7 @@
             document.getElementById('displayTotalValue').textContent = material.totalValue.toLocaleString('tr-TR') + ' TRY';
             document.getElementById('displayCostId').textContent = material.costId;
             document.getElementById('displayCostingDate').textContent = material.costingDate || '-';
-            document.getElementById('displayOpenMR').textContent = material.openMR;
+            document.getElementById('displayOpenMaterial Request').textContent = material.openMaterial Request;
             document.getElementById('displayOpenSRM').textContent = material.openSRM;
             document.getElementById('displayOpenPO').textContent = material.openPO;
             document.getElementById('displayGoodsMovementId').textContent = material.goodsMovementId || 'Yeni oluşturulacak';
@@ -921,7 +910,7 @@
             // Auto-generate correction doc title
             const today = new Date().toLocaleDateString('tr-TR');
             document.getElementById('correctionDocTitle').value =
-                `Tekli Sayım - ${material.storage} - ${material.materialTitle} (${today})`;
+                `Tekli Counting - ${material.storage} - ${material.materialTitle} (${today})`;
 
             // Show counting section, hide search
             document.getElementById('searchSection').style.display = 'none';
@@ -933,7 +922,7 @@
 
         // Back to search button
         document.getElementById('backToSearch').addEventListener('click', function() {
-            if (confirm('Sayım formundan çıkmak istediğinize emin misiniz?\n\nGirilen veriler kaybolacak.')) {
+            if (confirm('Counting formundan çıkmak istediğinize emin misiniz?\n\nGirilen veriler kaybolacak.')) {
                 document.getElementById('searchSection').style.display = 'block';
                 document.getElementById('countingSection').style.display = 'none';
                 resetCountingForm();
@@ -963,7 +952,7 @@
             const reasonRequired = document.getElementById('reasonRequired');
 
             if (difference === 0) {
-                statusDiv.innerHTML = '<span class="badge badge-success">✅ Fark Yok</span>';
+                statusDiv.innerHTML = '<span class="badge badge-success">✅ Differences by quantity Yok</span>';
                 reasonRequired.style.display = 'none';
             } else if (difference > 0) {
                 statusDiv.innerHTML = `<span class="badge badge-warning">⬆️ Fazla: +${difference.toFixed(2)}</span>`;
@@ -987,16 +976,16 @@
             const correctionType = document.getElementById('correctionType').value;
             const reason = document.getElementById('countReason').value;
 
-            let message = `Sayım onaylanacak ve stok düzeltmesi yapılacak!\n\n`;
+            let message = `Counting onaylanacak ve stok düzeltmesi yapılacak!\n\n`;
             message += `Malzeme: ${selectedMaterial.materialNo} - ${selectedMaterial.materialTitle}\n`;
-            message += `Depo/Lokasyon: ${selectedMaterial.storage} - ${selectedMaterial.location} - ${selectedMaterial.bin}\n\n`;
-            message += `Sistem Stok: ${systemQty} ${selectedMaterial.uom}\n`;
-            message += `Sayım Değeri: ${countingValue} ${selectedMaterial.uom}\n`;
-            message += `Fark: ${difference.toFixed(2)} ${selectedMaterial.uom}\n\n`;
+            message += `Storage/Location: ${selectedMaterial.storage} - ${selectedMaterial.location} - ${selectedMaterial.bin}\n\n`;
+            message += `Sistem Stock: ${systemQty} ${selectedMaterial.uom}\n`;
+            message += `Counting value: ${countingValue} ${selectedMaterial.uom}\n`;
+            message += `Differences by quantity: ${difference.toFixed(2)} ${selectedMaterial.uom}\n\n`;
 
             if (difference !== 0) {
                 const differenceValue = difference * selectedMaterial.unitValue;
-                message += `Parasal Fark: ${differenceValue.toLocaleString('tr-TR')} ${selectedMaterial.currency}\n`;
+                message += `Parasal Differences by quantity: ${differenceValue.toLocaleString('tr-TR')} ${selectedMaterial.currency}\n`;
                 message += `Gerekçe: ${reason}\n\n`;
             }
 
@@ -1005,7 +994,7 @@
             if (confirm(message)) {
                 // Simulate API call
                 setTimeout(() => {
-                    alert(`✅ Sayım başarıyla kaydedildi!\n\nDüzeltme Doküman No: ${document.getElementById('correctionDocId').value}\n\nStok güncellendi:\n${systemQty} → ${countingValue} ${selectedMaterial.uom}`);
+                    alert(`✅ Counting başarıyla kaydedildi!\n\nCorrection document Id: ${document.getElementById('correctionDocId').value}\n\nStock güncellendi:\n${systemQty} → ${countingValue} ${selectedMaterial.uom}`);
 
                     // Reset and go back to search
                     document.getElementById('searchSection').style.display = 'block';
@@ -1020,7 +1009,7 @@
         document.getElementById('saveDraftButton').addEventListener('click', function() {
             const correctionDocId = document.getElementById('correctionDocId').value;
 
-            if (confirm('Sayım taslak olarak kaydedilecek.\n\nDaha sonra devam edebilirsiniz.\n\nDevam etmek istiyor musunuz?')) {
+            if (confirm('Counting taslak olarak kaydedilecek.\n\nDaha sonra devam edebilirsiniz.\n\nDevam etmek istiyor musunuz?')) {
                 alert(`💾 Taslak kaydedildi!\n\nDoküman No: ${correctionDocId}\n\nDaha sonra "Sayım İşlemleri" ekranından devam edebilirsiniz.`);
 
                 // Reset and go back to search
@@ -1032,7 +1021,7 @@
 
         // Cancel button
         document.getElementById('cancelButton').addEventListener('click', function() {
-            if (confirm('Sayım iptal edilecek!\n\nGirilen veriler kaybolacak.\n\nDevam etmek istiyor musunuz?')) {
+            if (confirm('Counting iptal edilecek!\n\nGirilen veriler kaybolacak.\n\nDevam etmek istiyor musunuz?')) {
                 document.getElementById('searchSection').style.display = 'block';
                 document.getElementById('countingSection').style.display = 'none';
                 resetCountingForm();
@@ -1067,7 +1056,7 @@
             }
 
             if (difference !== 0 && !reason) {
-                alert('⚠️ Fark tespit edildiği için gerekçe girmeniz zorunludur.');
+                alert('⚠️ Differences by quantity tespit edildiği için gerekçe girmeniz zorunludur.');
                 document.getElementById('countReason').focus();
                 return false;
             }
@@ -1084,7 +1073,7 @@
             document.getElementById('difference').value = '';
             document.getElementById('differenceValue').value = '';
             document.getElementById('countReason').value = '';
-            document.getElementById('differenceStatus').innerHTML = '<span class="badge badge-secondary">Sayım bekleniyor</span>';
+            document.getElementById('differenceStatus').innerHTML = '<span class="badge badge-secondary">Counting bekleniyor</span>';
             document.getElementById('reasonRequired').style.display = 'none';
 
             // Generate new correction doc ID
@@ -1134,5 +1123,98 @@
             document.getElementById('correctionDocId').value = newDocId;
         });
     </script>
+
+    <!-- DEVELOPER DOCUMENTATION PANEL -->
+    <div id="devDocsPanel" class="dev-docs-panel">
+        <button class="dev-docs-toggle" onclick="toggleDevDocs()">📋 Geliştirici Dokümantasyonu</button>
+        <div class="dev-docs-content" id="devDocsContent">
+            <div class="dev-docs-header">
+                <h2>📋 23 IC-SMC - Single Material Counting</h2>
+                <button class="dev-docs-close" onclick="toggleDevDocs()">✕</button>
+            </div>
+            <div class="dev-docs-body">
+                <div class="dev-docs-tabs">
+                    <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
+                    <button class="dev-tab" onclick="showDevTab('workflow')">İş Akışı</button>
+                </div>
+                <div id="dataStructure" class="dev-tab-content active">
+                    <h3>Inventory Counting Header Tablosu</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Uzunluk</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Inventory Counting Header Id</td><td>int</td><td>8</td><td>Primary key</td></tr>
+                            <tr><td>Correction type</td><td>char</td><td>1</td><td>Düzeltme tipi</td></tr>
+                            <tr><td>Creation date time</td><td>datetime</td><td>-</td><td>Oluşturma tarihi</td></tr>
+                            <tr><td>Created by user info</td><td>int</td><td>8</td><td>Oluşturan</td></tr>
+                            <tr><td>Created for user info</td><td>int</td><td>8</td><td>Sorumlu</td></tr>
+                            <tr><td>Counted by user info</td><td>int</td><td>8</td><td>Sayan kişi</td></tr>
+                            <tr><td>Entered by user info</td><td>int</td><td>8</td><td>Giren kişi</td></tr>
+                            <tr><td>Document group Id</td><td>int</td><td>8</td><td>Doküman grubu</td></tr>
+                            <tr><td>Correction finalized check</td><td>bool</td><td>-</td><td>Tamamlandı mı</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Inventory Counting Item Tablosu</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Uzunluk</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Inventory Counting item id</td><td>int</td><td>8</td><td>Primary key</td></tr>
+                            <tr><td>Inventory Counting item number</td><td>int</td><td>4</td><td>Sıra no</td></tr>
+                            <tr><td>Material number</td><td>text</td><td>13</td><td>Malzeme no</td></tr>
+                            <tr><td>Stock record Id</td><td>int</td><td>8</td><td>Stok kaydı ref.</td></tr>
+                            <tr><td>Stock quantity</td><td>float</td><td>15</td><td>Sistem stoğu</td></tr>
+                            <tr><td>Counting result quantity</td><td>float</td><td>15</td><td>Sayım sonucu</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="businessRules" class="dev-tab-content">
+                    <div class="rules-section">
+                        <h4>Tekli Sayım Kuralları</h4>
+                        <ul>
+                            <li>Spot check veya hızlı doğrulama için kullanılır</li>
+                            <li>Tek bir malzeme/stok kaydı seçilir</li>
+                            <li>Fark varsa gerekçe zorunludur</li>
+                            <li>Sayım onaylandığında stok otomatik güncellenir</li>
+                            <li>Taslak olarak kaydedilip sonra devam edilebilir</li>
+                        </ul>
+                    </div>
+                    <div class="rules-section">
+                        <h4>Fark Hesaplama</h4>
+                        <ul>
+                            <li><strong>Fark = Sayım Değeri - Sistem Stoğu</strong></li>
+                            <li>Pozitif fark: Fazla stok (Movement Type 8)</li>
+                            <li>Negatif fark: Eksik stok (Movement Type 9)</li>
+                            <li>Fark değeri = Fark miktarı × Birim fiyat</li>
+                        </ul>
+                    </div>
+                </div>
+                <div id="workflow" class="dev-tab-content">
+                    <div class="rules-section">
+                        <h4>İş Akışı</h4>
+                        <ol style="padding-left:20px;">
+                            <li>Malzeme arama (3+ karakter)</li>
+                            <li>Depo/Lokasyon filtresi (opsiyonel)</li>
+                            <li>Stok kaydı seçimi</li>
+                            <li>Fiziksel sayım girişi</li>
+                            <li>Fark varsa gerekçe girişi</li>
+                            <li>Sayım onayı veya taslak kaydet</li>
+                        </ol>
+                    </div>
+                    <div class="rules-section">
+                        <h4>Hareket Tipleri</h4>
+                        <table class="dev-table">
+                            <thead><tr><th>Kod</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                            <tbody>
+                                <tr><td>8</td><td>Inventory positive record</td><td>Fazla stok</td></tr>
+                                <tr><td>9</td><td>Inventory negative record</td><td>Eksik stok</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>.dev-docs-panel{position:fixed;bottom:0;left:0;right:0;z-index:9999;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}.dev-docs-toggle{width:100%;padding:12px 20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;cursor:pointer;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px}.dev-docs-toggle:hover{background:linear-gradient(135deg,#5a6fd6 0%,#6a4190 100%)}.dev-docs-content{display:none;background:#1a1a2e;color:#eee;max-height:70vh;overflow-y:auto}.dev-docs-content.active{display:block}.dev-docs-header{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;background:#16213e;border-bottom:2px solid #667eea}.dev-docs-header h2{margin:0;font-size:16px;color:#fff}.dev-docs-close{background:#e74c3c;color:#fff;border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px}.dev-docs-body{padding:20px}.dev-docs-tabs{display:flex;gap:10px;margin-bottom:20px;border-bottom:2px solid #333;padding-bottom:10px}.dev-tab{padding:8px 16px;background:#2d2d44;color:#aaa;border:none;border-radius:6px 6px 0 0;cursor:pointer;font-size:13px}.dev-tab.active,.dev-tab:hover{background:#667eea;color:#fff}.dev-tab-content{display:none}.dev-tab-content.active{display:block}.dev-table{width:100%;border-collapse:collapse;margin:15px 0;font-size:13px}.dev-table th,.dev-table td{padding:10px;text-align:left;border:1px solid #333}.dev-table th{background:#2d2d44;color:#667eea;font-weight:600}.dev-table tr:nth-child(even){background:#1f1f35}.rules-section{margin-bottom:20px}.rules-section h4{color:#667eea;margin-bottom:10px;font-size:14px}.rules-section ul,.rules-section ol{margin:0;padding-left:20px}.rules-section li{margin-bottom:6px;line-height:1.5;font-size:13px}</style>
+    <script>function toggleDevDocs(){document.getElementById('devDocsContent').classList.toggle('active')}function showDevTab(tabId){document.querySelectorAll('.dev-tab-content').forEach(c=>c.classList.remove('active'));document.querySelectorAll('.dev-tab').forEach(t=>t.classList.remove('active'));document.getElementById(tabId).classList.add('active');event.target.classList.add('active')}</script>
 </body>
 </html>

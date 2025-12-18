@@ -3,9 +3,189 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bütçe Detay - IMMA</title>
+    <title>Budget Detay - IMMA</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
+<!--
+================================================================================
+IMMA DEVELOPER DOCUMENTATION
+================================================================================
+
+SCREEN: 14 MB - Maintain Budget (Detail)
+FILE: budget-detail.html
+LAST UPDATED: 2025-12-18
+
+--------------------------------------------------------------------------------
+RELATED DATABASE TABLES
+--------------------------------------------------------------------------------
+
+TABLE: Budget
+| Field Name               | Type     | Length | Description                            |
+|--------------------------|----------|--------|----------------------------------------|
+| Budget Id                | int      | 8      | Primary key                            |
+| Year                     | int      | 4      | Bütçe yılı (2024, 2025...)             |
+| Month                    | int      | 2      | Ay (1-12), boş=yıllık bütçe            |
+| Week                     | int      | 2      | Hafta (1-52), boş=aylık bütçe          |
+| First day of the week    | date     | -      | Haftanın ilk günü (Pazartesi)          |
+| Value                    | float    | 15     | Bütçe değeri (EUR)                     |
+| Consumed value           | float    | 15     | Tüketilen değer (EUR)                  |
+| Open Value               | float    | 15     | READONLY = Value - Consumed value      |
+| Creation datetime        | datetime | -      | Oluşturma tarihi/saati                 |
+| Created by user info     | int      | 8      | Oluşturan kullanıcı ID                 |
+| Last change date time    | datetime | -      | Son değişiklik tarihi                  |
+| Last change user info    | int      | -      | Son değişiklik yapan kullanıcı         |
+| responsible SL           | int      | 8      | Sorumlu Shift Leader ID                |
+| Department               | text     | 8      | Departman kodu                         |
+| Days on the month        | int      | 1      | Ayın kaç günü bu haftada (1-6)         |
+| Days on the second month | int      | 1      | İkinci ayın kaç günü (yarım hafta)     |
+| Budget Closed check      | bool     | -      | Bütçe kapatıldı mı?                    |
+| Starting on previous month| bool    | -      | Önceki ayda başlayan hafta mı?         |
+| Half Week                | bool     | -      | Yarım hafta mı? (ay geçişi)            |
+
+--------------------------------------------------------------------------------
+BUDGET HIERARCHY (Bütçe Hiyerarşisi)
+--------------------------------------------------------------------------------
+
+LEVEL 1: Yıllık Departman Bütçesi
+- Year = 2025, Month = null, Week = null, SL = null
+- Tüm departman için yıllık toplam bütçe
+- Örnek: BAKIM departmanı 2025 yılı bütçesi = 500.000 EUR
+
+LEVEL 2: Aylık Departman Bütçesi
+- Year = 2025, Month = 1-12, Week = null, SL = null
+- Departmanın aylık bütçe payı
+- Yıllık bütçeden eşit veya oransal dağılım
+- Örnek: BAKIM Ocak 2025 = 45.000 EUR
+
+LEVEL 3: Aylık SL Bütçesi
+- Year = 2025, Month = 1-12, Week = null, SL = user_id
+- Her Shift Leader'ın aylık bütçesi
+- Aylık departman bütçesinden dağılım
+- Örnek: Mehmet Yılmaz (SL) Ocak 2025 = 15.000 EUR
+
+LEVEL 4: Haftalık SL Bütçesi
+- Year = 2025, Month = 1-12, Week = 1-52, SL = user_id
+- En detaylı seviye - talep kontrolü bu seviyede yapılır
+- Aylık SL bütçesinden dağılım
+- Örnek: Mehmet Yılmaz Hafta 3 = 3.500 EUR
+
+--------------------------------------------------------------------------------
+BUSINESS RULES (İş Kuralları)
+--------------------------------------------------------------------------------
+
+HAFTA-AY DAĞILIMI (KRİTİK):
+1. Hafta iki aya denk geliyorsa GÜNLERE GÖRE dağıtılır
+2. Dağılım hesaplamasında PAZAR HARİÇ (6 iş günü)
+3. Days on the month = Bu aydaki gün sayısı (1-6)
+4. Days on the second month = Diğer aydaki gün sayısı (1-6)
+5. Half Week = true ise yarım hafta bütçesi
+
+ÖRNEK HESAPLAMA:
+- Hafta 5: 27 Ocak - 2 Şubat (Pazar hariç 6 gün)
+- Ocak'ta: 4 gün (Pzt-Per)
+- Şubat'ta: 2 gün (Cum-Cmt)
+- Days on the month = 4, Days on the second month = 2
+- Half Week = true, Starting on previous month = false
+
+BÜTÇE DEĞİŞİKLİĞİ:
+1. Yöneticiler (Manager) istedikleri zaman değiştirebilir
+2. SL'ler kendi bütçelerini görebilir, DEĞİŞTİREMEZ
+3. Değişiklik geçmişi kaydedilir (Last change user info)
+4. Kapatılmış bütçe (Budget Closed check = true) DEĞİŞTİRİLEMEZ
+
+BÜTÇE AŞIMI:
+1. Talep toplam değeri > Open Value ise "Bütçe Aşımı"
+2. Budget Preference'a göre onay süreci tetiklenir
+3. Over budget value = Talep değeri - Open Value
+
+PARA BİRİMİ:
+- TÜM bütçeler EURO cinsindendir
+- Malzeme talepleri EUR'ya çevrilip kontrol edilir
+
+--------------------------------------------------------------------------------
+FIELD VALIDATIONS
+--------------------------------------------------------------------------------
+
+Zorunlu Alanlar:
+- Year: ZORUNLU (4 haneli)
+- Department: ZORUNLU (maxlength=8)
+- Value: ZORUNLU (>= 0)
+
+Koşullu Zorunlu:
+- Month: Aylık/haftalık bütçe için ZORUNLU (1-12)
+- Week: Haftalık bütçe için ZORUNLU (1-52)
+- responsible SL: SL bütçesi için ZORUNLU
+- First day of the week: Haftalık bütçe için ZORUNLU
+
+Hesaplanan Alanlar (READONLY):
+- Open Value = Value - Consumed value
+- Open Percentage = (Open Value / Value) * 100
+
+--------------------------------------------------------------------------------
+WORKFLOW / PROCESS FLOW
+--------------------------------------------------------------------------------
+
+YILLIK BÜTÇE OLUŞTURMA:
+1. Yıl ve departman seçilir
+2. Toplam bütçe değeri girilir (EUR)
+3. Kaydet → Yıllık bütçe kaydı oluşur
+4. Sonraki adım: Aylık dağılım
+
+AYLIK BÜTÇE DAĞILIMI:
+1. Yıllık bütçeden aylara dağılım yapılır
+2. Eşit dağılım veya oransal dağılım seçilebilir
+3. Aylık toplamlar = Yıllık toplam kontrolü yapılır
+
+SL BÜTÇE DAĞILIMI:
+1. Aylık departman bütçesinden SL'lere dağılım
+2. Her SL için ayrı kayıt oluşur
+3. SL toplamları = Aylık departman kontrolü
+
+HAFTALIK BÜTÇE:
+1. Aylık SL bütçesinden haftalara dağılım
+2. Hafta-ay geçişleri için günlük hesaplama
+3. Haftalık toplamlar = Aylık SL kontrolü
+
+BÜTÇE DÜZENLEME:
+1. Mevcut kayıt seçilir
+2. Value değeri değiştirilir
+3. Open Value otomatik güncellenir
+4. Last change bilgileri kaydedilir
+
+BÜTÇE KAPATMA:
+1. Dönem sonu geldiğinde bütçe kapatılabilir
+2. Budget Closed check = true
+3. Kapatılan bütçe DEĞİŞTİRİLEMEZ
+4. Kalan Open Value raporda görünür
+
+--------------------------------------------------------------------------------
+INTEGRATION NOTES
+--------------------------------------------------------------------------------
+
+Material Request Integration:
+- Talep oluşturulurken haftalık SL bütçesi kontrol edilir
+- Bütçe aşımı durumunda onay süreci tetiklenir
+- Onaylanan talep Consumed value'yu artırır
+- İptal edilen talep Consumed value'yu azaltır
+
+Budget Preference Integration:
+- Department bazında onay kuralları tanımlanır
+- Bütçe aşımı davranışı belirlenir
+- Budget Approval request Type (1-6)
+
+Reporting Integration:
+- Yıllık/aylık/haftalık bütçe raporları
+- Departman bazında kullanım raporları
+- SL bazında performans raporları
+- Bütçe aşımı istatistikleri
+
+SAP Integration (Opsiyonel):
+- SAP CO (Controlling) modülü ile senkronizasyon
+- Cost Center bazında bütçe eşleştirme
+- Mali dönem sonunda mutabakat
+
+================================================================================
+-->
 <body>
     <!-- NAVBAR - Top Navigation (Maximo Style) -->
     <nav class="modern-navbar">
@@ -57,7 +237,7 @@
                 <li class="nav-item">
                     <a href="budget-management.html" class="nav-link active">
                         <span class="nav-icon">💰</span>
-                        Bütçe
+                        Budget
                     </a>
                     <div class="dropdown-menu">
                         <a href="budget-management.html" class="dropdown-item active">Bütçe Yönetimi</a>
@@ -76,7 +256,7 @@
                 <li class="nav-item">
                     <a href="transfer-list.html" class="nav-link">
                         <span class="nav-icon">🏭</span>
-                        Stok
+                        Stock
                     </a>
                     <div class="dropdown-menu">
                         <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
@@ -99,8 +279,8 @@
     <main class="modern-container">
         <div class="page-header">
             <div>
-                <h1 class="page-title" id="pageTitle">Bütçe Detay</h1>
-                <p class="page-subtitle">Bütçe > Bütçe Yönetimi > <span id="breadcrumbAction">Görüntüle</span></p>
+                <h1 class="page-title" id="pageTitle">Budget Detay</h1>
+                <p class="page-subtitle">Budget > Bütçe Yönetimi > <span id="breadcrumbAction">Görüntüle</span></p>
             </div>
             <div class="page-actions">
                 <a href="budget-management.html" class="btn btn-outline">← Listeye Dön</a>
@@ -111,7 +291,7 @@
         <!-- Budget Form -->
         <div class="card">
             <div class="card-header">
-                <h3 id="formTitle">Bütçe Bilgileri</h3>
+                <h3 id="formTitle">Budget Information</h3>
             </div>
             <div class="card-body">
                 <form id="budgetForm">
@@ -149,12 +329,12 @@
                         <div class="form-group col-2">
                             <label>Week</label>
                             <select class="form-control" id="budgetWeek">
-                                <option value="">Tümü</option>
-                                <option value="1">Hafta 1</option>
-                                <option value="2">Hafta 2</option>
-                                <option value="3">Hafta 3</option>
-                                <option value="4">Hafta 4</option>
-                                <option value="5">Hafta 5</option>
+                                <option value="">-</option>
+                                <script>
+                                    for(let i=1; i<=52; i++) {
+                                        document.write('<option value="'+i+'">Week '+i+'</option>');
+                                    }
+                                </script>
                             </select>
                         </div>
                         <div class="form-group col-3">
@@ -194,36 +374,36 @@
                             <label>Budget Closed</label>
                             <div style="padding-top: 8px;">
                                 <input type="checkbox" id="budgetClosed" style="width: auto; margin-right: 8px;">
-                                <label for="budgetClosed" style="display: inline; font-weight: normal;">Kapalı</label>
+                                <label for="budgetClosed" style="display: inline; font-weight: normal;">Closed</label>
                             </div>
                         </div>
                         <div class="form-group col-3">
-                            <label>Last Change By</label>
+                            <label>Last change user info</label>
                             <input type="text" class="form-control" id="lastChangeBy" readonly>
                         </div>
                         <div class="form-group col-3">
-                            <label>Last Change Date/Time</label>
+                            <label>Last change date time</label>
                             <input type="text" class="form-control" id="lastChangeDateTime" readonly>
                         </div>
                     </div>
 
-                    <h4 style="margin-top: 20px; margin-bottom: 15px;">Aylık Bütçe Dağılımı</h4>
+                    <h4 style="margin-top: 20px; margin-bottom: 15px;">Aylık Budget Dağılımı</h4>
                     <div style="overflow-x: auto;">
                         <table class="table table-sm">
                             <thead>
                                 <tr>
-                                    <th>Oca</th>
-                                    <th>Şub</th>
+                                    <th>Jan</th>
+                                    <th>Feb</th>
                                     <th>Mar</th>
-                                    <th>Nis</th>
+                                    <th>Apr</th>
                                     <th>May</th>
-                                    <th>Haz</th>
-                                    <th>Tem</th>
-                                    <th>Ağu</th>
-                                    <th>Eyl</th>
-                                    <th>Eki</th>
-                                    <th>Kas</th>
-                                    <th>Ara</th>
+                                    <th>Jun</th>
+                                    <th>Jul</th>
+                                    <th>Aug</th>
+                                    <th>Sep</th>
+                                    <th>Oct</th>
+                                    <th>Nov</th>
+                                    <th>Dec</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -259,10 +439,6 @@
         </div>
 
         <!-- Database Schema Info -->
-        <div class="dev-note success">
-            <h4>Veritabanı Yapısı (Data Structure IMMA.xlsx)</h4>
-            <p><strong>Budget Tablosu:</strong> Budget Id, Year, Month, Week, Value, Consumed value, Open Value, Department, Budget Closed check, responsible SL</p>
-        </div>
     </main>
 
     <style>
@@ -286,80 +462,81 @@
     <script>
         // Sample budget data (backend'den gelecek)
         const budgets = {
-            'BUD-2025-001': {
+            // Numeric IDs (from budget-management.html)
+            '12345678': {
                 budgetId: '12345678',
                 year: '2025',
                 month: '',
                 week: '',
                 department: 'URETIM',
-                value: 500000,
-                consumedValue: 375000,
-                openValue: 125000,
-                responsibleSL: 'Mehmet Demir',
+                value: 1000000,
+                consumedValue: 750000,
+                openValue: 250000,
+                responsibleSL: '',
                 closed: false,
-                lastChangeBy: 'Yasin Taşdelen - FIPC',
+                lastChangeBy: 'Yasin Taşdelen',
                 lastChangeDateTime: '17.09.2025 17:18',
-                monthly: [45000, 40000, 42000, 38000, 40000, 35000, 38000, 42000, 45000, 48000, 42000, 45000]
+                monthly: [90000, 80000, 84000, 76000, 80000, 70000, 76000, 84000, 90000, 96000, 84000, 90000]
             },
-            'BUD-2025-002': {
+            '12345679': {
                 budgetId: '12345679',
                 year: '2025',
-                month: '',
+                month: '1',
                 week: '',
-                department: 'BAKIM',
-                value: 300000,
-                consumedValue: 294000,
-                openValue: 6000,
-                responsibleSL: 'Ali Yılmaz',
-                closed: false,
-                lastChangeBy: 'Yasin Taşdelen - FIPC',
-                lastChangeDateTime: '17.09.2025 17:18',
-                monthly: [25000, 24000, 26000, 23000, 25000, 22000, 24000, 26000, 28000, 30000, 24000, 23000]
+                department: 'URETIM',
+                value: 75000,
+                consumedValue: 75000,
+                openValue: 0,
+                responsibleSL: 'Ahmet Yılmaz',
+                closed: true,
+                lastChangeBy: 'Ahmet Yılmaz',
+                lastChangeDateTime: '31.01.2025 17:00',
+                monthly: [75000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             },
-            'BUD-2025-003': {
-                budgetId: '12345680',
-                year: '2025',
-                month: '',
-                week: '',
-                department: 'KALITE',
-                value: 150000,
-                consumedValue: 94500,
-                openValue: 55500,
-                responsibleSL: 'Ayşe Kaya',
-                closed: false,
-                lastChangeBy: 'Yasin Taşdelen - FIPC',
-                lastChangeDateTime: '17.09.2025 17:18',
-                monthly: [12500, 12000, 13000, 11500, 12500, 11000, 12000, 13000, 13500, 14000, 12000, 13000]
-            },
-            'BUD-2025-004': {
+            '12345681': {
                 budgetId: '12345681',
                 year: '2025',
-                month: '',
-                week: '',
-                department: 'LOJISTIK',
-                value: 2000000,
-                consumedValue: 1600000,
-                openValue: 400000,
-                responsibleSL: 'Fatma Öz',
-                closed: false,
-                lastChangeBy: 'Yasin Taşdelen - FIPC',
-                lastChangeDateTime: '17.09.2025 17:18',
-                monthly: [180000, 160000, 170000, 155000, 165000, 150000, 160000, 170000, 180000, 190000, 165000, 155000]
-            },
-            'BUD-2025-005': {
-                budgetId: '12345682',
-                year: '2025',
-                month: '',
-                week: '',
-                department: 'ARASTIRMA',
-                value: 50000,
-                consumedValue: 52000,
-                openValue: -2000,
-                responsibleSL: 'Kemal Aydın',
+                month: '3',
+                week: '10',
+                department: 'URETIM',
+                value: 75000,
+                consumedValue: 80000,
+                openValue: -5000,
+                responsibleSL: 'Mustafa Kara',
                 closed: true,
-                lastChangeBy: 'Yasin Taşdelen - FIPC',
+                lastChangeBy: 'Mustafa Kara',
+                lastChangeDateTime: '31.03.2025 17:00',
+                monthly: [0, 0, 75000, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            },
+            '12345800': {
+                budgetId: '12345800',
+                year: '2025',
+                month: '12',
+                week: '',
+                department: 'BAKIM',
+                value: 500000,
+                consumedValue: 420000,
+                openValue: 80000,
+                responsibleSL: '',
+                closed: false,
+                lastChangeBy: 'Yasin Taşdelen',
                 lastChangeDateTime: '17.09.2025 17:18',
-                monthly: [4500, 4000, 4200, 3800, 4000, 3500, 3800, 4200, 4500, 4800, 4200, 4500]
+                monthly: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 500000]
+            },
+            '12345901': {
+                budgetId: '12345901',
+                year: '2025',
+                month: '11',
+                week: '48',
+                department: 'KALITE',
+                value: 8000,
+                consumedValue: 8500,
+                openValue: -500,
+                responsibleSL: 'Zeynep Arslan',
+                closed: true,
+                lastChangeBy: 'Zeynep Arslan',
+                lastChangeDateTime: '30.11.2025 17:00',
+                monthly: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8000, 0]
             }
         };
 
@@ -380,9 +557,9 @@
 
             switch(mode) {
                 case 'view':
-                    document.getElementById('pageTitle').textContent = 'Bütçe Görüntüle';
+                    document.getElementById('pageTitle').textContent = 'Budget Görüntüle';
                     document.getElementById('breadcrumbAction').textContent = 'Görüntüle';
-                    document.getElementById('formTitle').textContent = 'Bütçe Bilgileri (Salt Okunur)';
+                    document.getElementById('formTitle').textContent = 'Budget Information (Read Only)';
                     document.getElementById('editModeBtn').style.display = 'inline-block';
                     document.getElementById('formActions').style.display = 'none';
                     document.getElementById('monthlyActions').style.display = 'none';
@@ -407,9 +584,9 @@
                     break;
 
                 case 'edit':
-                    document.getElementById('pageTitle').textContent = 'Bütçe Düzenle';
+                    document.getElementById('pageTitle').textContent = 'Budget Düzenle';
                     document.getElementById('breadcrumbAction').textContent = 'Düzenle';
-                    document.getElementById('formTitle').textContent = 'Bütçe Düzenleme';
+                    document.getElementById('formTitle').textContent = 'Budget Düzenleme';
                     document.getElementById('editModeBtn').style.display = 'none';
                     document.getElementById('formActions').style.display = 'flex';
                     document.getElementById('monthlyActions').style.display = 'block';
@@ -431,9 +608,9 @@
                     break;
 
                 case 'create':
-                    document.getElementById('pageTitle').textContent = 'Yeni Bütçe Oluştur';
+                    document.getElementById('pageTitle').textContent = 'Yeni Budget Oluştur';
                     document.getElementById('breadcrumbAction').textContent = 'Yeni';
-                    document.getElementById('formTitle').textContent = 'Yeni Bütçe';
+                    document.getElementById('formTitle').textContent = 'Yeni Budget';
                     document.getElementById('editModeBtn').style.display = 'none';
                     document.getElementById('formActions').style.display = 'flex';
                     document.getElementById('monthlyActions').style.display = 'block';
@@ -456,7 +633,7 @@
             }
         }
 
-        // Bütçe verilerini forma yükle
+        // Budget verilerini forma yükle
         function loadBudgetData(budget) {
             document.getElementById('budgetId').value = budget.budgetId;
             document.getElementById('budgetYear').value = budget.year;
@@ -533,7 +710,7 @@
             }
 
             const action = mode === 'create' ? 'oluşturuldu' : 'güncellendi';
-            alert(`Bütçe ${action}!\n\nBudget Id: ${budgetData.budgetId}\nYear: ${budgetData.year}\nDepartment: ${budgetData.department}\nValue: ${budgetData.value}\n\n(Backend entegrasyonu ile çalışacak)`);
+            alert(`Budget ${action}!\n\nBudget Id: ${budgetData.budgetId}\nYear: ${budgetData.year}\nDepartment: ${budgetData.department}\nValue: ${budgetData.value}\n\n(Backend entegrasyonu ile çalışacak)`);
 
             // Liste sayfasına dön
             window.location.href = 'budget-management.html';
@@ -541,6 +718,84 @@
 
         // Sayfa yüklendiğinde başlat
         document.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+
+    <!-- DEVELOPER DOCUMENTATION PANEL -->
+    <div id="devDocsPanel" class="dev-docs-panel">
+        <button class="dev-docs-toggle" onclick="toggleDevDocs()">📋 Geliştirici Dokümantasyonu</button>
+        <div class="dev-docs-content" id="devDocsContent">
+            <div class="dev-docs-header">
+                <h2>📋 14 MB - Maintain Budget (Detail)</h2>
+                <button class="dev-docs-close" onclick="toggleDevDocs()">✕</button>
+            </div>
+            <div class="dev-docs-body">
+                <div class="dev-docs-tabs">
+                    <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
+                </div>
+                <div id="dataStructure" class="dev-tab-content active">
+                    <h3>Budget Tablosu</h3>
+                    <table class="dev-table"><thead><tr><th>Field Name</th><th>Type</th><th>Length</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td>Budget Id</td><td>int</td><td>8</td><td>Primary key</td></tr>
+                            <tr><td>Year</td><td>int</td><td>4</td><td>Bütçe yılı</td></tr>
+                            <tr><td>Month</td><td>int</td><td>2</td><td>Ay (1-12, null=yıllık)</td></tr>
+                            <tr><td>Week</td><td>int</td><td>2</td><td>Hafta (1-52, null=aylık)</td></tr>
+                            <tr><td>Value</td><td>float</td><td>15</td><td>Bütçe değeri (EUR)</td></tr>
+                            <tr><td>Consumed value</td><td>float</td><td>15</td><td>Tüketilen değer</td></tr>
+                            <tr><td>Open Value</td><td>float</td><td>15</td><td>READONLY: Value - Consumed</td></tr>
+                            <tr><td>responsible SL</td><td>int</td><td>8</td><td>Sorumlu SL ID</td></tr>
+                            <tr><td>Department</td><td>text</td><td>8</td><td>Departman kodu</td></tr>
+                            <tr><td>Budget Closed check</td><td>bool</td><td>-</td><td>Kapatıldı mı?</td></tr>
+                            <tr><td>Half Week</td><td>bool</td><td>-</td><td>Yarım hafta</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="businessRules" class="dev-tab-content">
+                    <h3>İş Kuralları</h3>
+                    <div class="rules-section">
+                        <h4>💰 Bütçe Hesaplama</h4>
+                        <ul>
+                            <li>Tüm değerler <strong>Euro cinsindendir</strong></li>
+                            <li>Open Value = Value - Consumed value (readonly)</li>
+                            <li>Aylık dağılım ekranında görüntülenir</li>
+                        </ul>
+                        <h4>📅 Hafta-Ay Dağılımı</h4>
+                        <ul>
+                            <li>Hafta iki aya denk gelirse günlere göre bölünür</li>
+                            <li>Pazar hariç 6 iş günü hesaplanır</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>
+        .dev-docs-panel{position:fixed;bottom:0;left:0;right:0;z-index:9999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+        .dev-docs-toggle{position:absolute;bottom:100%;right:20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;padding:10px 20px;border-radius:8px 8px 0 0;cursor:pointer;font-weight:600;font-size:14px;box-shadow:0 -2px 10px rgba(0,0,0,0.2)}
+        .dev-docs-content{display:none;background:#1a1a2e;color:#eee;max-height:60vh;overflow-y:auto;box-shadow:0 -5px 20px rgba(0,0,0,0.3)}
+        .dev-docs-content.active{display:block}
+        .dev-docs-header{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);position:sticky;top:0}
+        .dev-docs-header h2{margin:0;font-size:18px}
+        .dev-docs-close{background:rgba(255,255,255,0.2);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px}
+        .dev-docs-body{padding:20px}
+        .dev-docs-tabs{display:flex;gap:10px;margin-bottom:20px;border-bottom:1px solid #333;padding-bottom:10px}
+        .dev-tab{background:#2d2d44;color:#aaa;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;transition:all 0.3s}
+        .dev-tab:hover,.dev-tab.active{background:#667eea;color:#fff}
+        .dev-tab-content{display:none}
+        .dev-tab-content.active{display:block}
+        .dev-table{width:100%;border-collapse:collapse;margin:15px 0;font-size:13px}
+        .dev-table th,.dev-table td{padding:10px;text-align:left;border:1px solid #333}
+        .dev-table th{background:#2d2d44;color:#667eea;font-weight:600}
+        .dev-table tr:nth-child(even){background:#252538}
+        .dev-docs-body h3{color:#667eea;margin:20px 0 10px;font-size:16px;border-bottom:1px solid #333;padding-bottom:5px}
+        .dev-docs-body h4{color:#9580ff;margin:15px 0 8px;font-size:14px}
+        .dev-docs-body ul{margin:0 0 15px 20px;line-height:1.8}
+        .rules-section{background:#252538;padding:15px;border-radius:8px}
+    </style>
+    <script>
+        function toggleDevDocs(){document.getElementById('devDocsContent').classList.toggle('active')}
+        function showDevTab(tabId){document.querySelectorAll('.dev-tab-content').forEach(c=>c.classList.remove('active'));document.querySelectorAll('.dev-tab').forEach(t=>t.classList.remove('active'));document.getElementById(tabId).classList.add('active');event.target.classList.add('active')}
     </script>
 </body>
 </html>

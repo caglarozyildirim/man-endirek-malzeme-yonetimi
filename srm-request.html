@@ -6,6 +6,129 @@
     <title>SRM Talebi - IMMA</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
+<!--
+================================================================================
+IMMA DEVELOPER DOCUMENTATION
+================================================================================
+
+SCREEN: 10 SRM RC - SRM Request Creation
+FILE: srm-request.html
+LAST UPDATED: 2025-12-18
+
+--------------------------------------------------------------------------------
+RELATED DATABASE TABLES
+--------------------------------------------------------------------------------
+
+TABLE: SRM Request Header
+| Field Name              | Type     | Length | Description                       |
+|-------------------------|----------|--------|-----------------------------------|
+| SRM Request number      | int      | 12     | Primary key - Otomatik oluşturulur|
+| Supplier id             | int      | 8      | Tedarikçi ID (FK)                 |
+| Created by user info    | int      | 8      | Oluşturan kullanıcı ID            |
+| Creation date time      | datetime | -      | Oluşturma tarihi/saati            |
+| Order date              | date     | -      | Sipariş tarihi                    |
+| Expected delivery date  | date     | -      | Beklenen teslimat tarihi          |
+| Currency Code           | text     | 3      | Para birimi (EUR, USD, TRY)       |
+| Contract number         | int      | 10     | Sözleşme numarası (varsa)         |
+| SRM Number              | int      | 10     | SAP SRM numarası                  |
+
+TABLE: SRM Request Item
+| Field Name                        | Type     | Length | Description                    |
+|-----------------------------------|----------|--------|--------------------------------|
+| SRM Request item id               | int      | 16     | Primary key                    |
+| SRM Request number                | int      | 12     | Header referansı (FK)          |
+| Material Number                   | text     | 13     | Malzeme numarası               |
+| unit of measure code              | text     | 3      | Ölçü birimi                    |
+| Order Quantity                    | float    | 15     | Sipariş miktarı                |
+| Item Prize                        | float    | 14     | Birim fiyatı                   |
+| Supplier Material info record Id  | int      | 8      | Info record referansı          |
+| Created by user info              | int      | 8      | Oluşturan kullanıcı            |
+| Creation date time                | datetime | -      | Oluşturma tarihi               |
+| SRM ItemNumber                    | int      | 4      | Satır numarası                 |
+| Ordered quantity                  | float    | 14     | Siparişe dönüşen miktar        |
+| Request closed check box          | bool     | -      | Talep kapatıldı mı?            |
+
+TABLE: Supplier Material Info Record (Tedarikçi-Malzeme ilişkisi)
+| Field Name                | Type     | Length | Description                       |
+|---------------------------|----------|--------|-----------------------------------|
+| Info record Id            | int      | 8      | Primary key                       |
+| Supplier Id               | int      | 8      | Tedarikçi ID                      |
+| Material Number           | text     | 13     | Malzeme numarası                  |
+| Unit price                | float    | 14     | Birim fiyat                       |
+| Currency code             | text     | 3      | Para birimi                       |
+| Contract number           | int      | 10     | Sözleşme numarası                 |
+| Contract start date       | date     | -      | Sözleşme başlangıç               |
+| Contract end date         | date     | -      | Sözleşme bitiş                    |
+| Preferred order           | int      | 2      | Öncelik sırası (1=birincil)       |
+| Inactivation check        | bool     | -      | İnaktif mi?                       |
+| Lead time (business days) | int      | 4      | Tedarik süresi (iş günü)          |
+
+--------------------------------------------------------------------------------
+BUSINESS RULES (İş Kuralları)
+--------------------------------------------------------------------------------
+
+TEDARİKÇİ SEÇİMİ:
+1. Birincil tedarikçi: Preferred order en DÜŞÜK değerli info record
+2. Aynı malzeme için birden fazla tedarikçi tanımlanabilir
+3. Sözleşmeli tedarikçi önceliklidir
+4. İnaktif info record kullanılamaz
+
+SRM OLUŞTURMA KURALLARI:
+1. SRM'ler TEDARİKÇİ ve SÖZLEŞME bazında gruplanır
+2. Aynı tedarikçi + aynı sözleşme = TEK SRM
+3. Sözleşmeli ve sözleşmesiz malzemeler AYRI SRM'de olmalı
+4. Farklı tedarikçiler = AYRI SRM'ler
+
+FİYAT DEĞİŞİKLİĞİ:
+1. Info record fiyatı değiştirilirse:
+   - Mevcut info record İNAKTİF yapılır
+   - YENİ info record oluşturulur
+2. Fiyat geçmişi böylece korunur
+3. Sözleşme bitiş tarihi geçmişse info record otomatik İNAKTİF
+
+SÖZLEŞME KURALLARI:
+1. Sözleşme numarası = SAP sözleşme referansı
+2. Contract end date < bugün ise info record kullanılamaz
+3. Sözleşmeli malzeme fiyatı sözleşmeden gelir
+
+MRP ENTEGRASYONU:
+1. MRP SRM Suggestion oluşturur
+2. Suggestion'lar SRM'ye dönüştürülür
+3. Transferred = true olunca suggestion kapatılır
+
+--------------------------------------------------------------------------------
+FIELD VALIDATIONS
+--------------------------------------------------------------------------------
+
+- SRM Request number: maxlength=12, READONLY, otomatik
+- Supplier id: ZORUNLU
+- Order date: ZORUNLU, >= bugün
+- Expected delivery date: >= Order date
+- Currency Code: maxlength=3, ZORUNLU
+- Material Number: maxlength=13, ##.#####-#### formatı
+- Order Quantity: > 0, ZORUNLU
+- Item Prize: >= 0
+
+--------------------------------------------------------------------------------
+WORKFLOW / PROCESS FLOW
+--------------------------------------------------------------------------------
+
+SRM OLUŞTURMA:
+1. MRP'den veya manuel SRM başlatılır
+2. Tedarikçi seçilir (veya otomatik atanır)
+3. Malzemeler eklenir (info record'dan fiyat gelir)
+4. Miktarlar girilir
+5. Beklenen teslimat tarihi girilir
+6. SRM kaydedilir → SAP'a gönderilir
+7. SAP SRM numarası alınır
+
+SAP ENTEGRASYONU:
+- SRM kaydı SAP ME21N ile oluşturulur
+- PO oluşturulunca SRM'den PO'ya link
+- SRM Number = SAP numarası
+
+================================================================================
+-->
 <body>
     <!-- ============================================
          NAVBAR - Top Navigation (Maximo Style)
@@ -59,7 +182,7 @@
                 <li class="nav-item">
                     <a href="budget-management.html" class="nav-link">
                         <span class="nav-icon">💰</span>
-                        Bütçe
+                        Budget
                     </a>
                     <div class="dropdown-menu">
                         <a href="budget-management.html" class="dropdown-item">Bütçe Yönetimi</a>
@@ -78,7 +201,7 @@
                 <li class="nav-item">
                     <a href="transfer-list.html" class="nav-link">
                         <span class="nav-icon">🏭</span>
-                        Stok
+                        Stock
                     </a>
                     <div class="dropdown-menu">
                         <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
@@ -113,65 +236,41 @@
         </div>
 
         <!-- Developer Notes -->
-        <div class="dev-note info">
-            <h4>Ekran Bilgisi: 10 SRM RC - SRM Request Creation</h4>
-            <p><strong>URL Modes:</strong></p>
-            <ul>
-                <li><strong>?mode=create:</strong> Yeni talep oluşturma (tüm alanlar boş, form editable)</li>
-                <li><strong>?id=xxx&mode=edit:</strong> Mevcut talep düzenleme (veriler yüklü, form editable)</li>
-                <li><strong>?id=xxx&mode=view:</strong> Talep görüntüleme (veriler yüklü, tüm alanlar readonly)</li>
-            </ul>
-            <p><strong>Fonksiyonlar:</strong></p>
-            <ul>
-                <li>a) Dogrudan Talep Olusturma</li>
-                <li>b) SRM Onerisinden Talep Olusturma</li>
-                <li>c) Tedarikci ve Bilgi Kaydi Secimi</li>
-                <li>d) Malzeme Arama ve Secimi</li>
-                <li>e) Otomatik Toplam Hesaplama</li>
-                <li>f) Butce Kontrolu</li>
-            </ul>
-            <p><strong>Action Buttons:</strong></p>
-            <ul>
-                <li><strong>Kaydet:</strong> Talebi gönder (onay akışı başlar)</li>
-                <li><strong>Taslak Kaydet:</strong> Taslak olarak kaydet (daha sonra düzenlenebilir)</li>
-                <li><strong>İptal:</strong> Formu iptal et ve srm-list.html'e dön</li>
-            </ul>
-        </div>
 
         <!-- ============================================
              SECTION 1: SRM REQUEST HEADER
              ============================================ -->
         <div class="card">
             <div class="card-header">
-                <h3>SRM Talep Başlığı</h3>
+                <h3>SRM Request Header</h3>
             </div>
             <div class="card-body">
                 <div class="form-row">
                     <div class="form-group col-3">
-                        <label>Talep No</label>
-                        <input type="text" id="requestNo" class="form-control" value="SRM-2025-000456" readonly>
+                        <label>SRM Request number</label>
+                        <input type="text" id="requestNo" class="form-control" maxlength="12" value="SRM-2025-000456" readonly>
                         <small class="form-hint">Otomatik oluşturulur</small>
                     </div>
                     <div class="form-group col-3">
-                        <label>Talep Tarihi <span class="required">*</span></label>
-                        <input type="date" id="requestDate" class="form-control" value="2025-12-15">
+                        <label>Creation date time <span class="required">*</span></label>
+                        <input type="datetime-local" id="requestDate" class="form-control" value="2025-12-15T09:30">
                     </div>
                     <div class="form-group col-3">
-                        <label>Talep Eden</label>
+                        <label>Created by user info</label>
                         <input type="text" id="requestor" class="form-control" value="Mehmet Demir" readonly>
                     </div>
                     <div class="form-group col-3">
-                        <label>Durum</label>
+                        <label>Status</label>
                         <input type="text" id="status" class="form-control" value="Taslak" readonly>
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group col-3">
-                        <label>Departman</label>
+                        <label>Department</label>
                         <input type="text" id="department" class="form-control" value="Üretim - Boyahane" readonly>
                     </div>
                     <div class="form-group col-3">
-                        <label>Öncelik <span class="required">*</span></label>
+                        <label>Priority <span class="required">*</span></label>
                         <select class="form-control" id="prioritySelect">
                             <option value="1">1 - Düşük</option>
                             <option value="2" selected>2 - Normal</option>
@@ -180,7 +279,7 @@
                         </select>
                     </div>
                     <div class="form-group col-3">
-                        <label>Maliyet Merkezi <span class="required">*</span></label>
+                        <label>Cost Center <span class="required">*</span></label>
                         <select class="form-control" id="costCenterSelect">
                             <option value="">Seçiniz...</option>
                             <option value="CC001" selected>CC001 - Üretim</option>
@@ -190,14 +289,14 @@
                         </select>
                     </div>
                     <div class="form-group col-3">
-                        <label>İstenen Teslim Tarihi <span class="required">*</span></label>
+                        <label>Expected delivery date <span class="required">*</span></label>
                         <input type="date" id="deliveryDate" class="form-control" min="2025-12-22">
                     </div>
                 </div>
                 <!-- Row 3: Currency and SRM Number - Data Structure 10 SRM RC -->
                 <div class="form-row">
                     <div class="form-group col-3">
-                        <label>Para Birimi <span class="required">*</span></label>
+                        <label>Currency <span class="required">*</span></label>
                         <select class="form-control" id="currencyCode">
                             <option value="TRY" selected>TRY - Türk Lirası</option>
                             <option value="EUR">EUR - Euro</option>
@@ -206,17 +305,17 @@
                         <small class="form-hint">Currency code (text, 3)</small>
                     </div>
                     <div class="form-group col-3">
-                        <label>SRM Numarası</label>
+                        <label>SRM Number</label>
                         <input type="text" id="srmNumber" class="form-control" readonly placeholder="SAP entegrasyonu sonrası">
                         <small class="form-hint">SRM Number (int, 10)</small>
                     </div>
                     <div class="form-group col-3">
-                        <label>Sipariş Tarihi</label>
+                        <label>Order Date</label>
                         <input type="date" id="orderDate" class="form-control">
                         <small class="form-hint">Order date</small>
                     </div>
                     <div class="form-group col-3">
-                        <label>Beklenen Teslim Tarihi</label>
+                        <label>Expected delivery date</label>
                         <input type="date" id="expectedDeliveryDate" class="form-control">
                         <small class="form-hint">Expected delivery date</small>
                     </div>
@@ -229,12 +328,12 @@
              ============================================ -->
         <div class="card">
             <div class="card-header">
-                <h3>Tedarikçi Bilgileri</h3>
+                <h3>Supplier Information</h3>
             </div>
             <div class="card-body">
                 <div class="form-row">
                     <div class="form-group col-3">
-                        <label>Tedarikçi SAP No <span class="required">*</span></label>
+                        <label>Supplier SAP No <span class="required">*</span></label>
                         <div class="supplier-autocomplete">
                             <input type="text" id="supplierSapNo" class="form-control" placeholder="SAP No veya ünvan yazın..." autocomplete="off">
                             <div class="supplier-dropdown" id="supplierDropdown">
@@ -244,12 +343,12 @@
                         <small class="form-hint">Yazmaya başlayın - dinamik arama</small>
                     </div>
                     <div class="form-group col-4">
-                        <label>Tedarikçi Ünvan 1</label>
+                        <label>Supplier Title 1</label>
                         <input type="text" id="supplierTitle1" class="form-control" readonly placeholder="Tedarikçi seçildiğinde otomatik dolar">
                         <small class="form-hint">Supplier title 1 (text, 50)</small>
                     </div>
                     <div class="form-group col-4">
-                        <label>Tedarikçi Ünvan 2</label>
+                        <label>Supplier Title 2</label>
                         <input type="text" id="supplierTitle2" class="form-control" readonly placeholder="Tedarikçi seçildiğinde otomatik dolar">
                         <small class="form-hint">Supplier title 2 (text, 50)</small>
                     </div>
@@ -262,32 +361,32 @@
              ============================================ -->
         <div class="card">
             <div class="card-header">
-                <h3>Kontrat Bilgileri</h3>
+                <h3>Contract Information</h3>
             </div>
             <div class="card-body">
                 <div class="form-row">
                     <div class="form-group col-3">
-                        <label>Kontrat Numarası</label>
+                        <label>Contract number</label>
                         <input type="text" id="contractNumber" class="form-control" value="CNT-2025-00123" readonly>
                         <small class="form-hint">Contract number (int, 10)</small>
                     </div>
                     <div class="form-group col-2">
-                        <label>Kontrat Para Birimi</label>
+                        <label>Contract Currency</label>
                         <input type="text" id="contractCurrency" class="form-control" value="EUR" readonly>
                         <small class="form-hint">Contract Currency</small>
                     </div>
                     <div class="form-group col-3">
-                        <label>Kontrat Limiti</label>
+                        <label>Contract Limit</label>
                         <input type="text" id="contractLimit" class="form-control" value="500.000,00 EUR" readonly>
                         <small class="form-hint">Contract Limit</small>
                     </div>
                     <div class="form-group col-2">
-                        <label>Açık Limit</label>
+                        <label>Contract Open Limit</label>
                         <input type="text" id="contractOpenLimit" class="form-control" value="125.000,00 EUR" readonly>
                         <small class="form-hint">Open limit</small>
                     </div>
                     <div class="form-group col-2">
-                        <label>Kontrat Bitiş</label>
+                        <label>Contract finish date</label>
                         <input type="date" id="contractEndDate" class="form-control" value="2025-12-31" readonly>
                         <small class="form-hint">End of contract date</small>
                     </div>
@@ -300,9 +399,9 @@
              ============================================ -->
         <div class="card">
             <div class="card-header">
-                <h3>SRM Talep Kalemleri</h3>
+                <h3>SRM Request Items</h3>
                 <div class="card-header-actions">
-                    <button class="btn btn-primary btn-sm" id="addItemBtn">+ Kalem Ekle</button>
+                    <button class="btn btn-primary btn-sm" id="addItemBtn">+ Add Item</button>
                 </div>
             </div>
             <div class="card-body">
@@ -310,16 +409,16 @@
                     <table class="table" id="itemsTable">
                         <thead>
                             <tr>
-                                <th style="width: 40px;">#</th>
-                                <th style="width: 140px;">Malzeme No <span class="required">*</span></th>
-                                <th>Malzeme Açıklaması</th>
-                                <th style="width: 70px;">Birim</th>
-                                <th style="width: 100px;">Talep Miktarı <span class="required">*</span></th>
-                                <th style="width: 120px;">Birim Fiyat (TL)</th>
-                                <th style="width: 130px;">Toplam Değer (TL)</th>
-                                <th style="width: 150px;">Tedarikçi (Opsiyonel)</th>
-                                <th style="width: 130px;">İstenen Teslim</th>
-                                <th style="width: 200px;">Notlar</th>
+                                <th style="width: 40px;">SRM ItemNumber</th>
+                                <th style="width: 140px;">Material Number <span class="required">*</span></th>
+                                <th>Material description</th>
+                                <th style="width: 70px;">Unit of measure code</th>
+                                <th style="width: 100px;">Order Quantity <span class="required">*</span></th>
+                                <th style="width: 120px;">Item Prize</th>
+                                <th style="width: 130px;">Total value</th>
+                                <th style="width: 150px;">Supplier Material info record</th>
+                                <th style="width: 130px;">Expected delivery date</th>
+                                <th style="width: 200px;">Notes</th>
                                 <th style="width: 70px;">İşlem</th>
                             </tr>
                         </thead>
@@ -399,7 +498,7 @@
                         </tbody>
                         <tfoot>
                             <tr class="table-summary">
-                                <td colspan="6" style="text-align: right;"><strong>Genel Toplam:</strong></td>
+                                <td colspan="6" style="text-align: right;"><strong>Sub total:</strong></td>
                                 <td colspan="5"><strong id="grandTotal">342.956,00 TL</strong></td>
                             </tr>
                         </tfoot>
@@ -408,24 +507,24 @@
 
                 <!-- Historical Issue Data - Screen Designs 10 SRM RC -->
                 <div class="historical-data-section" style="margin-top: 20px;">
-                    <h4 style="margin-bottom: 15px; color: #555;">Tarihsel Çıkış Verileri (Seçili Malzemeler)</h4>
+                    <h4 style="margin-bottom: 15px; color: #555;">Historical Issue Data (Selected Materials)</h4>
                     <div class="table-responsive">
                         <table class="table table-sm table-bordered" id="historicalDataTable">
                             <thead style="background: #f8f9fa;">
                                 <tr>
-                                    <th rowspan="2" style="vertical-align: middle;">Malzeme No</th>
-                                    <th colspan="3" style="text-align: center; background: #e3f2fd;">Son 3 Ay Çıkış</th>
-                                    <th colspan="3" style="text-align: center; background: #fff3e0;">Son 3 Yıl Çıkış</th>
-                                    <th rowspan="2" style="vertical-align: middle; text-align: center;">Açık PO</th>
-                                    <th rowspan="2" style="vertical-align: middle; text-align: center;">Açık SRM</th>
+                                    <th rowspan="2" style="vertical-align: middle;">Material number</th>
+                                    <th colspan="3" style="text-align: center; background: #e3f2fd;">Last third month total issued quantity</th>
+                                    <th colspan="3" style="text-align: center; background: #fff3e0;">Last third year total issued quantity</th>
+                                    <th rowspan="2" style="vertical-align: middle; text-align: center;">Open purchasing order</th>
+                                    <th rowspan="2" style="vertical-align: middle; text-align: center;">Open SRM Request</th>
                                 </tr>
                                 <tr>
-                                    <th style="text-align: center; font-size: 11px;">1. Ay</th>
-                                    <th style="text-align: center; font-size: 11px;">2. Ay</th>
-                                    <th style="text-align: center; font-size: 11px;">3. Ay</th>
-                                    <th style="text-align: center; font-size: 11px;">1. Yıl</th>
-                                    <th style="text-align: center; font-size: 11px;">2. Yıl</th>
-                                    <th style="text-align: center; font-size: 11px;">3. Yıl</th>
+                                    <th style="text-align: center; font-size: 11px;">Last month</th>
+                                    <th style="text-align: center; font-size: 11px;">Last second month</th>
+                                    <th style="text-align: center; font-size: 11px;">Last third month</th>
+                                    <th style="text-align: center; font-size: 11px;">Last year</th>
+                                    <th style="text-align: center; font-size: 11px;">Last second year</th>
+                                    <th style="text-align: center; font-size: 11px;">Last third year</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -466,7 +565,7 @@
                         </table>
                     </div>
                     <small class="form-hint">
-                        <strong>Açıklama:</strong> Last month's/year's total issued quantity (Screen Designs 10 SRM RC) -
+                        <strong>Description:</strong> Last month's/year's total issued quantity (Screen Designs 10 SRM RC) -
                         Open purchasing order quantity, Open SRM Request quantity
                     </small>
                 </div>
@@ -476,47 +575,37 @@
                     <h4 style="margin-bottom: 15px; color: #555;">Euro Dönüşümü</h4>
                     <div class="form-row">
                         <div class="form-group col-3">
-                            <label>Genel Toplam (TL)</label>
+                            <label>Sub total (TL)</label>
                             <input type="text" class="form-control" id="totalTL" value="342.956,00" readonly>
                         </div>
                         <div class="form-group col-2">
-                            <label>EUR/TL Kuru</label>
+                            <label>Euro Currency</label>
                             <input type="text" class="form-control" id="eurRate" value="35,85" readonly>
                         </div>
                         <div class="form-group col-3">
-                            <label>Euro Toplam</label>
+                            <label>Euro total</label>
                             <input type="text" class="form-control" id="totalEUR" value="9.565,90 EUR" readonly style="font-weight: bold; color: #1565c0;">
                             <small class="form-hint">Euro Currency / Euro Unit Price</small>
                         </div>
                     </div>
                 </div>
 
-                <div class="dev-note warning" style="margin-top: 15px;">
-                    <h4>Malzeme Ekleme Kuralları</h4>
-                    <ul>
-                        <li>Malzeme numarası searchable - malzeme arama popup'ı açılır</li>
-                        <li>Miktar girildikçe toplam otomatik hesaplanır</li>
-                        <li>Her kalem için tedarikçi seçimi opsiyoneldir</li>
-                        <li>Teslimat tarihi her kalem için farklı olabilir</li>
-                        <li>Kalem notları opsiyoneldir (özel talepler için)</li>
-                    </ul>
-                </div>
             </div>
         </div>
 
         <!-- Budget Check Section -->
         <div class="card">
             <div class="card-header">
-                <h3>Bütçe Kontrolü</h3>
+                <h3>Budget Kontrolü</h3>
             </div>
             <div class="card-body">
                 <div class="budget-summary">
                     <div class="budget-item">
-                        <label>Maliyet Merkezi:</label>
+                        <label>Cost Center:</label>
                         <span id="budgetCostCenter">CC001 - Üretim</span>
                     </div>
                     <div class="budget-item">
-                        <label>Yıllık Bütçe:</label>
+                        <label>Yıllık Budget:</label>
                         <span>5.000.000,00 TL</span>
                     </div>
                     <div class="budget-item">
@@ -524,7 +613,7 @@
                         <span>3.250.000,00 TL</span>
                     </div>
                     <div class="budget-item">
-                        <label>Kalan Bütçe:</label>
+                        <label>Remaining Budget:</label>
                         <span class="text-success"><strong>1.750.000,00 TL</strong></span>
                     </div>
                     <div class="budget-item">
@@ -538,7 +627,7 @@
                 </div>
 
                 <div class="alert alert-success" style="margin-top: 15px;" id="budgetAlert">
-                    ✅ Bütçe yeterli. Talep oluşturulabilir.
+                    ✅ Budget yeterli. Talep oluşturulabilir.
                 </div>
             </div>
         </div>
@@ -546,7 +635,7 @@
         <!-- Notes and Justification -->
         <div class="card">
             <div class="card-header">
-                <h3>Notlar ve Gerekçe</h3>
+                <h3>Notes ve Gerekçe</h3>
             </div>
             <div class="card-body">
                 <div class="form-group">
@@ -554,7 +643,7 @@
                     <textarea class="form-control" id="justification" rows="3" placeholder="Neden bu malzemelere ihtiyaç duyulduğunu açıklayın...">Üretim hattı bakımı için gerekli yedek parçalar. Kritik stok seviyesine ulaşılmıştır.</textarea>
                 </div>
                 <div class="form-group">
-                    <label>Ek Notlar</label>
+                    <label>Notes</label>
                     <textarea class="form-control" id="additionalNotes" rows="2" placeholder="Tedarikçi tercihi, özel gereksinimler vb."></textarea>
                 </div>
             </div>
@@ -576,176 +665,17 @@
         <!-- ============================================
              DEVELOPER NOTES
              ============================================ -->
-        <div class="dev-note info" style="margin-top: 30px;">
-            <h4>Form Mode Implementation Details</h4>
-            <p><strong>CREATE Mode (?mode=create):</strong></p>
-            <ul>
-                <li>Page title: "Yeni SRM Talebi"</li>
-                <li>All fields editable (except auto-generated ones)</li>
-                <li>Empty form ready for new data entry</li>
-                <li>Action buttons: Kaydet, Taslak Kaydet, İptal</li>
-            </ul>
-            <p><strong>EDIT Mode (?id=xxx&mode=edit):</strong></p>
-            <ul>
-                <li>Page title: "SRM Talebi Düzenle: [SRM-2025-000456]"</li>
-                <li>All editable fields enabled</li>
-                <li>Data loaded from API based on id parameter</li>
-                <li>Action buttons: Kaydet, Taslak Kaydet, İptal</li>
-            </ul>
-            <p><strong>VIEW Mode (?id=xxx&mode=view):</strong></p>
-            <ul>
-                <li>Page title: "SRM Talebi Detay: [SRM-2025-000456]"</li>
-                <li>All fields readonly/disabled</li>
-                <li>Data loaded from API based on id parameter</li>
-                <li>Action buttons: İptal (returns to srm-list.html)</li>
-                <li>Add Item button hidden</li>
-                <li>Delete item buttons hidden</li>
-            </ul>
-            <p><strong>JavaScript Functions:</strong></p>
-            <ul>
-                <li>getUrlParams() - Parse URL parameters for mode and id</li>
-                <li>loadRequestData(id) - Fetch data from API if id exists</li>
-                <li>setFormMode(mode) - Apply readonly/editable states</li>
-                <li>updatePageTitle(mode, requestNo) - Set dynamic page title</li>
-                <li>calculateGrandTotal() - Auto-calculate total from items</li>
-                <li>validateForm() - Check required fields before submit</li>
-            </ul>
-        </div>
 
-        <div class="dev-note">
-            <h4>Öncelik Seviyeleri</h4>
-            <table class="table table-sm">
-                <thead>
-                    <tr>
-                        <th>Seviye</th>
-                        <th>Açıklama</th>
-                        <th>Beklenen İşlem Süresi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>1 - Düşük</td>
-                        <td>Stok yeterli, ileride kullanılacak</td>
-                        <td>30 gün</td>
-                    </tr>
-                    <tr>
-                        <td>2 - Normal</td>
-                        <td>Standart tedarik süresi</td>
-                        <td>14 gün</td>
-                    </tr>
-                    <tr>
-                        <td>3 - Yüksek</td>
-                        <td>Stok kritik seviyeye yaklaşıyor</td>
-                        <td>7 gün</td>
-                    </tr>
-                    <tr>
-                        <td>4 - Acil</td>
-                        <td>Üretim durma riski var</td>
-                        <td>3 gün</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
 
-        <div class="dev-note">
-            <h4>Onay Akışı</h4>
-            <table class="table table-sm">
-                <thead>
-                    <tr>
-                        <th>Adım</th>
-                        <th>Onaylayan</th>
-                        <th>Koşul</th>
-                        <th>SLA</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>1</td>
-                        <td>Section Leader (SL)</td>
-                        <td>Tüm talepler</td>
-                        <td>24 saat</td>
-                    </tr>
-                    <tr>
-                        <td>2</td>
-                        <td>Manager</td>
-                        <td>Tutar > 100.000 TL VEYA Bütçe Aşımı</td>
-                        <td>48 saat</td>
-                    </tr>
-                    <tr>
-                        <td>3</td>
-                        <td>Satınalma Departmanı</td>
-                        <td>Onaylanan tüm talepler</td>
-                        <td>Önceliğe göre</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
 
-        <div class="dev-note success">
-            <h4>✅ Veritabanı İşlemleri (Data Structure IMMA.xlsx)</h4>
-            <p><strong>API Endpoints:</strong></p>
-            <ul>
-                <li>GET /api/srm-requests/{id} - Talep detay görüntüle</li>
-                <li>POST /api/srm-requests - Yeni talep oluştur</li>
-                <li>PUT /api/srm-requests/{id} - Talep güncelle</li>
-            </ul>
-            <p><strong>SRM Request Header Tablosu (Data Structure IMMA.xlsx - "SRM Request Header"):</strong></p>
-            <ul>
-                <li>SRM Request number (int, 12) - Talep numarası</li>
-                <li>Supplier id (int, 8) - Tedarikçi ID</li>
-                <li>Created by user info (int, 8) - Oluşturan kullanıcı</li>
-                <li>Creation date time (datetime) - Oluşturma zamanı</li>
-                <li>Order date (date) - Sipariş tarihi</li>
-                <li>Expected delivery date (date) - Beklenen teslim tarihi</li>
-                <li>Currency Code (text, 3) - Para birimi kodu</li>
-                <li>Contract number (int, 10) - Kontrat numarası</li>
-                <li>SRM Number (int, 10) - SAP SRM numarası</li>
-            </ul>
-            <p><strong>SRM Request Item Tablosu (Data Structure IMMA.xlsx - "SRM Request item"):</strong></p>
-            <ul>
-                <li>SRM Request item id (int, 16) - Kalem ID</li>
-                <li>SRM Request number (int, 12) - Talep numarası (FK)</li>
-                <li>Material Number (text, 13) - Malzeme numarası</li>
-                <li>unit of measure code (text, 3) - Birim kodu</li>
-                <li>Order Quantity (Float, 15) - Sipariş miktarı</li>
-                <li>Item Prize (Float, 14) - Kalem fiyatı</li>
-                <li>Supplier Material info record Id (int, 8) - Tedarikçi bilgi kaydı ID</li>
-                <li>SRM ItemNumber (int, 4) - SAP kalem numarası</li>
-                <li>Ordered quantity (Float, 14) - Sipariş edilen miktar</li>
-                <li>Request closed check box (bool) - Talep kapatma</li>
-            </ul>
-            <p><strong>Ek Alanlar (Screen Designs 10 SRM RC):</strong></p>
-            <ul>
-                <li>Last month's/2nd/3rd month's total issued quantity - Tarihsel çıkış verileri</li>
-                <li>Last year/2nd/3rd year total issued quantity - Yıllık çıkış verileri</li>
-                <li>Open purchasing order quantity - Açık PO miktarı</li>
-                <li>Open SRM Request quantity - Açık SRM miktarı</li>
-                <li>Euro Currency / Euro Unit Price - Euro dönüşüm bilgileri</li>
-                <li>Contract Limit / Open limit / End of contract date - Kontrat bilgileri</li>
-            </ul>
-        </div>
 
-        <div class="dev-note warning">
-            <h4>İş Kuralları ve Validasyonlar</h4>
-            <ul>
-                <li>En az 1 kalem olmalı</li>
-                <li>Tüm kalemler için miktar > 0 olmalı</li>
-                <li>Malzeme numarası zorunlu (searchable)</li>
-                <li>Birim fiyat sistem tarafından getirilir (son satınalma fiyatı)</li>
-                <li>Toplam değer otomatik hesaplanır: Miktar × Birim Fiyat</li>
-                <li>Tedarikçi seçimi opsiyonel</li>
-                <li>Her kalem için teslimat tarihi farklı olabilir</li>
-                <li>Budget check: Maliyet merkezi bütçesi kontrol edilir</li>
-                <li>Bütçe aşımında Manager onayı zorunlu</li>
-            </ul>
-        </div>
     </main>
 
     <!-- Material Search Modal -->
     <div class="modal" id="materialSearchModal">
         <div class="modal-content modal-lg">
             <div class="modal-header">
-                <h3>Malzeme Ara</h3>
+                <h3>Search Material</h3>
                 <button class="modal-close">&times;</button>
             </div>
             <div class="modal-body">
@@ -769,11 +699,11 @@
                     <table class="table table-hover" id="materialSearchTable">
                         <thead style="position: sticky; top: 0; background: white;">
                             <tr>
-                                <th>Malzeme No</th>
-                                <th>Açıklama</th>
-                                <th>Birim</th>
-                                <th>Stok</th>
-                                <th>Fiyat (TL)</th>
+                                <th>Material number</th>
+                                <th>Description</th>
+                                <th>Unit of measure</th>
+                                <th>Stock</th>
+                                <th>Price (TL)</th>
                                 <th style="width: 80px;">Seç</th>
                             </tr>
                         </thead>
@@ -1105,7 +1035,7 @@
                 requestDate: '2025-12-10',
                 requestor: 'Mehmet Demir',
                 status: 'Onaylandı',
-                department: 'Üretim - Kaynak',
+                department: 'Üretim - Source',
                 priority: '2',
                 costCenter: 'CC001',
                 deliveryDate: '2025-12-17',
@@ -1127,7 +1057,7 @@
                     { materialNo: '01.00002-0001', description: 'Rulman 6205-2RS', unit: 'AD', quantity: 15, price: 460.00, supplier: 'SUP001', deliveryDate: '2025-12-17', notes: '' },
                     { materialNo: '03.00001-0001', description: 'Kayış V-Belt A52', unit: 'AD', quantity: 2, price: 320.00, supplier: 'SUP002', deliveryDate: '2025-12-17', notes: '' }
                 ],
-                justification: 'Kaynak hattı bakımı.',
+                justification: 'Source hattı bakımı.',
                 additionalNotes: 'Teslim edildi.'
             },
             '116': {
@@ -1600,7 +1530,7 @@
                 const materialNo = row.querySelector('.material-no').value;
                 const materialDesc = row.querySelector('.material-desc').textContent;
 
-                if (confirm(`Kalem silinecek:\n\n${materialNo} - ${materialDesc}\n\nDevam etmek istiyor musunuz?`)) {
+                if (confirm(`Item number silinecek:\n\n${materialNo} - ${materialDesc}\n\nDevam etmek istiyor musunuz?`)) {
                     row.style.transition = 'opacity 0.3s';
                     row.style.opacity = '0';
                     setTimeout(function() {
@@ -1891,8 +1821,8 @@
                 return;
             }
 
-            if (confirm(`SRM Talep ${mode === 'edit' ? 'güncellenecek' : 'gönderilecek'}!\n\nTalep No: ${requestNo}\nToplam Tutar: ${total}\n\nOnay akışı başlatılacak. Devam etmek istiyor musunuz?`)) {
-                alert(`Talep başarıyla ${mode === 'edit' ? 'güncellendi' : 'gönderildi'}!\n\nTalep No: ${requestNo}\nDurum: Onay Bekliyor\n\nSL onayı bekleniyor.`);
+            if (confirm(`SRM Talep ${mode === 'edit' ? 'güncellenecek' : 'gönderilecek'}!\n\nSRM Request number: ${requestNo}\nTotal value: ${total}\n\nOnay akışı başlatılacak. Devam etmek istiyor musunuz?`)) {
+                alert(`Talep başarıyla ${mode === 'edit' ? 'güncellendi' : 'gönderildi'}!\n\nSRM Request number: ${requestNo}\nStatus: Onay Bekliyor\n\nSL onayı bekleniyor.`);
                 window.location.href = 'srm-list.html';
             }
         });
@@ -1900,7 +1830,7 @@
         // Save draft button
         document.getElementById('saveDraftBtn').addEventListener('click', function() {
             const requestNo = document.getElementById('requestNo').value;
-            alert(`Taslak kaydedildi!\n\nTalep No: ${requestNo}\nDurum: Taslak\n\nDaha sonra düzenlemeye devam edebilirsiniz.`);
+            alert(`Taslak kaydedildi!\n\nSRM Request number: ${requestNo}\nStatus: Taslak\n\nDaha sonra düzenlemeye devam edebilirsiniz.`);
         });
 
         // Cancel button
@@ -2049,5 +1979,143 @@
             font-size: 12px;
         }
     </style>
+
+    <!-- DEVELOPER DOCUMENTATION PANEL -->
+    <div id="devDocsPanel" class="dev-docs-panel">
+        <button class="dev-docs-toggle" onclick="toggleDevDocs()">📋 Geliştirici Dokümantasyonu</button>
+        <div class="dev-docs-content" id="devDocsContent">
+            <div class="dev-docs-header">
+                <h2>📋 10 SRM RC - SRM Request Creation</h2>
+                <button class="dev-docs-close" onclick="toggleDevDocs()">✕</button>
+            </div>
+            <div class="dev-docs-body">
+                <div class="dev-docs-tabs">
+                    <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
+                    <button class="dev-tab" onclick="showDevTab('validations')">Validasyonlar</button>
+                </div>
+                <div id="dataStructure" class="dev-tab-content active">
+                    <h3>SRM Request Header</h3>
+                    <table class="dev-table"><thead><tr><th>Field Name</th><th>Type</th><th>Length</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td>SRM Request number</td><td>int</td><td>12</td><td>Primary key - Otomatik</td></tr>
+                            <tr><td>Supplier id</td><td>int</td><td>8</td><td>Tedarikçi ID (FK)</td></tr>
+                            <tr><td>Created by user info</td><td>int</td><td>8</td><td>Oluşturan kullanıcı</td></tr>
+                            <tr><td>Creation date time</td><td>datetime</td><td>-</td><td>Oluşturma tarihi</td></tr>
+                            <tr><td>Order date</td><td>date</td><td>-</td><td>Sipariş tarihi</td></tr>
+                            <tr><td>Expected delivery date</td><td>date</td><td>-</td><td>Beklenen teslimat</td></tr>
+                            <tr><td>Currency Code</td><td>text</td><td>3</td><td>Para birimi (EUR, USD, TRY)</td></tr>
+                            <tr><td>Contract number</td><td>int</td><td>10</td><td>Sözleşme numarası</td></tr>
+                            <tr><td>SRM Number</td><td>int</td><td>10</td><td>SAP SRM numarası</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>SRM Request Item</h3>
+                    <table class="dev-table"><thead><tr><th>Field Name</th><th>Type</th><th>Length</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td>SRM Request item id</td><td>int</td><td>16</td><td>Primary key</td></tr>
+                            <tr><td>SRM Request number</td><td>int</td><td>12</td><td>Header FK</td></tr>
+                            <tr><td>Material Number</td><td>text</td><td>13</td><td>Malzeme numarası</td></tr>
+                            <tr><td>unit of measure code</td><td>text</td><td>3</td><td>Ölçü birimi</td></tr>
+                            <tr><td>Order Quantity</td><td>float</td><td>15</td><td>Sipariş miktarı</td></tr>
+                            <tr><td>Item Prize</td><td>float</td><td>14</td><td>Birim fiyatı</td></tr>
+                            <tr><td>Supplier Material info record Id</td><td>int</td><td>8</td><td>Info record referansı</td></tr>
+                            <tr><td>SRM ItemNumber</td><td>int</td><td>4</td><td>Satır numarası</td></tr>
+                            <tr><td>Ordered quantity</td><td>float</td><td>14</td><td>Siparişe dönüşen miktar</td></tr>
+                            <tr><td>Request closed check box</td><td>bool</td><td>-</td><td>Talep kapatıldı mı?</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Supplier Material Info Record</h3>
+                    <table class="dev-table"><thead><tr><th>Field Name</th><th>Type</th><th>Length</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td>Info record Id</td><td>int</td><td>8</td><td>Primary key</td></tr>
+                            <tr><td>Supplier Id</td><td>int</td><td>8</td><td>Tedarikçi ID</td></tr>
+                            <tr><td>Material Number</td><td>text</td><td>13</td><td>Malzeme numarası</td></tr>
+                            <tr><td>Unit price</td><td>float</td><td>14</td><td>Birim fiyat</td></tr>
+                            <tr><td>Currency code</td><td>text</td><td>3</td><td>Para birimi</td></tr>
+                            <tr><td>Contract number</td><td>int</td><td>10</td><td>Sözleşme numarası</td></tr>
+                            <tr><td>Contract start/end date</td><td>date</td><td>-</td><td>Sözleşme tarihleri</td></tr>
+                            <tr><td>Preferred order</td><td>int</td><td>2</td><td>Öncelik sırası (1=birincil)</td></tr>
+                            <tr><td>Lead time (business days)</td><td>int</td><td>4</td><td>Tedarik süresi</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="businessRules" class="dev-tab-content">
+                    <h3>İş Kuralları</h3>
+                    <div class="rules-section">
+                        <h4>🏢 Tedarikçi Seçimi</h4>
+                        <ul>
+                            <li><strong>Birincil tedarikçi:</strong> Preferred order en DÜŞÜK değerli info record</li>
+                            <li>Aynı malzeme için birden fazla tedarikçi tanımlanabilir</li>
+                            <li>Sözleşmeli tedarikçi önceliklidir</li>
+                            <li>İnaktif info record kullanılamaz</li>
+                        </ul>
+                        <h4>📝 SRM Oluşturma Kuralları</h4>
+                        <ul>
+                            <li>SRM'ler TEDARİKÇİ ve SÖZLEŞME bazında gruplanır</li>
+                            <li>Aynı tedarikçi + aynı sözleşme = TEK SRM</li>
+                            <li><strong>Sözleşmeli ve sözleşmesiz malzemeler AYRI SRM'de olmalı!</strong></li>
+                            <li>Farklı tedarikçiler = AYRI SRM'ler</li>
+                        </ul>
+                        <h4>💰 Fiyat Değişikliği</h4>
+                        <ul>
+                            <li>Info record fiyatı değiştirilirse: Mevcut İNAKTİF yapılır</li>
+                            <li>YENİ info record oluşturulur (fiyat geçmişi korunur)</li>
+                            <li>Sözleşme bitiş tarihi geçmişse otomatik İNAKTİF</li>
+                        </ul>
+                        <h4>🔄 MRP Entegrasyonu</h4>
+                        <ul>
+                            <li>MRP SRM Suggestion oluşturur</li>
+                            <li>Suggestion'lar SRM'ye dönüştürülür</li>
+                            <li>Transferred = true olunca suggestion kapatılır</li>
+                        </ul>
+                    </div>
+                </div>
+                <div id="validations" class="dev-tab-content">
+                    <h3>Alan Validasyonları</h3>
+                    <ul>
+                        <li><strong>Supplier id:</strong> Zorunlu, aktif tedarikçi olmalı</li>
+                        <li><strong>Currency Code:</strong> maxlength=3 (EUR, USD, TRY)</li>
+                        <li><strong>Contract number:</strong> maxlength=10</li>
+                        <li><strong>Material Number:</strong> maxlength=13</li>
+                        <li><strong>Order Quantity:</strong> > 0</li>
+                        <li><strong>Expected delivery date:</strong> > Order date</li>
+                    </ul>
+                    <h3>Malzeme Durum Kontrolleri</h3>
+                    <ul>
+                        <li><strong>Status=5:</strong> YENİ SRM YAPILAMAZ</li>
+                        <li><strong>Status=4:</strong> SRM YAPILABİLİR</li>
+                        <li><strong>Status=2:</strong> SRM YAPILAMAZ</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>
+        .dev-docs-panel{position:fixed;bottom:0;left:0;right:0;z-index:9999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+        .dev-docs-toggle{position:absolute;bottom:100%;right:20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;padding:10px 20px;border-radius:8px 8px 0 0;cursor:pointer;font-weight:600;font-size:14px;box-shadow:0 -2px 10px rgba(0,0,0,0.2)}
+        .dev-docs-content{display:none;background:#1a1a2e;color:#eee;max-height:60vh;overflow-y:auto;box-shadow:0 -5px 20px rgba(0,0,0,0.3)}
+        .dev-docs-content.active{display:block}
+        .dev-docs-header{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);position:sticky;top:0}
+        .dev-docs-header h2{margin:0;font-size:18px}
+        .dev-docs-close{background:rgba(255,255,255,0.2);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px}
+        .dev-docs-body{padding:20px}
+        .dev-docs-tabs{display:flex;gap:10px;margin-bottom:20px;border-bottom:1px solid #333;padding-bottom:10px}
+        .dev-tab{background:#2d2d44;color:#aaa;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;transition:all 0.3s}
+        .dev-tab:hover,.dev-tab.active{background:#667eea;color:#fff}
+        .dev-tab-content{display:none}
+        .dev-tab-content.active{display:block}
+        .dev-table{width:100%;border-collapse:collapse;margin:15px 0;font-size:13px}
+        .dev-table th,.dev-table td{padding:10px;text-align:left;border:1px solid #333}
+        .dev-table th{background:#2d2d44;color:#667eea;font-weight:600}
+        .dev-table tr:nth-child(even){background:#252538}
+        .dev-docs-body h3{color:#667eea;margin:20px 0 10px;font-size:16px;border-bottom:1px solid #333;padding-bottom:5px}
+        .dev-docs-body h4{color:#9580ff;margin:15px 0 8px;font-size:14px}
+        .dev-docs-body ul{margin:0 0 15px 20px;line-height:1.8}
+        .rules-section{background:#252538;padding:15px;border-radius:8px}
+    </style>
+    <script>
+        function toggleDevDocs(){document.getElementById('devDocsContent').classList.toggle('active')}
+        function showDevTab(tabId){document.querySelectorAll('.dev-tab-content').forEach(c=>c.classList.remove('active'));document.querySelectorAll('.dev-tab').forEach(t=>t.classList.remove('active'));document.getElementById(tabId).classList.add('active');event.target.classList.add('active')}
+    </script>
 </body>
 </html>

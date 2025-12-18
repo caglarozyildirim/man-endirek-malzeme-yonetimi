@@ -6,6 +6,73 @@
     <title>Satınalma Siparişleri - IMMA</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
+<!--
+================================================================================
+IMMA DEVELOPER DOCUMENTATION
+================================================================================
+
+SCREEN: 12 PO L - Purchasing Orders List
+FILE: po-list.html
+LAST UPDATED: 2025-12-18
+
+--------------------------------------------------------------------------------
+RELATED DATABASE TABLES
+--------------------------------------------------------------------------------
+
+TABLE: Purchasing Order
+| Field Name                  | Type     | Length | Description                    |
+|-----------------------------|----------|--------|--------------------------------|
+| Purchasing Order Id         | int      | 8      | Primary key                    |
+| Purchasing Order SAP number | int      | 10     | SAP sipariş numarası           |
+| Supplier number             | int      | 10     | Tedarikçi numarası             |
+| SRM number                  | int      | 10     | İlişkili SRM numarası          |
+| creation datetime           | datetime | -      | Oluşturma tarihi               |
+| Created by user id          | int      | 8      | Oluşturan kullanıcı            |
+
+TABLE: Purchasing Order Item
+| Field Name                   | Type     | Length | Description                    |
+|------------------------------|----------|--------|--------------------------------|
+| Purchasing Order item Id     | int      | 12     | Primary key                    |
+| Purchasing Order SAP no      | int      | 10     | SAP sipariş numarası           |
+| Purchasing Order SAP Item No | int      | 4      | SAP satır numarası             |
+| Material number              | text     | 13     | Malzeme numarası               |
+| Unit of measure code         | text     | 3      | Ölçü birimi                    |
+| Order quantity               | float    | 15     | Sipariş miktarı                |
+| Goods receipt quantity       | float    | 15     | Teslim alınan toplam           |
+| currency code                | text     | 3      | Para birimi                    |
+| Unit price                   | float    | 14     | Birim fiyat                    |
+
+--------------------------------------------------------------------------------
+BUSINESS RULES (İş Kuralları)
+--------------------------------------------------------------------------------
+
+PO DURUMU:
+1. Açık: Goods receipt quantity < Order quantity
+2. Kısmen Teslim: 0 < Goods receipt quantity < Order quantity
+3. Tamamlandı: Goods receipt quantity >= Order quantity
+4. Kapatıldı: Manuel kapatma (kısmi teslimle)
+
+MAL KABUL ENTEGRASYONU:
+1. Mal kabul yapılınca Goods receipt quantity güncellenir
+2. Kısmi teslimat yapılabilir
+3. Fazla teslimat YAPILAMAZ
+
+SAP ENTEGRASYONU:
+- PO bilgileri SAP'dan senkronize edilir
+- Purchasing Order SAP number = SAP belge numarası
+- Mal kabul SAP MIGO ile eşleşir
+
+--------------------------------------------------------------------------------
+LIST SCREEN FEATURES
+--------------------------------------------------------------------------------
+
+- Filtreleme: Tedarikçi, Tarih aralığı, Durum
+- Sıralama: PO numarası, Tarih, Tedarikçi
+- Detay görüntüleme: Satır bazında bilgi
+- Mal kabul linki: goods-receipt.html?po=
+
+================================================================================
+-->
 <body>
     <!-- NAVBAR - Top Navigation (Maximo Style) -->
     <nav class="modern-navbar">
@@ -57,7 +124,7 @@
                 <li class="nav-item">
                     <a href="budget-management.html" class="nav-link">
                         <span class="nav-icon">💰</span>
-                        Bütçe
+                        Budget
                     </a>
                     <div class="dropdown-menu">
                         <a href="budget-management.html" class="dropdown-item">Bütçe Yönetimi</a>
@@ -76,7 +143,7 @@
                 <li class="nav-item">
                     <a href="transfer-list.html" class="nav-link">
                         <span class="nav-icon">🏭</span>
-                        Stok
+                        Stock
                     </a>
                     <div class="dropdown-menu">
                         <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
@@ -105,49 +172,43 @@
         </div>
 
         <!-- Developer Notes - Doküman Referansları -->
-        <div class="dev-note info">
-            <h4>Ekran: 12 PO L - Purchasing Orders List</h4>
-            <p><strong>Kaynak:</strong> Screen Designs IMMA.xlsx > 12 PO L, Activities X Screens > Row 43 "Open Orders"</p>
-            <p><strong>Amaç:</strong> SAP'tan entegre edilen satınalma siparişlerinin açık kalemlerini listelemek.</p>
-            <p><strong>Not:</strong> PO'lar SAP sisteminde oluşturulur ve bu uygulamaya aktarılır. (Indirect Material Management Application Draft - Business Rules)</p>
-        </div>
 
         <!-- Search/Filter Section - Goods Receipt dokümanından -->
         <div class="card">
             <div class="card-header">
-                <h3>Sipariş Ara / Filtrele</h3>
+                <h3>Search / Filter Orders</h3>
             </div>
             <div class="card-body">
                 <!-- Data Structure: Purchasing Order + Purchasing Order Item alanları -->
                 <div class="form-row">
                     <div class="form-group col-2">
-                        <label>Arama (Search Box)</label>
+                        <label>Search (Search Box)</label>
                         <input type="text" class="form-control" id="searchBox" placeholder="Sipariş, malzeme, tedarikçi...">
                     </div>
                     <div class="form-group col-2">
-                        <label>Sipariş No (Order Number)</label>
+                        <label>Order number (Order Number)</label>
                         <input type="text" class="form-control" id="filterOrderNo" placeholder="4500012345">
                     </div>
                     <div class="form-group col-1">
-                        <label>Kalem No (Item No)</label>
+                        <label>Item number No (Item No)</label>
                         <input type="text" class="form-control" id="filterItemNo" placeholder="10">
                     </div>
                     <div class="form-group col-2">
-                        <label>Malzeme No (Material No)</label>
+                        <label>Material number (Material No)</label>
                         <input type="text" class="form-control" id="filterMaterialNo" placeholder="01.00002-0001">
                     </div>
                     <div class="form-group col-2">
-                        <label>Malzeme Adı (Material Title)</label>
+                        <label>Material title (Material Title)</label>
                         <input type="text" class="form-control" id="filterMaterialTitle" placeholder="Rulman">
                     </div>
                     <div class="form-group col-3">
-                        <label>Tedarikçi Adı (Supplier Title)</label>
+                        <label>Supplier title (Supplier Title)</label>
                         <input type="text" class="form-control" id="filterSupplierTitle" placeholder="ABC Endüstriyel">
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group col-2">
-                        <label>Birim (Unit of Measure)</label>
+                        <label>Unit of measure (Unit of Measure)</label>
                         <select class="form-control" id="filterUOM">
                             <option value="">Tümü</option>
                             <option>AD</option>
@@ -165,16 +226,13 @@
                         <button class="btn btn-outline btn-block" id="clearFilterBtn">Temizle</button>
                     </div>
                 </div>
-                <div class="dev-note" style="margin-top: 10px; padding: 8px; font-size: 11px;">
-                    <strong>Doküman Ref:</strong> Goods Receipt > Selecting Open Purchasing Order > Search fields
-                </div>
             </div>
         </div>
 
         <!-- Open Orders List - Header + Item birlikte görünüm -->
         <div class="card">
             <div class="card-header">
-                <h3>Açık Sipariş Kalemleri (Open Orders)</h3>
+                <h3>Open Order Items</h3>
                 <span class="result-count" id="resultCount">8 kayıt bulundu</span>
             </div>
             <div class="card-body" style="padding: 0;">
@@ -187,17 +245,17 @@
                 <table class="table table-compact" id="openOrdersTable">
                     <thead>
                         <tr>
-                            <th>Sipariş No</th>
-                            <th>Klm</th>
-                            <th>Malzeme No</th>
-                            <th>Malzeme Adı</th>
-                            <th>Tedarikçi</th>
-                            <th>Brm</th>
-                            <th class="text-right">Sip.</th>
-                            <th class="text-right">Tes.</th>
-                            <th class="text-right">Açık</th>
-                            <th class="text-right">Fiyat</th>
-                            <th>Tarih</th>
+                            <th>Purchasing Order SAP number</th>
+                            <th>Item No</th>
+                            <th>Material number</th>
+                            <th>Material title</th>
+                            <th>Supplier</th>
+                            <th>Unit of measure code</th>
+                            <th class="text-right">Order quantity</th>
+                            <th class="text-right">Goods receipt quantity</th>
+                            <th class="text-right">Open</th>
+                            <th class="text-right">Unit price</th>
+                            <th>Creation datetime</th>
                             <th class="text-center">İşlem</th>
                         </tr>
                     </thead>
@@ -321,93 +379,49 @@
         </div>
 
         <!-- Developer Notes - Data Structure Reference -->
-        <div class="dev-note">
-            <h4>Data Structure Referansları - Tablodaki Alanların Kaynakları</h4>
-            <table class="table" style="font-size: 12px;">
-                <thead>
-                    <tr>
-                        <th>Ekrandaki Alan</th>
-                        <th>Data Structure Tablosu</th>
-                        <th>Alan Adı</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><td>Sipariş No</td><td>Purchasing Order</td><td>Purchasing Order SAP number</td></tr>
-                    <tr><td>Kalem No</td><td>Purchasing Order Item</td><td>Purchasing Order SAP Item No</td></tr>
-                    <tr><td>SRM No</td><td>Purchasing Order</td><td>SRM number</td></tr>
-                    <tr><td>Malzeme No</td><td>Purchasing Order Item</td><td>Material number</td></tr>
-                    <tr><td>Malzeme Adı</td><td>Material (JOIN)</td><td>Title</td></tr>
-                    <tr><td>Tedarikçi No</td><td>Purchasing Order</td><td>Supplier number</td></tr>
-                    <tr><td>Tedarikçi Adı</td><td>Supplier (JOIN)</td><td>Supplier title 1</td></tr>
-                    <tr><td>Birim</td><td>Purchasing Order Item</td><td>Unit of measure code</td></tr>
-                    <tr><td>Sipariş Mik.</td><td>Purchasing Order Item</td><td>Order quantity</td></tr>
-                    <tr><td>Teslim Mik.</td><td>Purchasing Order Item</td><td>Goods receipt quantity</td></tr>
-                    <tr><td>Açık Mik.</td><td>Hesaplanan</td><td>Order qty - GR qty</td></tr>
-                    <tr><td>Birim Fiyat</td><td>Purchasing Order Item</td><td>Unit price</td></tr>
-                    <tr><td>Para Birimi</td><td>Purchasing Order Item</td><td>currency code</td></tr>
-                    <tr><td>Oluşturma Tarihi</td><td>Purchasing Order</td><td>creation datetime</td></tr>
-                </tbody>
-            </table>
-            <p><strong>Not:</strong> Malzeme Adı ve Tedarikçi Adı, Goods Receipt dokümanındaki arama alanlarında listelenmiştir.</p>
-        </div>
 
-        <div class="dev-note warning">
-            <h4>Business Rules (Indirect Material Management Application Draft)</h4>
-            <ul>
-                <li>"Purchasing orders are created on the SAP but transferred to Indirect Material Management program."</li>
-                <li>"When open purchasing orders records entered to the application, items of these orders are added to ordered quantity on related SRM Request."</li>
-                <li>"Purchasing order screen should have a view and it include both header and item information together."</li>
-                <li>"Process start with the list of open purchasing order items that waits for goods receipt."</li>
-            </ul>
-        </div>
 
-        <div class="dev-note info">
-            <h4>Screen Designs IMMA.xlsx - Activities X Screens</h4>
-            <p><strong>Ekran:</strong> 12 - Purchasing Orders</p>
-            <p><strong>Screen Variant:</strong> CVCD (Create, <u>View</u>, Change, Delete)</p>
-            <p><strong>Görüntüle Butonu:</strong> CVCD kalıbının "View" işlevi olarak eklenmiştir.</p>
-        </div>
     </main>
 
     <!-- PO Detay Modal - "Purchasing order screen should have a view and it include both header and item information together" -->
     <div id="poDetailModal" class="modal" style="display: none;">
         <div class="modal-content" style="max-width: 900px;">
             <div class="modal-header">
-                <h3 id="modalTitle">Sipariş Detayı</h3>
+                <h3 id="modalTitle">Order Details</h3>
                 <button class="modal-close" onclick="closeModal()">&times;</button>
             </div>
             <div class="modal-body">
                 <!-- Header Information - Purchasing Order tablosundan -->
                 <div class="card" style="margin-bottom: 15px;">
                     <div class="card-header">
-                        <h4>Sipariş Başlık Bilgileri (Header)</h4>
+                        <h4>Order Header Information</h4>
                     </div>
                     <div class="card-body">
                         <div class="form-row">
                             <div class="form-group col-3">
-                                <label>Sipariş No (PO SAP Number)</label>
+                                <label>Order number (PO SAP Number)</label>
                                 <input type="text" class="form-control" id="modalPoNo" readonly>
                             </div>
                             <div class="form-group col-3">
-                                <label>SRM No</label>
+                                <label>SRM number</label>
                                 <input type="text" class="form-control" id="modalSrmNo" readonly>
                             </div>
                             <div class="form-group col-3">
-                                <label>Tedarikçi No (Supplier Number)</label>
+                                <label>Supplier number (Supplier Number)</label>
                                 <input type="text" class="form-control" id="modalSupplierNo" readonly>
                             </div>
                             <div class="form-group col-3">
-                                <label>Oluşturma Tarihi (Creation DateTime)</label>
+                                <label>Creation date time (Creation DateTime)</label>
                                 <input type="text" class="form-control" id="modalCreationDate" readonly>
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group col-6">
-                                <label>Tedarikçi Adı (Supplier Title)</label>
+                                <label>Supplier title (Supplier Title)</label>
                                 <input type="text" class="form-control" id="modalSupplierTitle" readonly>
                             </div>
                             <div class="form-group col-3">
-                                <label>Oluşturan (Created by User)</label>
+                                <label>Created by user info (Created by User)</label>
                                 <input type="text" class="form-control" id="modalCreatedBy" readonly>
                             </div>
                         </div>
@@ -417,21 +431,21 @@
                 <!-- Item Information - Purchasing Order Item tablosundan -->
                 <div class="card">
                     <div class="card-header">
-                        <h4>Sipariş Kalemleri (Items)</h4>
+                        <h4>Order Items</h4>
                     </div>
                     <div class="card-body" style="padding: 0; overflow-x: auto;">
                         <table class="table" id="modalItemsTable" style="min-width: 700px;">
                             <thead>
                                 <tr>
-                                    <th>Kalem No</th>
-                                    <th>Malzeme No</th>
-                                    <th>Malzeme Adı</th>
-                                    <th>Birim</th>
-                                    <th class="text-right">Sipariş Mik.</th>
-                                    <th class="text-right">Teslim Mik.</th>
-                                    <th class="text-right">Açık Mik.</th>
-                                    <th class="text-right">Birim Fiyat</th>
-                                    <th>Para Birimi</th>
+                                    <th>Purchasing Order SAP Item No</th>
+                                    <th>Material number</th>
+                                    <th>Material title</th>
+                                    <th>Unit of measure code</th>
+                                    <th class="text-right">Order quantity</th>
+                                    <th class="text-right">Goods receipt quantity</th>
+                                    <th class="text-right">Open quantity</th>
+                                    <th class="text-right">Unit price</th>
+                                    <th>Currency code</th>
                                 </tr>
                             </thead>
                             <tbody id="modalItemsBody">
@@ -440,9 +454,6 @@
                     </div>
                 </div>
 
-                <div class="dev-note" style="margin-top: 15px; padding: 8px; font-size: 11px;">
-                    <strong>Doküman Ref:</strong> "Purchasing order screen should have a view and it include both header and item information together." (Business Rules)
-                </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-outline" onclick="closeModal()">Kapat</button>
@@ -528,7 +539,7 @@
         });
 
         function setupEventListeners() {
-            // Arama butonu
+            // Search butonu
             document.getElementById('searchBtn').addEventListener('click', applyFilters);
             document.getElementById('clearFilterBtn').addEventListener('click', clearFilters);
 
@@ -543,10 +554,10 @@
                 });
             });
 
-            // Birim değişikliğinde otomatik filtrele
+            // Unit of measure değişikliğinde otomatik filtrele
             document.getElementById('filterUOM').addEventListener('change', applyFilters);
 
-            // Satır tıklama - Mal Kabul sayfasına yönlendirme
+            // Item number tıklama - Mal Kabul sayfasına yönlendirme
             document.querySelectorAll('.table-row-clickable').forEach(row => {
                 row.addEventListener('click', function() {
                     const poNo = this.getAttribute('data-po');
@@ -576,7 +587,7 @@
                 if (cells.length === 0) return;
 
                 // Updated column indices for compact table:
-                // 0: Sipariş No, 1: Klm, 2: Malzeme No, 3: Malzeme Adı, 4: Tedarikçi, 5: Brm, 6-8: Qty, 9: Fiyat, 10: Tarih, 11: İşlem
+                // 0: Order number, 1: Klm, 2: Material number, 3: Material title, 4: Tedarikçi, 5: Unit, 6-8: Qty, 9: Price, 10: Date, 11: Action
                 const rowOrderNo = cells[0].textContent.toLowerCase();
                 const rowItemNo = cells[1].textContent.toLowerCase();
                 const rowMaterialNo = cells[2].textContent.toLowerCase();
@@ -684,5 +695,68 @@
             }
         });
     </script>
+
+    <!-- DEVELOPER DOCUMENTATION PANEL -->
+    <div id="devDocsPanel" class="dev-docs-panel">
+        <button class="dev-docs-toggle" onclick="toggleDevDocs()">📋 Geliştirici Dokümantasyonu</button>
+        <div class="dev-docs-content" id="devDocsContent">
+            <div class="dev-docs-header">
+                <h2>📋 12 PO L - Purchasing Orders</h2>
+                <button class="dev-docs-close" onclick="toggleDevDocs()">✕</button>
+            </div>
+            <div class="dev-docs-body">
+                <div class="dev-docs-tabs">
+                    <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
+                </div>
+                <div id="dataStructure" class="dev-tab-content active">
+                    <h3>Purchasing Order Tablosu</h3>
+                    <table class="dev-table"><thead><tr><th>Field Name</th><th>Type</th><th>Length</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td>Purchasing Order Id</td><td>int</td><td>8</td><td>Primary key</td></tr>
+                            <tr><td>Purchasing Order SAP number</td><td>int</td><td>10</td><td>SAP sipariş numarası</td></tr>
+                            <tr><td>Supplier number</td><td>int</td><td>10</td><td>Tedarikçi numarası</td></tr>
+                            <tr><td>SRM number</td><td>int</td><td>10</td><td>SRM referansı</td></tr>
+                            <tr><td>creation datetime</td><td>datetime</td><td>-</td><td>Oluşturma tarihi</td></tr>
+                            <tr><td>Created by user id</td><td>int</td><td>8</td><td>Oluşturan kullanıcı</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Purchasing Order Item Tablosu</h3>
+                    <table class="dev-table"><thead><tr><th>Field Name</th><th>Type</th><th>Length</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td>Purchasing Order item Id</td><td>int</td><td>12</td><td>Item primary key</td></tr>
+                            <tr><td>Purchasing Order SAP no</td><td>int</td><td>10</td><td>Header referansı</td></tr>
+                            <tr><td>Purchasing Order SAP Item No</td><td>int</td><td>4</td><td>SAP item numarası</td></tr>
+                            <tr><td>Material number</td><td>text</td><td>13</td><td>Malzeme numarası</td></tr>
+                            <tr><td>Order quantity</td><td>float</td><td>15</td><td>Sipariş miktarı</td></tr>
+                            <tr><td>Goods receipt quantity</td><td>float</td><td>15</td><td>Mal kabul miktarı</td></tr>
+                            <tr><td>Unit price</td><td>float</td><td>14</td><td>Birim fiyat</td></tr>
+                            <tr><td>currency code</td><td>text</td><td>3</td><td>Döviz kodu</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="businessRules" class="dev-tab-content">
+                    <h3>İş Kuralları</h3>
+                    <div class="rules-section">
+                        <ul>
+                            <li>PO'lar SAP entegrasyonu ile oluşturulur</li>
+                            <li><strong>Open quantity</strong> = Order quantity - Goods receipt quantity</li>
+                            <li>Detay modal'da header ve item bilgileri birlikte görünür</li>
+                            <li>Item tıklandığında goods-receipt.html sayfasına yönlendirme</li>
+                        </ul>
+                    </div>
+                    <h3>Liste Özellikleri</h3>
+                    <div class="rules-section">
+                        <ul>
+                            <li>Filtreleme: Order No, Item No, Material No, Supplier</li>
+                            <li>Açık siparişler listesi (Open quantity > 0)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>.dev-docs-panel{position:fixed;bottom:0;left:0;right:0;z-index:9999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}.dev-docs-toggle{position:absolute;bottom:100%;right:20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;padding:10px 20px;border-radius:8px 8px 0 0;cursor:pointer;font-weight:600;font-size:14px;box-shadow:0 -2px 10px rgba(0,0,0,0.2)}.dev-docs-content{display:none;background:#1a1a2e;color:#eee;max-height:60vh;overflow-y:auto;box-shadow:0 -5px 20px rgba(0,0,0,0.3)}.dev-docs-content.active{display:block}.dev-docs-header{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);position:sticky;top:0}.dev-docs-header h2{margin:0;font-size:18px}.dev-docs-close{background:rgba(255,255,255,0.2);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px}.dev-docs-body{padding:20px}.dev-docs-tabs{display:flex;gap:10px;margin-bottom:20px;border-bottom:1px solid #333;padding-bottom:10px}.dev-tab{background:#2d2d44;color:#aaa;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;transition:all 0.3s}.dev-tab:hover,.dev-tab.active{background:#667eea;color:#fff}.dev-tab-content{display:none}.dev-tab-content.active{display:block}.dev-table{width:100%;border-collapse:collapse;margin:15px 0;font-size:13px}.dev-table th,.dev-table td{padding:10px;text-align:left;border:1px solid #333}.dev-table th{background:#2d2d44;color:#667eea;font-weight:600}.dev-table tr:nth-child(even){background:#252538}.dev-docs-body h3{color:#667eea;margin:20px 0 10px;font-size:16px;border-bottom:1px solid #333;padding-bottom:5px}.dev-docs-body ul{margin:0 0 15px 20px;line-height:1.8}.rules-section{background:#252538;padding:15px;border-radius:8px;margin-bottom:15px}</style>
+    <script>function toggleDevDocs(){document.getElementById('devDocsContent').classList.toggle('active')}function showDevTab(tabId){document.querySelectorAll('.dev-tab-content').forEach(c=>c.classList.remove('active'));document.querySelectorAll('.dev-tab').forEach(t=>t.classList.remove('active'));document.getElementById(tabId).classList.add('active');event.target.classList.add('active')}</script>
 </body>
 </html>

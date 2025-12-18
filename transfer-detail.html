@@ -6,6 +6,85 @@
     <title>Transfer Detay - IMMA</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
+<!--
+================================================================================
+IMMA DEVELOPER DOCUMENTATION
+================================================================================
+
+SCREEN: 21 TWW - Transfer Within Warehouse (Detail)
+FILE: transfer-detail.html
+LAST UPDATED: 2025-12-18
+
+--------------------------------------------------------------------------------
+RELATED DATABASE TABLES
+--------------------------------------------------------------------------------
+
+TABLE: Material Transfer Within Stock
+| Field Name                        | Type  | Length | Description                  |
+|-----------------------------------|-------|--------|------------------------------|
+| Material stock transfer request id| int   | 8      | Primary key                  |
+| Stock Record Id                   | int   | 8      | Kaynak stok kaydı            |
+| Transferring Quantity             | float | 15     | Transfer edilecek miktar     |
+| Transferred quantity              | float | 15     | Transfer edilen miktar       |
+| Delivery Finalized                | bool  | -      | Transfer tamamlandı mı       |
+
+TABLE: Material Movement (for tracking)
+| Field Name                 | Type     | Length | Description                  |
+|----------------------------|----------|--------|------------------------------|
+| Material Movement id       | int      | 12     | Hareket ID                   |
+| Material number            | text     | 13     | Malzeme numarası             |
+| Movement type              | int      | 2      | 4=Entry, 5=Exit              |
+| Movement quantity          | float    | 15     | Hareket miktarı              |
+| Stock record Id            | int      | 8      | Stok kaydı referansı         |
+| Created datetime           | datetime | -      | Oluşturma tarihi             |
+| Created by user info       | int      | 8      | Oluşturan kullanıcı          |
+
+--------------------------------------------------------------------------------
+MOVEMENT TYPES FOR TRANSFER
+--------------------------------------------------------------------------------
+
+| Code | Type                                  | Description              |
+|------|---------------------------------------|--------------------------|
+| 4    | Material transfer entry to storage    | Hedef depoya giriş       |
+| 5    | Material transfer exit from storage   | Kaynak depodan çıkış     |
+
+--------------------------------------------------------------------------------
+BUSINESS RULES
+--------------------------------------------------------------------------------
+
+1. Transfer aynı depo içinde farklı lokasyon/bin'ler arasında yapılabilir
+2. Transfer işlemi iki hareket kaydı oluşturur: Exit (5) ve Entry (4)
+3. Stock Record Id kaynak stoğu belirtir
+4. Transferred quantity <= Transferring Quantity olmalı
+5. Kısmi transfer yapılabilir (Delivery Finalized = false)
+6. Transfer tamamlandığında Delivery Finalized = true
+
+--------------------------------------------------------------------------------
+DISPLAYED INFORMATION
+--------------------------------------------------------------------------------
+
+Transfer Information:
+- Material Movement Id
+- Status
+- Date
+- Material number
+- Material description
+- Quantity
+- Movement type ID
+- Movement type Description
+
+Source and Target:
+- Source: Storage / Location / Bin
+- Target: Storage / Location / Bin
+
+Stock Record Information:
+- Stock Record Id
+- Previous Stock Record Id
+- Goods Receipt Id
+- Cost Id
+
+================================================================================
+-->
 <body>
     <!-- NAVBAR -->
     <nav class="modern-navbar">
@@ -57,7 +136,7 @@
                 <li class="nav-item">
                     <a href="budget-management.html" class="nav-link">
                         <span class="nav-icon">💰</span>
-                        Bütçe
+                        Budget
                     </a>
                     <div class="dropdown-menu">
                         <a href="budget-management.html" class="dropdown-item">Bütçe Yönetimi</a>
@@ -76,7 +155,7 @@
                 <li class="nav-item">
                     <a href="transfer-list.html" class="nav-link active">
                         <span class="nav-icon">🏭</span>
-                        Stok
+                        Stock
                     </a>
                     <div class="dropdown-menu">
                         <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
@@ -100,7 +179,7 @@
         <div class="page-header">
             <div>
                 <h1 class="page-title">Transfer Detayı</h1>
-                <p class="page-subtitle">Stok > Depo Transferi > <span id="transferId">-</span></p>
+                <p class="page-subtitle">Stock > Depo Transferi > <span id="transferId">-</span></p>
             </div>
             <div class="page-actions">
                 <a href="warehouse-transfer.html" class="btn btn-outline">← Geri Dön</a>
@@ -110,40 +189,40 @@
         <!-- Transfer Details -->
         <div class="card">
             <div class="card-header">
-                <h3>Transfer Bilgileri</h3>
+                <h3>Transfer Information</h3>
             </div>
             <div class="card-body">
                 <div class="info-grid">
                     <div class="info-item">
-                        <label>Transfer ID:</label>
+                        <label>Material Movement Id:</label>
                         <span id="displayTransferId">-</span>
                     </div>
                     <div class="info-item">
-                        <label>Durum:</label>
+                        <label>Status:</label>
                         <span id="displayStatus">-</span>
                     </div>
                     <div class="info-item">
-                        <label>Tarih:</label>
+                        <label>Date:</label>
                         <span id="displayDate">-</span>
                     </div>
                     <div class="info-item">
-                        <label>Malzeme No:</label>
+                        <label>Material number:</label>
                         <span id="displayMaterialNo">-</span>
                     </div>
                     <div class="info-item">
-                        <label>Malzeme Açıklaması:</label>
+                        <label>Material description:</label>
                         <span id="displayMaterialDesc">-</span>
                     </div>
                     <div class="info-item">
-                        <label>Miktar:</label>
+                        <label>Quantity:</label>
                         <span id="displayQuantity">-</span>
                     </div>
                     <div class="info-item">
-                        <label>Hareket Tipi ID:</label>
+                        <label>Movement type ID:</label>
                         <span id="displayMovementTypeId">-</span>
                     </div>
                     <div class="info-item">
-                        <label>Hareket Tipi Açıklaması:</label>
+                        <label>Movement type Description:</label>
                         <span id="displayMovementTypeTitle">-</span>
                     </div>
                 </div>
@@ -153,19 +232,19 @@
         <!-- Source/Target Info -->
         <div class="card">
             <div class="card-header">
-                <h3>Kaynak ve Hedef Bilgileri</h3>
+                <h3>Source and Target Information</h3>
             </div>
             <div class="card-body">
                 <div class="form-row" style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 20px;">
                     <!-- SOURCE -->
                     <div style="padding: 15px; border: 2px solid #dc3545; border-radius: 8px; background-color: #fff5f5;">
-                        <h4 style="color: #dc3545; margin-bottom: 15px;">Kaynak</h4>
+                        <h4 style="color: #dc3545; margin-bottom: 15px;">Source</h4>
                         <div class="info-item">
-                            <label>Depo:</label>
+                            <label>Storage:</label>
                             <span id="displaySourceWarehouse">-</span>
                         </div>
                         <div class="info-item">
-                            <label>Lokasyon:</label>
+                            <label>Location:</label>
                             <span id="displaySourceLocation">-</span>
                         </div>
                         <div class="info-item">
@@ -181,13 +260,13 @@
 
                     <!-- TARGET -->
                     <div style="padding: 15px; border: 2px solid #28a745; border-radius: 8px; background-color: #f0fff4;">
-                        <h4 style="color: #28a745; margin-bottom: 15px;">Hedef</h4>
+                        <h4 style="color: #28a745; margin-bottom: 15px;">Target</h4>
                         <div class="info-item">
-                            <label>Depo:</label>
+                            <label>Storage:</label>
                             <span id="displayTargetWarehouse">-</span>
                         </div>
                         <div class="info-item">
-                            <label>Lokasyon:</label>
+                            <label>Location:</label>
                             <span id="displayTargetLocation">-</span>
                         </div>
                         <div class="info-item">
@@ -202,7 +281,7 @@
         <!-- Stock Record Info -->
         <div class="card">
             <div class="card-header">
-                <h3>Stok Kayıt Bilgileri</h3>
+                <h3>Stock Record Information</h3>
             </div>
             <div class="card-body">
                 <div class="info-grid">
@@ -387,5 +466,90 @@
         // Initialize on DOM ready
         document.addEventListener('DOMContentLoaded', initializePage);
     </script>
+
+    <!-- DEVELOPER DOCUMENTATION PANEL -->
+    <div id="devDocsPanel" class="dev-docs-panel">
+        <button class="dev-docs-toggle" onclick="toggleDevDocs()">📋 Geliştirici Dokümantasyonu</button>
+        <div class="dev-docs-content" id="devDocsContent">
+            <div class="dev-docs-header">
+                <h2>📋 21 TWW - Transfer Within Warehouse (Detail)</h2>
+                <button class="dev-docs-close" onclick="toggleDevDocs()">✕</button>
+            </div>
+            <div class="dev-docs-body">
+                <div class="dev-docs-tabs">
+                    <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
+                    <button class="dev-tab" onclick="showDevTab('movementTypes')">Hareket Tipleri</button>
+                </div>
+                <div id="dataStructure" class="dev-tab-content active">
+                    <h3>Material Transfer Within Stock Tablosu</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Uzunluk</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Material stock transfer request id</td><td>int</td><td>8</td><td>Primary key</td></tr>
+                            <tr><td>Stock Record Id</td><td>int</td><td>8</td><td>Kaynak stok kaydı</td></tr>
+                            <tr><td>Transferring Quantity</td><td>float</td><td>15</td><td>Transfer edilecek miktar</td></tr>
+                            <tr><td>Transferred quantity</td><td>float</td><td>15</td><td>Transfer edilen miktar</td></tr>
+                            <tr><td>Delivery Finalized</td><td>bool</td><td>-</td><td>Transfer tamamlandı mı</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Transfer Bilgileri</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Source Storage/Location/Bin</td><td>Kaynak depo bilgileri</td></tr>
+                            <tr><td>Target Storage/Location/Bin</td><td>Hedef depo bilgileri</td></tr>
+                            <tr><td>Movement Type Id</td><td>Hareket tipi referansı</td></tr>
+                            <tr><td>Cost Id</td><td>Maliyet kaydı (FIFO için)</td></tr>
+                            <tr><td>Goods Receipt Id</td><td>Orijinal mal kabul referansı</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="businessRules" class="dev-tab-content">
+                    <div class="rules-section">
+                        <h4>Depo İçi Transfer Kuralları</h4>
+                        <ul>
+                            <li>Aynı depo içinde lokasyon/bin değişikliği</li>
+                            <li>Cost ID korunur (FIFO bozulmaz)</li>
+                            <li>Stok kaydı güncellenir, yeni kayıt oluşmaz</li>
+                            <li>Kısmi transfer yapılabilir</li>
+                            <li>İnaktif lokasyona transfer yapılamaz</li>
+                        </ul>
+                    </div>
+                    <div class="rules-section">
+                        <h4>Transfer Durumları</h4>
+                        <ul>
+                            <li><strong>Beklemede:</strong> Transfer oluşturuldu, onay bekliyor</li>
+                            <li><strong>Devam Ediyor:</strong> Kısmi transfer yapılmış</li>
+                            <li><strong>Tamamlandı:</strong> Tüm miktar transfer edildi</li>
+                            <li><strong>İptal:</strong> Transfer iptal edildi</li>
+                        </ul>
+                    </div>
+                </div>
+                <div id="movementTypes" class="dev-tab-content">
+                    <div class="rules-section">
+                        <h4>İlgili Hareket Tipleri</h4>
+                        <table class="dev-table">
+                            <thead><tr><th>Kod</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                            <tbody>
+                                <tr><td>4</td><td>Material transfer entry</td><td>Hedef lokasyona giriş</td></tr>
+                                <tr><td>5</td><td>Material transfer exit</td><td>Kaynak lokasyondan çıkış</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="rules-section">
+                        <h4>Stok Kaydı Referansları</h4>
+                        <ul>
+                            <li><strong>Stock Record Id:</strong> Yeni stok kaydı (hedef)</li>
+                            <li><strong>Prev Stock Record Id:</strong> Önceki stok kaydı (kaynak)</li>
+                            <li><strong>Goods Receipt Id:</strong> Orijinal mal kabul</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>.dev-docs-panel{position:fixed;bottom:0;left:0;right:0;z-index:9999;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}.dev-docs-toggle{width:100%;padding:12px 20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;cursor:pointer;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px}.dev-docs-toggle:hover{background:linear-gradient(135deg,#5a6fd6 0%,#6a4190 100%)}.dev-docs-content{display:none;background:#1a1a2e;color:#eee;max-height:70vh;overflow-y:auto}.dev-docs-content.active{display:block}.dev-docs-header{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;background:#16213e;border-bottom:2px solid #667eea}.dev-docs-header h2{margin:0;font-size:16px;color:#fff}.dev-docs-close{background:#e74c3c;color:#fff;border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px}.dev-docs-body{padding:20px}.dev-docs-tabs{display:flex;gap:10px;margin-bottom:20px;border-bottom:2px solid #333;padding-bottom:10px}.dev-tab{padding:8px 16px;background:#2d2d44;color:#aaa;border:none;border-radius:6px 6px 0 0;cursor:pointer;font-size:13px}.dev-tab.active,.dev-tab:hover{background:#667eea;color:#fff}.dev-tab-content{display:none}.dev-tab-content.active{display:block}.dev-table{width:100%;border-collapse:collapse;margin:15px 0;font-size:13px}.dev-table th,.dev-table td{padding:10px;text-align:left;border:1px solid #333}.dev-table th{background:#2d2d44;color:#667eea;font-weight:600}.dev-table tr:nth-child(even){background:#1f1f35}.rules-section{margin-bottom:20px}.rules-section h4{color:#667eea;margin-bottom:10px;font-size:14px}.rules-section ul{margin:0;padding-left:20px}.rules-section li{margin-bottom:6px;line-height:1.5;font-size:13px}</style>
+    <script>function toggleDevDocs(){document.getElementById('devDocsContent').classList.toggle('active')}function showDevTab(tabId){document.querySelectorAll('.dev-tab-content').forEach(c=>c.classList.remove('active'));document.querySelectorAll('.dev-tab').forEach(t=>t.classList.remove('active'));document.getElementById(tabId).classList.add('active');event.target.classList.add('active')}</script>
 </body>
 </html>

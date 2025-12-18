@@ -3,9 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sayım Detay - IMMA</title>
+    <title>Counting Detay - IMMA</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
+<!--
+================================================================================
+IMMA DEVELOPER DOCUMENTATION
+================================================================================
+
+SCREEN: 22 IC-C - Inventory Counting (Session Detail)
+FILE: counting-session-detail.html
+LAST UPDATED: 2025-12-18
+
+--------------------------------------------------------------------------------
+RELATED DATABASE TABLES
+--------------------------------------------------------------------------------
+
+TABLE: Inventory Counting Header
+| Field Name                    | Type     | Length | Description                  |
+|-------------------------------|----------|--------|------------------------------|
+| Inventory Counting Header Id  | int      | 8      | Primary key                  |
+| Correction type               | char     | 1      | Düzeltme tipi                |
+| Creation date time            | datetime | -      | Oluşturma tarihi             |
+| Created by user info          | int      | 8      | Oluşturan kullanıcı          |
+| Created for user info         | int      | 8      | Sayımı yapacak kullanıcı     |
+| Counted by user info          | int      | 8      | Sayan kullanıcı              |
+| Entered by user info          | int      | 8      | Veri giriş kullanıcısı       |
+| Document group Id             | int      | 8      | Ek dokümanlar grubu          |
+| Correction finalized check    | bool     | -      | Düzeltme tamamlandı mı       |
+
+TABLE: Inventory Counting Item
+| Field Name                    | Type     | Length | Description                  |
+|-------------------------------|----------|--------|------------------------------|
+| Inventory Counting item id    | int      | 8      | Primary key                  |
+| Inventory Counting item number| int      | 4      | Satır numarası               |
+| Material number               | text     | 13     | Malzeme numarası             |
+| Stock record Id               | int      | 8      | Stok kaydı referansı         |
+| Stock quantity                | float    | 15     | Sistem stok miktarı          |
+| Counting result quantity      | float    | 15     | Sayım sonucu miktarı         |
+
+--------------------------------------------------------------------------------
+BUSINESS RULES
+--------------------------------------------------------------------------------
+
+1. Sayım oturumu bir depo/lokasyon için oluşturulur
+2. Created for user info sayımı yapacak depo personelini belirtir
+3. Counted by user info fiili sayımı yapan kişidir
+4. Entered by user info veriyi sisteme giren kişidir (farklı olabilir)
+5. Differences by quantity = Counting result quantity - Stock quantity
+6. Pozitif fark: Fazla malzeme (yeşil)
+7. Negatif fark: Eksik malzeme (kırmızı)
+8. Sıfır fark: Eşleşme (gri)
+
+--------------------------------------------------------------------------------
+MOVEMENT TYPES FOR INVENTORY
+--------------------------------------------------------------------------------
+
+| Code | Type                    | Description                    |
+|------|-------------------------|--------------------------------|
+| 8    | Inventory positive record| Sayım fazlası (stok artışı)   |
+| 9    | Inventory negative record| Sayım eksiği (stok azalması)  |
+
+--------------------------------------------------------------------------------
+DISPLAYED INFORMATION
+--------------------------------------------------------------------------------
+
+Session Header:
+- Counting document Id
+- Counting Type (Yıllık/Dönemsel)
+- Storage
+- Status
+- Creation date time
+- Created by user info
+- Counted by user info
+- Total Items
+
+Item Table Columns:
+- Item (satır no)
+- Material number
+- Material title
+- Storage / Location / Bin
+- System Quantity
+- Counting result Quantity
+- Differences by quantity
+- Unit value
+- Differences by quantity Value
+
+Summary Stats:
+- Total Items
+- Counted Items
+- Items with Difference
+- Total Difference Value
+
+================================================================================
+-->
 <body>
     <!-- NAVBAR -->
     <nav class="modern-navbar">
@@ -22,10 +113,10 @@
                 <li class="nav-item"><a href="material-list.html" class="nav-link"><span class="nav-icon">📦</span>Ana Veriler</a></li>
                 <li class="nav-item"><a href="mrp.html" class="nav-link"><span class="nav-icon">📈</span>MRP</a></li>
                 <li class="nav-item"><a href="srm-list.html" class="nav-link"><span class="nav-icon">🛒</span>Satınalma</a></li>
-                <li class="nav-item"><a href="budget-management.html" class="nav-link"><span class="nav-icon">💰</span>Bütçe</a></li>
+                <li class="nav-item"><a href="budget-management.html" class="nav-link"><span class="nav-icon">💰</span>Budget</a></li>
                 <li class="nav-item"><a href="material-request-list.html" class="nav-link"><span class="nav-icon">📋</span>Talepler</a></li>
                 <li class="nav-item">
-                    <a href="transfer-list.html" class="nav-link active"><span class="nav-icon">🏭</span>Stok</a>
+                    <a href="transfer-list.html" class="nav-link active"><span class="nav-icon">🏭</span>Stock</a>
                     <div class="dropdown-menu">
                         <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
                         <a href="warehouse-transfer.html" class="dropdown-item">Depo Transferi</a>
@@ -47,8 +138,8 @@
     <main class="modern-container">
         <div class="page-header">
             <div>
-                <h1 class="page-title">Sayım Detayları</h1>
-                <p class="page-subtitle">Stok > Sayım İşlemleri > <span id="sessionId">-</span></p>
+                <h1 class="page-title">Counting Detayları</h1>
+                <p class="page-subtitle">Stock > Sayım İşlemleri > <span id="sessionId">-</span></p>
             </div>
             <div class="page-actions">
                 <a href="inventory-counting.html" class="btn btn-outline">← Geri Dön</a>
@@ -58,43 +149,43 @@
         <!-- Session Header Info -->
         <div class="card">
             <div class="card-header">
-                <h3>Sayım Oturumu Bilgileri</h3>
+                <h3>Counting Session Information</h3>
             </div>
             <div class="card-body">
                 <div class="detail-header">
                     <div class="detail-row">
                         <div class="detail-col">
-                            <label>Sayım ID</label>
+                            <label>Counting document Id</label>
                             <div id="detailId" class="detail-value">-</div>
                         </div>
                         <div class="detail-col">
-                            <label>Sayım Tipi</label>
+                            <label>Counting Type</label>
                             <div id="detailType" class="detail-value">-</div>
                         </div>
                         <div class="detail-col">
-                            <label>Depo</label>
+                            <label>Storage</label>
                             <div id="detailStorage" class="detail-value">-</div>
                         </div>
                         <div class="detail-col">
-                            <label>Durum</label>
+                            <label>Status</label>
                             <div id="detailStatus" class="detail-value">-</div>
                         </div>
                     </div>
                     <div class="detail-row">
                         <div class="detail-col">
-                            <label>Oluşturma Tarihi</label>
+                            <label>Creation date time</label>
                             <div id="detailCreationDate" class="detail-value">-</div>
                         </div>
                         <div class="detail-col">
-                            <label>Oluşturan</label>
+                            <label>Created by user info</label>
                             <div id="detailCreatedBy" class="detail-value">-</div>
                         </div>
                         <div class="detail-col">
-                            <label>Sayım Sorumlusu</label>
+                            <label>Counted by user info</label>
                             <div id="detailCreatedFor" class="detail-value">-</div>
                         </div>
                         <div class="detail-col">
-                            <label>Toplam Kalem</label>
+                            <label>Total Items</label>
                             <div id="detailTotalItems" class="detail-value">-</div>
                         </div>
                     </div>
@@ -105,7 +196,7 @@
         <!-- Detail Items Table -->
         <div class="card">
             <div class="card-header">
-                <h3>Sayım Kalemleri</h3>
+                <h3>Counting Items</h3>
             </div>
             <div class="card-body">
                 <div class="table-container" style="max-height: 500px;">
@@ -113,16 +204,16 @@
                         <thead>
                             <tr>
                                 <th>Item</th>
-                                <th>Malzeme No</th>
-                                <th>Malzeme Adı</th>
-                                <th>Depo</th>
-                                <th>Lokasyon</th>
+                                <th>Material number</th>
+                                <th>Material title</th>
+                                <th>Storage</th>
+                                <th>Location</th>
                                 <th>Bin</th>
-                                <th>Sistem Miktar</th>
-                                <th>Sayılan Miktar</th>
-                                <th>Fark</th>
-                                <th>Birim Değer</th>
-                                <th>Fark Değeri</th>
+                                <th>System Quantity</th>
+                                <th>Counting result Quantity</th>
+                                <th>Differences by quantity</th>
+                                <th>Unit value</th>
+                                <th>Differences by quantity Value</th>
                             </tr>
                         </thead>
                         <tbody id="detailItemsTable">
@@ -130,7 +221,7 @@
                                 <td>1</td>
                                 <td><strong>MAT-ELC-0234</strong></td>
                                 <td>Motor Rulman SKF 6205</td>
-                                <td>Merkez Depo</td>
+                                <td>Merkez Storage</td>
                                 <td>A</td>
                                 <td>A-01</td>
                                 <td>45 PC</td>
@@ -143,7 +234,7 @@
                                 <td>2</td>
                                 <td><strong>MAT-MEC-0891</strong></td>
                                 <td>V Kayış A-45</td>
-                                <td>Merkez Depo</td>
+                                <td>Merkez Storage</td>
                                 <td>A</td>
                                 <td>A-01</td>
                                 <td>120 PC</td>
@@ -156,7 +247,7 @@
                                 <td>3</td>
                                 <td><strong>MAT-HYD-0456</strong></td>
                                 <td>Hidrolik Yağ ISO VG 46</td>
-                                <td>Merkez Depo</td>
+                                <td>Merkez Storage</td>
                                 <td>A</td>
                                 <td>A-02</td>
                                 <td>200 L</td>
@@ -179,19 +270,19 @@
             <div class="card-body">
                 <div class="summary-stats">
                     <div class="stat-item">
-                        <label>Toplam Kalem</label>
+                        <label>Total Items</label>
                         <div class="stat-value" id="totalItems">247</div>
                     </div>
                     <div class="stat-item">
-                        <label>Sayılan</label>
+                        <label>Counting result Quantity</label>
                         <div class="stat-value" style="color: #28a745;" id="countedItems">247</div>
                     </div>
                     <div class="stat-item">
-                        <label>Fark Olan</label>
+                        <label>Differences</label>
                         <div class="stat-value" style="color: #ffc107;" id="differenceItems">18</div>
                     </div>
                     <div class="stat-item">
-                        <label>Toplam Fark Değeri</label>
+                        <label>Toplam Differences by quantity Değeri</label>
                         <div class="stat-value" style="color: #dc3545;" id="totalDifference">3,247.50 TRY</div>
                     </div>
                 </div>
@@ -272,7 +363,7 @@
             'IC-HDR-2025-0012': {
                 id: 'IC-HDR-2025-0012',
                 type: 'Yıllık',
-                storage: 'Merkez Depo',
+                storage: 'Merkez Storage',
                 status: 'Tamamlandı',
                 statusClass: 'status-active',
                 creationDate: '2025-12-14',
@@ -300,7 +391,7 @@
             'IC-HDR-2025-0010': {
                 id: 'IC-HDR-2025-0010',
                 type: 'Dönemsel',
-                storage: 'Konsinye Depo',
+                storage: 'Konsinye Storage',
                 status: 'Tamamlandı',
                 statusClass: 'status-active',
                 creationDate: '2025-12-05',
@@ -314,7 +405,7 @@
             'IC-HDR-2025-0009': {
                 id: 'IC-HDR-2025-0009',
                 type: 'Yıllık',
-                storage: 'Yardımcı Depo',
+                storage: 'Yardımcı Storage',
                 status: 'Tamamlandı',
                 statusClass: 'status-active',
                 creationDate: '2025-11-28',
@@ -337,7 +428,7 @@
             if (id && sessions[id]) {
                 loadSessionData(sessions[id]);
             } else {
-                alert('Sayım oturumu bulunamadı!');
+                alert('Counting oturumu bulunamadı!');
                 window.location.href = 'inventory-counting.html';
             }
         }

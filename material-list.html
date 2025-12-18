@@ -6,6 +6,95 @@
     <title>Malzeme Listesi - IMMA</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
+<!--
+================================================================================
+IMMA DEVELOPER DOCUMENTATION
+================================================================================
+
+SCREEN: 2 ML - Material List
+FILE: material-list.html
+LAST UPDATED: 2025-12-18
+
+--------------------------------------------------------------------------------
+RELATED DATABASE TABLES
+--------------------------------------------------------------------------------
+
+TABLE: Material
+| Field Name                              | Type     | Length | Description                    |
+|-----------------------------------------|----------|--------|--------------------------------|
+| id                                      | int      | 8      | Primary key                    |
+| Material number                         | text     | 13     | Format: ##.#####-####          |
+| Old material number                     | text     | 13     | Eski sistem numarası           |
+| Title                                   | text     | 128    | Malzeme başlığı                |
+| Description                             | text     | 512    | Detaylı açıklama               |
+| Unit of measure code                    | text     | 4      | Ölçü birimi kodu               |
+| Material Status code                    | char     | 1      | 1-5 arası değer                |
+| Blocking Reason                         | text     | 128    | Status=2 için zorunlu          |
+| Blocking Reevaluation date              | datetime | -      | Bloklama yeniden değ. tarihi   |
+| Reordering quantity                     | float    | 15     | Yeniden sipariş miktarı        |
+| Safety stock quantity                   | float    | 15     | Güvenlik stoğu                 |
+| Default Storage                         | text     | 8      | Varsayılan depo                |
+| Default Location                        | text     | 8      | Varsayılan lokasyon            |
+| Default Bin                             | text     | 8      | Varsayılan bin                 |
+| Reordering point quantity               | float    | 15     | Yeniden sipariş noktası        |
+| Notes                                   | text     | 512    | Notlar                         |
+| Created by user info                    | int      | 8      | Oluşturan kullanıcı ID         |
+| Accounting Number                       | int      | 8      | Muhasebe numarası              |
+| Purchased Packing Material              | bool     | -      | Satın alınan ambalaj           |
+| Alternative material 1                  | text     | 13     | Alternatif malzeme 1           |
+| Alternative material 2                  | text     | 13     | Alternatif malzeme 2           |
+| Material Group Code                     | text     | 8      | Malzeme grubu kodu             |
+| Order batch quantity                    | float    | 15     | Sipariş parti miktarı          |
+| Unit quantity in a package              | float    | 15     | Paket içi birim adedi          |
+| Document group Id                       | int      | 8      | Doküman grubu referansı        |
+| Accounting actions required             | bool     | -      | Muhasebe aksiyonu gerekli      |
+| Maximum stock quantity                  | float    | 15     | Maksimum stok miktarı          |
+| Blocked for material request check      | bool     | -      | Talep için bloklu              |
+| Total Stock                             | float    | 15     | Toplam stok (hesaplanan)       |
+| Open request quantity                   | float    | 15     | Açık talep miktarı             |
+| Producer name                           | text     | 32     | Üretici adı                    |
+| Producer model name                     | text     | 64     | Üretici model adı              |
+
+Material Status Codes:
+- 1: Active - Normal kullanımda
+- 2: Blocked - Geçici olarak bloklu
+- 3: Inactive - Kullanım dışı
+- 4: Preparing to be used - Kullanıma hazırlanıyor
+- 5: Preparing to discontinuation - Kullanımdan kaldırılıyor
+
+--------------------------------------------------------------------------------
+BUSINESS RULES (İş Kuralları)
+--------------------------------------------------------------------------------
+
+1. Material number formatı: ##.#####-#### veya seri prefix + otomatik numara
+2. "Preparing to be used" (4): Satınalma ve mal kabul yapılabilir, talep YAPILAMAZ
+3. "Preparing to discontinuation" (5): Talep/çıkış/transfer yapılabilir, yeni SRM YAPILAMAZ
+4. Yeni malzeme oluşturulduğunda default status: "Preparing to be used" (4)
+5. Status=Blocked (2) ise Blocking Reason zorunludur
+6. Bloklu malzemeler listede görünür ancak talep için seçilemez
+7. 3 karakter sonra arama otosuggest aktif olur
+8. "main image" etiketli görseller malzeme view ekranında görünür
+
+--------------------------------------------------------------------------------
+LIST SCREEN FEATURES
+--------------------------------------------------------------------------------
+
+- Varsayılan sıralama: Material number
+- Filtreleme: Status, Material Group, Storage
+- Arama: Material number, Title, Description alanlarında
+- Toplu işlem: Seçili malzemelere status değişikliği
+- Detay linki: material-data.html?mode=view&id=
+
+--------------------------------------------------------------------------------
+INTEGRATION NOTES
+--------------------------------------------------------------------------------
+
+- SAP: Material number SAP'dan gelebilir veya IMMA'da oluşturulabilir
+- MRP: Reordering point ve Safety stock MRP hesaplamalarında kullanılır
+- Budget: Malzeme talepleri budget kontrolünden geçer
+
+================================================================================
+-->
 <body>
     <!-- ============================================
          NAVBAR - Top Navigation (Maximo Style)
@@ -59,7 +148,7 @@
                 <li class="nav-item">
                     <a href="budget-management.html" class="nav-link">
                         <span class="nav-icon">💰</span>
-                        Bütçe
+                        Budget
                     </a>
                     <div class="dropdown-menu">
                         <a href="budget-management.html" class="dropdown-item">Bütçe Yönetimi</a>
@@ -78,7 +167,7 @@
                 <li class="nav-item">
                     <a href="transfer-list.html" class="nav-link">
                         <span class="nav-icon">🏭</span>
-                        Stok
+                        Stock
                     </a>
                     <div class="dropdown-menu">
                         <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
@@ -114,58 +203,44 @@
         </div>
 
             <!-- Developer Notes Section -->
-            <div class="dev-note info">
-                <h4>📋 Ekran Bilgisi: Malzeme Listesi (Screen 2 - MDM)</h4>
-                <p><strong>Amaç:</strong> Sistemdeki tüm malzemelerin listelenmesi, filtrelenmesi ve yönetilmesi.</p>
-                <p><strong>Tablo:</strong> MDM_Material (Ana malzeme tablosu)</p>
-            </div>
 
-            <div class="dev-note">
-                <h4>🔧 Geliştirici Notları - Filtreleme</h4>
-                <ul>
-                    <li><strong>Varsayılan Filtre:</strong> Sayfa açıldığında aktif malzemeler gösterilir (StatusID = 1)</li>
-                    <li><strong>Arama:</strong> Malzeme No, Başlık, Açıklama alanlarında arama yapılabilir</li>
-                    <li><strong>Performans:</strong> Sayfalama kullanılmalı, sayfa başına max 50 kayıt</li>
-                    <li><strong>Sıralama:</strong> Varsayılan olarak güncelleme tarihine göre azalan sırada</li>
-                </ul>
-            </div>
 
             <!-- Filter Section -->
             <div class="card">
                 <div class="card-header">
-                    <h3>Filtreler</h3>
+                    <h3>Filters</h3>
                     <button class="btn btn-sm btn-outline" id="toggleFilters">Filtreleri Gizle/Göster</button>
                 </div>
                 <div class="card-body" id="filterSection">
                     <div class="form-row">
                         <div class="form-group col-3">
-                            <label>Malzeme No</label>
-                            <input type="text" class="form-control" placeholder="##.#####-####">
+                            <label>Material number</label>
+                            <input type="text" class="form-control" id="filterMaterialNumber" placeholder="##.#####-####" maxlength="13">
                         </div>
                         <div class="form-group col-3">
-                            <label>Malzeme Başlığı</label>
-                            <input type="text" class="form-control" placeholder="Başlık ara...">
+                            <label>Material title</label>
+                            <input type="text" class="form-control" id="filterTitle" placeholder="Title ara..." maxlength="128">
                         </div>
                         <div class="form-group col-3">
-                            <label>Malzeme Grubu</label>
-                            <select class="form-control">
+                            <label>Material Group Code</label>
+                            <select class="form-control" id="filterMaterialGroup">
                                 <option value="">Tümü</option>
-                                <option value="electrical">Elektrik Malzemeleri</option>
-                                <option value="mechanical">Mekanik Parçalar</option>
-                                <option value="consumable">Sarf Malzemeleri</option>
-                                <option value="spare">Yedek Parçalar</option>
-                                <option value="safety">Güvenlik Ekipmanları</option>
+                                <option value="GEN">GEN - Genel Malzemeler</option>
+                                <option value="ELK">ELK - Elektrik Malzemeleri</option>
+                                <option value="MKN">MKN - Mekanik Parcalar</option>
+                                <option value="KMY">KMY - Kimyasallar</option>
+                                <option value="GUV">GUV - Guvenlik Ekipmanlari</option>
                             </select>
                         </div>
                         <div class="form-group col-3">
-                            <label>Durum</label>
-                            <select class="form-control">
+                            <label>Material Status</label>
+                            <select class="form-control" id="filterStatus">
                                 <option value="">Tümü</option>
-                                <option value="1" selected>Aktif</option>
-                                <option value="2">Blokeli</option>
-                                <option value="3">İnaktif</option>
-                                <option value="4">Kullanıma Hazırlanıyor</option>
-                                <option value="5">Kullanımdan Kaldırılıyor</option>
+                                <option value="1" selected>Active</option>
+                                <option value="2">Blocked</option>
+                                <option value="3">Inactive</option>
+                                <option value="4">Preparing to be used</option>
+                                <option value="5">Preparing to discontinuation</option>
                             </select>
                         </div>
                     </div>
@@ -174,13 +249,13 @@
                             <label>Depolama Tipi</label>
                             <select class="form-control">
                                 <option value="">Tümü</option>
-                                <option value="central">Merkez Depo</option>
-                                <option value="line">Hat Kenarı Depo</option>
-                                <option value="consignment">Konsinye Depo</option>
+                                <option value="central">Merkez Storage</option>
+                                <option value="line">Hat Kenarı Storage</option>
+                                <option value="consignment">Konsinye Storage</option>
                             </select>
                         </div>
                         <div class="form-group col-3">
-                            <label>Birim</label>
+                            <label>Unit of measure</label>
                             <select class="form-control">
                                 <option value="">Tümü</option>
                                 <option value="AD">Adet (AD)</option>
@@ -191,7 +266,7 @@
                             </select>
                         </div>
                         <div class="form-group col-3">
-                            <label>MRP Aktif</label>
+                            <label>MRP Active</label>
                             <select class="form-control">
                                 <option value="">Tümü</option>
                                 <option value="1">Evet</option>
@@ -199,12 +274,12 @@
                             </select>
                         </div>
                         <div class="form-group col-3">
-                            <label>Stok Durumu</label>
+                            <label>Stock Statusu</label>
                             <select class="form-control">
                                 <option value="">Tümü</option>
-                                <option value="instock">Stokta Var</option>
-                                <option value="lowstock">Düşük Stok</option>
-                                <option value="outofstock">Stokta Yok</option>
+                                <option value="instock">Stockta Var</option>
+                                <option value="lowstock">Düşük Stock</option>
+                                <option value="outofstock">Stockta Yok</option>
                             </select>
                         </div>
                     </div>
@@ -216,20 +291,11 @@
             </div>
 
             <!-- Developer Note for Table -->
-            <div class="dev-note warning">
-                <h4>⚠️ Tablo Özellikleri</h4>
-                <ul>
-                    <li><strong>Sıralama:</strong> Tüm sütunlar sıralanabilir olmalı (tıklanınca ASC/DESC)</li>
-                    <li><strong>Satır Tıklama:</strong> Satıra tıklandığında material-data.html?id={MaterialID} sayfasına yönlendir</li>
-                    <li><strong>Durum Renkleri:</strong> Aktif=Yeşil, Blokeli=Kırmızı, İnaktif=Gri, Hazırlanıyor=Sarı</li>
-                    <li><strong>Stok Uyarısı:</strong> Mevcut stok &lt; Min stok ise satır sarı arkaplan</li>
-                </ul>
-            </div>
 
             <!-- Results Table -->
             <div class="card">
                 <div class="card-header">
-                    <h3>Malzeme Listesi</h3>
+                    <h3>Material List</h3>
                     <div class="card-header-actions">
                         <span class="result-count">1.247 kayıt bulundu</span>
                         <select class="form-control form-control-sm" style="width: auto;">
@@ -244,16 +310,16 @@
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th class="sortable" data-sort="materialNo">Malzeme No</th>
-                                    <th class="sortable" data-sort="title">Baslik</th>
-                                    <th class="sortable" data-sort="group">Grup</th>
-                                    <th class="sortable" data-sort="unit">Birim</th>
-                                    <th class="sortable" data-sort="stock">Stok</th>
-                                    <th>Min</th>
-                                    <th>Max</th>
-                                    <th class="sortable" data-sort="storage">Depolama</th>
-                                    <th class="sortable" data-sort="status">Durum</th>
-                                    <th>Islem</th>
+                                    <th class="sortable" data-sort="materialNo">Material number</th>
+                                    <th class="sortable" data-sort="title">Title</th>
+                                    <th class="sortable" data-sort="group">Material Group</th>
+                                    <th class="sortable" data-sort="unit">Unit of measure</th>
+                                    <th class="sortable" data-sort="stock">Total Stock</th>
+                                    <th>Reorder Point</th>
+                                    <th>Max Stock</th>
+                                    <th class="sortable" data-sort="storage">Default Storage</th>
+                                    <th class="sortable" data-sort="status">Material Status</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -265,28 +331,28 @@
                                     <td class="text-danger"><strong>2</strong></td>
                                     <td>5</td>
                                     <td>20</td>
-                                    <td>Merkez Depo</td>
-                                    <td><span class="status-badge onaylandi">Aktif</span></td>
+                                    <td>Merkez Storage</td>
+                                    <td><span class="status-badge onaylandi">Active</span></td>
                                     <td>
                                         <div class="table-actions">
-                                            <button class="btn btn-sm btn-outline edit">Duzenle</button>
-                                            <button class="btn btn-sm btn-primary view">Stok</button>
+                                            <button class="btn btn-sm btn-outline edit">Düzenle</button>
+                                            <button class="btn btn-sm btn-primary view">Stock</button>
                                         </div>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td><a href="material-data.html?id=2" class="table-cell-primary">01.00002-0001</a></td>
                                     <td>Rulman 6205-2RS</td>
-                                    <td>Mekanik Parcalar</td>
+                                    <td>MKN</td>
                                     <td>AD</td>
                                     <td>150</td>
                                     <td>50</td>
                                     <td>300</td>
-                                    <td>Merkez Depo</td>
-                                    <td><span class="status-badge onaylandi">Aktif</span></td>
+                                    <td>MAIN</td>
+                                    <td><span class="status-badge onaylandi">Active</span></td>
                                     <td>
                                         <div class="table-actions">
-                                            <button class="btn btn-sm btn-outline edit">Duzenle</button>
+                                            <button class="btn btn-sm btn-outline edit">Düzenle</button>
                                             <button class="btn btn-sm btn-primary view">Stok</button>
                                         </div>
                                     </td>
@@ -299,11 +365,11 @@
                                     <td>500</td>
                                     <td>200</td>
                                     <td>1000</td>
-                                    <td>Merkez Depo</td>
-                                    <td><span class="status-badge onaylandi">Aktif</span></td>
+                                    <td>Merkez Storage</td>
+                                    <td><span class="status-badge onaylandi">Active</span></td>
                                     <td>
                                         <div class="table-actions">
-                                            <button class="btn btn-sm btn-outline edit">Duzenle</button>
+                                            <button class="btn btn-sm btn-outline edit">Düzenle</button>
                                             <button class="btn btn-sm btn-primary view">Stok</button>
                                         </div>
                                     </td>
@@ -316,11 +382,11 @@
                                     <td>8</td>
                                     <td>3</td>
                                     <td>15</td>
-                                    <td>Konsinye Depo</td>
-                                    <td><span class="status-badge onaylandi">Aktif</span></td>
+                                    <td>Konsinye Storage</td>
+                                    <td><span class="status-badge onaylandi">Active</span></td>
                                     <td>
                                         <div class="table-actions">
-                                            <button class="btn btn-sm btn-outline edit">Duzenle</button>
+                                            <button class="btn btn-sm btn-outline edit">Düzenle</button>
                                             <button class="btn btn-sm btn-primary view">Stok</button>
                                         </div>
                                     </td>
@@ -328,16 +394,16 @@
                                 <tr>
                                     <td><a href="material-data.html?id=5" class="table-cell-primary">01.00005-0001</a></td>
                                     <td>Guvenlik Eldiveni (Cift)</td>
-                                    <td>Guvenlik Ekipmanlari</td>
+                                    <td>Guvenlik Octpmanlari</td>
                                     <td>AD</td>
                                     <td>250</td>
                                     <td>100</td>
                                     <td>500</td>
                                     <td>Hat Kenari</td>
-                                    <td><span class="status-badge onaylandi">Aktif</span></td>
+                                    <td><span class="status-badge onaylandi">Active</span></td>
                                     <td>
                                         <div class="table-actions">
-                                            <button class="btn btn-sm btn-outline edit">Duzenle</button>
+                                            <button class="btn btn-sm btn-outline edit">Düzenle</button>
                                             <button class="btn btn-sm btn-primary view">Stok</button>
                                         </div>
                                     </td>
@@ -350,11 +416,11 @@
                                     <td>45</td>
                                     <td>20</td>
                                     <td>100</td>
-                                    <td>Merkez Depo</td>
-                                    <td><span class="status-badge reddedildi">Blokeli</span></td>
+                                    <td>Merkez Storage</td>
+                                    <td><span class="status-badge reddedildi">Blocked</span></td>
                                     <td>
                                         <div class="table-actions">
-                                            <button class="btn btn-sm btn-outline edit">Duzenle</button>
+                                            <button class="btn btn-sm btn-outline edit">Düzenle</button>
                                             <button class="btn btn-sm btn-primary view">Stok</button>
                                         </div>
                                     </td>
@@ -367,11 +433,11 @@
                                     <td>4</td>
                                     <td>2</td>
                                     <td>10</td>
-                                    <td>Merkez Depo</td>
-                                    <td><span class="status-badge beklemede">Hazirlaniyor</span></td>
+                                    <td>Merkez Storage</td>
+                                    <td><span class="status-badge beklemede">Preparing to be used</span></td>
                                     <td>
                                         <div class="table-actions">
-                                            <button class="btn btn-sm btn-outline edit">Duzenle</button>
+                                            <button class="btn btn-sm btn-outline edit">Düzenle</button>
                                             <button class="btn btn-sm btn-primary view">Stok</button>
                                         </div>
                                     </td>
@@ -384,11 +450,11 @@
                                     <td class="text-danger"><strong>1</strong></td>
                                     <td>3</td>
                                     <td>15</td>
-                                    <td>Merkez Depo</td>
-                                    <td><span class="status-badge onaylandi">Aktif</span></td>
+                                    <td>Merkez Storage</td>
+                                    <td><span class="status-badge onaylandi">Active</span></td>
                                     <td>
                                         <div class="table-actions">
-                                            <button class="btn btn-sm btn-outline edit">Duzenle</button>
+                                            <button class="btn btn-sm btn-outline edit">Düzenle</button>
                                             <button class="btn btn-sm btn-primary view">Stok</button>
                                         </div>
                                     </td>
@@ -402,10 +468,10 @@
                                     <td>10</td>
                                     <td>50</td>
                                     <td>Hat Kenari</td>
-                                    <td><span class="status-badge onaylandi">Aktif</span></td>
+                                    <td><span class="status-badge onaylandi">Active</span></td>
                                     <td>
                                         <div class="table-actions">
-                                            <button class="btn btn-sm btn-outline edit">Duzenle</button>
+                                            <button class="btn btn-sm btn-outline edit">Düzenle</button>
                                             <button class="btn btn-sm btn-primary view">Stok</button>
                                         </div>
                                     </td>
@@ -413,16 +479,16 @@
                                 <tr>
                                     <td><a href="material-data.html?id=10" class="table-cell-primary">02.00005-0001</a></td>
                                     <td>Baret (Sari)</td>
-                                    <td>Guvenlik Ekipmanlari</td>
+                                    <td>Guvenlik Octpmanlari</td>
                                     <td>AD</td>
                                     <td>75</td>
                                     <td>30</td>
                                     <td>150</td>
                                     <td>Hat Kenari</td>
-                                    <td><span class="status-badge taslak">Inaktif</span></td>
+                                    <td><span class="status-badge taslak">Inactive</span></td>
                                     <td>
                                         <div class="table-actions">
-                                            <button class="btn btn-sm btn-outline edit">Duzenle</button>
+                                            <button class="btn btn-sm btn-outline edit">Düzenle</button>
                                             <button class="btn btn-sm btn-primary view">Stok</button>
                                         </div>
                                     </td>
@@ -442,81 +508,6 @@
                 </div>
             </div>
 
-            <!-- Developer Note for Data -->
-            <div class="dev-note success">
-                <h4>✅ Veri Kaynağı ve API</h4>
-                <p><strong>API Endpoint:</strong> GET /api/materials</p>
-                <p><strong>Query Parameters:</strong></p>
-                <ul>
-                    <li><code>page</code> - Sayfa numarası (varsayılan: 1)</li>
-                    <li><code>pageSize</code> - Sayfa başına kayıt (varsayılan: 25, max: 50)</li>
-                    <li><code>materialNo</code> - Malzeme no filtresi (LIKE araması)</li>
-                    <li><code>title</code> - Başlık filtresi (LIKE araması)</li>
-                    <li><code>groupId</code> - Malzeme grubu ID</li>
-                    <li><code>statusId</code> - Durum ID (1=Aktif, 2=Blokeli, 3=İnaktif, 4=Hazırlanıyor, 5=Kaldırılıyor)</li>
-                    <li><code>storageTypeId</code> - Depolama tipi ID</li>
-                    <li><code>unitId</code> - Birim ID</li>
-                    <li><code>mrpActive</code> - MRP durumu (true/false)</li>
-                    <li><code>stockStatus</code> - Stok durumu (instock/lowstock/outofstock)</li>
-                    <li><code>sortBy</code> - Sıralama alanı</li>
-                    <li><code>sortOrder</code> - Sıralama yönü (asc/desc)</li>
-                </ul>
-            </div>
-
-            <div class="dev-note">
-                <h4>📊 İlişkili Tablolar</h4>
-                <table class="table table-sm">
-                    <thead>
-                        <tr>
-                            <th>Tablo</th>
-                            <th>İlişki</th>
-                            <th>Açıklama</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>MDM_Material</td>
-                            <td>Ana Tablo</td>
-                            <td>Malzeme ana verileri</td>
-                        </tr>
-                        <tr>
-                            <td>MDM_MaterialGroup</td>
-                            <td>FK: GroupID</td>
-                            <td>Malzeme grup bilgileri</td>
-                        </tr>
-                        <tr>
-                            <td>MDM_Unit</td>
-                            <td>FK: UnitID</td>
-                            <td>Birim tanımları</td>
-                        </tr>
-                        <tr>
-                            <td>MDM_MaterialStatus</td>
-                            <td>FK: StatusID</td>
-                            <td>Durum tanımları</td>
-                        </tr>
-                        <tr>
-                            <td>MDM_StorageType</td>
-                            <td>FK: StorageTypeID</td>
-                            <td>Depolama tipi tanımları</td>
-                        </tr>
-                        <tr>
-                            <td>INV_Stock</td>
-                            <td>JOIN: MaterialID</td>
-                            <td>Mevcut stok bilgisi (SUM)</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="dev-note warning">
-                <h4>⚠️ Yetki Kontrolleri</h4>
-                <ul>
-                    <li><strong>Görüntüleme:</strong> Tüm kullanıcılar listeyi görebilir</li>
-                    <li><strong>Yeni Malzeme:</strong> Sadece "MDM_CREATE" yetkisi olanlar</li>
-                    <li><strong>Excel Export:</strong> "MDM_EXPORT" yetkisi gerekli</li>
-                    <li><strong>Düzenleme:</strong> "MDM_EDIT" yetkisi + malzeme kendi departmanına ait olmalı</li>
-                </ul>
-            </div>
     </main>
 
     <style>
@@ -525,11 +516,18 @@
             display: flex;
             gap: 4px;
             flex-wrap: nowrap;
+            min-width: 180px;
         }
         .table-actions .btn-sm {
             padding: 4px 8px;
             font-size: 11px;
             white-space: nowrap;
+        }
+
+        /* Table last column min-width */
+        .table th:last-child,
+        .table td:last-child {
+            min-width: 180px;
         }
     </style>
 
@@ -544,7 +542,7 @@
         document.querySelectorAll('.sortable').forEach(th => {
             th.style.cursor = 'pointer';
             th.addEventListener('click', function() {
-                alert('Sıralama: ' + this.dataset.sort);
+                alert('#lama: ' + this.dataset.sort);
             });
         });
 
@@ -562,7 +560,7 @@
             btn.addEventListener('click', function() {
                 const row = this.closest('tr');
                 const materialCode = row.cells[0].textContent;
-                alert('Stok hareketleri görüntüleniyor: ' + materialCode + '\n\n(Bu özellik backend entegrasyonu ile çalışacak)');
+                alert('Stock hareketleri görüntüleniyor: ' + materialCode + '\n\n(Bu özellik backend entegrasyonu ile çalışacak)');
             });
         });
 
@@ -617,5 +615,71 @@
             alert('Filtreler temizlendi!');
         });
     </script>
+
+    <!-- DEVELOPER DOCUMENTATION PANEL -->
+    <div id="devDocsPanel" class="dev-docs-panel">
+        <button class="dev-docs-toggle" onclick="toggleDevDocs()">📋 Geliştirici Dokümantasyonu</button>
+        <div class="dev-docs-content" id="devDocsContent">
+            <div class="dev-docs-header">
+                <h2>📋 2 ML - Material List</h2>
+                <button class="dev-docs-close" onclick="toggleDevDocs()">✕</button>
+            </div>
+            <div class="dev-docs-body">
+                <div class="dev-docs-tabs">
+                    <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
+                </div>
+                <div id="dataStructure" class="dev-tab-content active">
+                    <h3>Material Tablosu</h3>
+                    <table class="dev-table"><thead><tr><th>Field Name</th><th>Type</th><th>Length</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td>id</td><td>int</td><td>8</td><td>Primary key</td></tr>
+                            <tr><td>Material number</td><td>text</td><td>13</td><td>Format: ##.#####-####</td></tr>
+                            <tr><td>Old material number</td><td>text</td><td>13</td><td>Eski sistem numarası</td></tr>
+                            <tr><td>Title</td><td>text</td><td>128</td><td>Malzeme başlığı</td></tr>
+                            <tr><td>Description</td><td>text</td><td>512</td><td>Detaylı açıklama</td></tr>
+                            <tr><td>Unit of measure code</td><td>text</td><td>4</td><td>Ölçü birimi</td></tr>
+                            <tr><td>Material Status code</td><td>char</td><td>1</td><td>1-5 arası değer</td></tr>
+                            <tr><td>Total Stock</td><td>float</td><td>15</td><td>Toplam stok</td></tr>
+                            <tr><td>Material Group Code</td><td>text</td><td>8</td><td>Malzeme grubu</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Material Status Kodları</h3>
+                    <table class="dev-table"><thead><tr><th>Kod</th><th>Durum</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>1</td><td>Active</td><td>Normal kullanımda</td></tr>
+                            <tr><td>2</td><td>Blocked</td><td>Geçici olarak bloklu</td></tr>
+                            <tr><td>3</td><td>Inactive</td><td>Kullanım dışı</td></tr>
+                            <tr><td>4</td><td>Preparing to be used</td><td>Kullanıma hazırlanıyor</td></tr>
+                            <tr><td>5</td><td>Preparing to discontinuation</td><td>Kullanımdan kaldırılıyor</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="businessRules" class="dev-tab-content">
+                    <h3>İş Kuralları</h3>
+                    <div class="rules-section">
+                        <ul>
+                            <li>Material number formatı: <strong>##.#####-####</strong> veya seri prefix + otomatik numara</li>
+                            <li><strong>Preparing to be used (4)</strong>: Satınalma/mal kabul OK, talep YAPILAMAZ</li>
+                            <li><strong>Preparing to discontinuation (5)</strong>: Talep/çıkış/transfer OK, yeni SRM YAPILAMAZ</li>
+                            <li>Bloklu malzemeler listede görünür ancak <strong>talep için seçilemez</strong></li>
+                            <li>3 karakter sonra arama otosuggest aktif olur</li>
+                        </ul>
+                    </div>
+                    <h3>Liste Özellikleri</h3>
+                    <div class="rules-section">
+                        <ul>
+                            <li>Varsayılan sıralama: Material number</li>
+                            <li>Filtreleme: Status, Material Group, Storage</li>
+                            <li>Arama: Material number, Title, Description</li>
+                            <li>Detay linki: material-data.html?mode=view&id=</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>.dev-docs-panel{position:fixed;bottom:0;left:0;right:0;z-index:9999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}.dev-docs-toggle{position:absolute;bottom:100%;right:20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;padding:10px 20px;border-radius:8px 8px 0 0;cursor:pointer;font-weight:600;font-size:14px;box-shadow:0 -2px 10px rgba(0,0,0,0.2)}.dev-docs-content{display:none;background:#1a1a2e;color:#eee;max-height:60vh;overflow-y:auto;box-shadow:0 -5px 20px rgba(0,0,0,0.3)}.dev-docs-content.active{display:block}.dev-docs-header{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);position:sticky;top:0}.dev-docs-header h2{margin:0;font-size:18px}.dev-docs-close{background:rgba(255,255,255,0.2);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px}.dev-docs-body{padding:20px}.dev-docs-tabs{display:flex;gap:10px;margin-bottom:20px;border-bottom:1px solid #333;padding-bottom:10px}.dev-tab{background:#2d2d44;color:#aaa;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;transition:all 0.3s}.dev-tab:hover,.dev-tab.active{background:#667eea;color:#fff}.dev-tab-content{display:none}.dev-tab-content.active{display:block}.dev-table{width:100%;border-collapse:collapse;margin:15px 0;font-size:13px}.dev-table th,.dev-table td{padding:10px;text-align:left;border:1px solid #333}.dev-table th{background:#2d2d44;color:#667eea;font-weight:600}.dev-table tr:nth-child(even){background:#252538}.dev-docs-body h3{color:#667eea;margin:20px 0 10px;font-size:16px;border-bottom:1px solid #333;padding-bottom:5px}.dev-docs-body ul{margin:0 0 15px 20px;line-height:1.8}.rules-section{background:#252538;padding:15px;border-radius:8px;margin-bottom:15px}</style>
+    <script>function toggleDevDocs(){document.getElementById('devDocsContent').classList.toggle('active')}function showDevTab(tabId){document.querySelectorAll('.dev-tab-content').forEach(c=>c.classList.remove('active'));document.querySelectorAll('.dev-tab').forEach(t=>t.classList.remove('active'));document.getElementById(tabId).classList.add('active');event.target.classList.add('active')}</script>
 </body>
 </html>
