@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Material Group Code Yonetimi - IMMA</title>
+    <title>Olcu Birimi Yonetimi - IMMA</title>
     <link rel="stylesheet" href="css/styles.css">
     <style>
         /* Filter Section */
@@ -107,87 +107,65 @@
 IMMA DEVELOPER DOCUMENTATION
 ================================================================================
 
-SCREEN: 6 MMG - Maintain Material Group (List)
-FILE: material-group.html
+SCREEN: 29 UOM - Unit of Measure Maintenance (List)
+FILE: unit-of-measure-list.html
 LAST UPDATED: 2025-12-23
 
 --------------------------------------------------------------------------------
 RELATED DATABASE TABLES
 --------------------------------------------------------------------------------
 
-TABLE: Material Group (Data Structure IMMA.xlsx)
+TABLE: Unit of Measure (Data Structure IMMA.xlsx) - 6 ALAN
 | Field Name                 | Type     | Length | Description                    |
 |----------------------------|----------|--------|--------------------------------|
-| Id                         | int      | -      | Primary key (otomatik)         |
-| Code                       | int      | 6      | Malzeme grubu kodu (benzersiz) |
-| Title                      | text     | 64     | Malzeme grubu adı              |
-
-NOT: Aşağıdaki alanlar Data Structure IMMA.xlsx'de Material Group tablosunda BULUNMUYOR.
-Screen Designs (6 MMG)'de tanımlı ekran alanlarıdır:
-| Field Name                 | Type     | Description                    |
-|----------------------------|----------|--------------------------------|
-| Inactivation check         | bool     | İnaktif durumu                 |
-| Inactivation datetime      | datetime | İnaktif edilme tarihi          |
-| Inactivated by user Id     | int      | İnaktif eden kullanıcı ID      |
-| Reactivation date time     | datetime | Yeniden aktif edilme tarihi    |
-| Reactivated by user info   | int      | Yeniden aktif eden kullanıcı   |
+| id                         | int      | 4      | Primary key                    |
+| Code                       | text     | 4      | Olcu birimi kodu (benzersiz)   |
+| Title                      | text     | 32     | Olcu birimi adi                |
+| created by user Id         | int      | 8      | Olusturan kullanici ID         |
+| creation date time         | datetime | -      | Olusturma tarihi               |
+| Inactivation check         | bool     | -      | Inaktif durumu                 |
 
 --------------------------------------------------------------------------------
-SCREEN FIELDS (UI Elements) - Screen Designs: 6 MMG
+SCREEN FIELDS (UI Elements) - Screen Designs: 29 UOM
 --------------------------------------------------------------------------------
 
-MATERIAL GROUP FORM:
-- Material Group Id (readonly) - Grup ID
-- Material Group Code (text, 8) - Grup kodu, UNIQUE
-- Material Group Title (text, 64) - Grup başlığı
-- Created By (readonly) - Oluşturan kullanıcı ve tarih
-- Inactivated (readonly) - İnaktif eden kullanıcı ve tarih
-- Reactivated (readonly) - Aktif eden kullanıcı ve tarih
-
-ACTION BUTTONS (Form):
-- Create Material Group - Yeni grup oluştur
-- Clear Selection - Seçimi temizle
-
-MATERIAL GROUP LIST TABLE:
+UNIT OF MEASURE LIST TABLE:
 | Column              | Description                        |
 |---------------------|-----------------------------------|
-| Material Group Id   | Grup ID                            |
-| Material Group Code | Grup kodu                          |
-| Material Group Title| Grup başlığı                       |
-| Active/Inactive     | Durum (X=Active, O=Inactive)       |
+| #                   | Sira numarasi                      |
+| UoM Id              | Olcu birimi ID                     |
+| UoM Code            | Olcu birimi kodu                   |
+| UoM Title           | Olcu birimi adi                    |
+| Status              | Durum (Active/Inactive)            |
+| Islemler            | Goruntule, Duzenle butonlari       |
 
-SELECTION BEHAVIOR:
-- Satır seçildiğinde form üstüne doldurulur
-- Form düzenleme moduna geçer
+ACTION BUTTONS:
+- + Yeni Olcu Birimi - Yeni olcu birimi olustur
 
 --------------------------------------------------------------------------------
-İŞ KURALLARI
+IS KURALLARI
 --------------------------------------------------------------------------------
 
-1. Malzeme grubu kodu 6 karakterlik sayısal değer olmalı
-2. Malzeme grubu kodu benzersiz olmalı (unique constraint)
-3. İnaktif gruplar listede görünür ancak yeni malzeme atanamaz
-4. İnaktif bir grup tekrar aktif edilebilir (reactivation)
-5. Grup inaktif edildiğinde tarih ve kullanıcı bilgisi otomatik kaydedilir
-6. Grup aktif edildiğinde reactivation tarihi ve kullanıcı bilgisi kaydedilir
+1. Olcu birimi kodu 4 karakterlik deger olmali (maxlength=4)
+2. Olcu birimi kodu benzersiz olmali (unique constraint)
+3. Inaktif birimler listede gorunur ancak yeni malzeme atanamaz
+4. Sadece Admin ve Indirect Material Key User olcu birimi olusturabilir/duzenleyebilir
+
+EXCEL SCREEN DESIGNS KURALI:
+5. OTOMATİK KAYDETME:
+   - Tüm değişiklikler ve yeni kayıtlar otomatik kaydedilecek
+   - Form submit/save butonu gerekmez
+   - Doğrulama hatası olursa işlem iptal edilir
 
 --------------------------------------------------------------------------------
 LIST FEATURES
 --------------------------------------------------------------------------------
 
 - Filtreleme: Code, Title, Status (Active/Inactive)
-- Varsayılan filtre: Active gruplar
-- Detay linki: material-group-detail.html?mode=view&id=
-- Düzenleme linki: material-group-detail.html?mode=edit&id=
-- Yeni oluşturma: material-group-detail.html?mode=create
-
---------------------------------------------------------------------------------
-USAGE IN SYSTEM
---------------------------------------------------------------------------------
-
-- Material tablosunda Material Group Code alanı bu tabloya referans verir
-- Malzeme oluştururken/düzenlerken grup seçimi zorunludur
-- Raporlama ve filtreleme için grup bazlı gruplama yapılabilir
+- Varsayilan filtre: Active birimler
+- Detay linki: unit-of-measure-detail.html?mode=view&id=
+- Duzenleme linki: unit-of-measure-detail.html?mode=edit&id=
+- Yeni olusturma: unit-of-measure-detail.html?mode=create
 
 ================================================================================
 -->
@@ -215,12 +193,12 @@ USAGE IN SYSTEM
                     </a>
                     <div class="dropdown-menu">
                         <a href="material-list.html" class="dropdown-item">Malzeme Listesi</a>
-                        <a href="supplier-list.html" class="dropdown-item">Tedarikçi Listesi</a>
+                        <a href="supplier-list.html" class="dropdown-item">Tedarikci Listesi</a>
                         <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
                         <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
-                        <a href="material-group.html" class="dropdown-item active">Malzeme Grupları</a>
-                        <a href="unit-of-measure-list.html" class="dropdown-item">Ölçü Birimleri</a>
-                        <a href="department-cost-center-list.html" class="dropdown-item">Departman-Masraf Merkezi</a>
+                        <a href="material-group.html" class="dropdown-item">Malzeme Gruplari</a>
+                        <a href="unit-of-measure-list.html" class="dropdown-item active">Olcu Birimleri</a>
+                        <a href="department-cost-center-list.html" class="dropdown-item">Dept-Masraf Merkezi</a>
                     </div>
                 </li>
                 <li class="nav-item">
@@ -232,12 +210,12 @@ USAGE IN SYSTEM
                 <li class="nav-item">
                     <a href="srm-list.html" class="nav-link">
                         <span class="nav-icon">🛒</span>
-                        Satınalma
+                        Satinalma
                     </a>
                     <div class="dropdown-menu">
                         <a href="srm-list.html" class="dropdown-item">Talep Listesi</a>
                         <a href="goods-receipt.html" class="dropdown-item">Mal Kabul</a>
-                        <a href="po-list.html" class="dropdown-item">Satınalma Siparişleri</a>
+                        <a href="po-list.html" class="dropdown-item">Satinalma Siparisleri</a>
                     </div>
                 </li>
                 <li class="nav-item">
@@ -246,8 +224,8 @@ USAGE IN SYSTEM
                         Budget
                     </a>
                     <div class="dropdown-menu">
-                        <a href="budget-management.html" class="dropdown-item">Bütçe Yönetimi</a>
-                        <a href="budget-preference.html" class="dropdown-item">Bütçe Tercihleri</a>
+                        <a href="budget-management.html" class="dropdown-item">Butce Yonetimi</a>
+                        <a href="budget-preference.html" class="dropdown-item">Butce Tercihleri</a>
                     </div>
                 </li>
                 <li class="nav-item">
@@ -265,12 +243,12 @@ USAGE IN SYSTEM
                         Stock
                     </a>
                     <div class="dropdown-menu">
-                        <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
+                        <a href="direct-issue.html" class="dropdown-item">Dogrudan Cikis</a>
                         <a href="warehouse-transfer.html" class="dropdown-item">Depo Transferi</a>
                         <a href="transfer-list.html" class="dropdown-item">Transfer Listesi</a>
-                        <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
-                        <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
-                        <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                        <a href="inventory-counting.html" class="dropdown-item">Sayim Islemleri</a>
+                        <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayimi</a>
+                        <a href="scrapping.html" class="dropdown-item">Hurda Islemleri</a>
                     </div>
                 </li>
                 <li class="nav-item">
@@ -279,8 +257,8 @@ USAGE IN SYSTEM
                         Ayarlar
                     </a>
                     <div class="dropdown-menu">
-                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanıcı Malzeme Limitleri</a>
-                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onayları</a>
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanici Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onaylari</a>
                     </div>
                 </li>
             </ul>
@@ -294,32 +272,29 @@ USAGE IN SYSTEM
     <main class="modern-container">
         <div class="page-header">
             <div>
-                <h1 class="page-title">Material Group Code Yonetimi</h1>
-                <p class="page-subtitle">Ana Veriler > Material Group Code Yonetimi</p>
+                <h1 class="page-title">Olcu Birimi Yonetimi</h1>
+                <p class="page-subtitle">Ana Veriler > Olcu Birimleri</p>
             </div>
         </div>
-
-
-        <!-- Veritabanı İşlemi -->
 
         <!-- FILTER SECTION -->
         <div class="card">
             <div class="card-header">
-                <h3>Filter and Search</h3>
+                <h3>Filtre ve Arama</h3>
             </div>
             <div class="card-body">
                 <div class="filter-section">
                     <div class="filter-row">
                         <div class="filter-group">
-                            <label>Material Group Code</label>
-                            <input type="text" id="filterCode" class="form-control" placeholder="Grup kodu ile ara...">
+                            <label>Olcu Birimi Kodu</label>
+                            <input type="text" id="filterCode" class="form-control" maxlength="4" placeholder="Kod ile ara...">
                         </div>
                         <div class="filter-group">
-                            <label>Material Group Title</label>
-                            <input type="text" id="filterName" class="form-control" placeholder="Grup adi ile ara...">
+                            <label>Olcu Birimi Adi</label>
+                            <input type="text" id="filterTitle" class="form-control" placeholder="Ad ile ara...">
                         </div>
                         <div class="filter-group">
-                            <label>Status</label>
+                            <label>Durum</label>
                             <select id="filterStatus" class="form-control">
                                 <option value="">Tumu</option>
                                 <option value="active" selected>Active</option>
@@ -338,124 +313,150 @@ USAGE IN SYSTEM
         <!-- LIST SECTION -->
         <div class="card" style="margin-top: 20px;">
             <div class="card-header card-header-actions">
-                <h3>Material Group Code List</h3>
-                <a href="material-group-detail.html?mode=create" class="btn btn-primary">+ Yeni Grup Ekle</a>
+                <h3>Olcu Birimi Listesi</h3>
+                <a href="unit-of-measure-detail.html?mode=create" class="btn btn-primary">+ Yeni Olcu Birimi</a>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                <table class="table table-hover" id="materialGroupTable">
+                <table class="table table-hover" id="uomTable">
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Material Group Id</th>
-                            <th>Material Group Code</th>
-                            <th>Material Group Title</th>
+                            <th>UoM Id</th>
+                            <th>UoM Code</th>
+                            <th>UoM Title</th>
                             <th>Status</th>
-                            <th>İşlemler</th>
+                            <th>Islemler</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td>1</td>
-                            <td>GRP-00001</td>
-                            <td>200123</td>
-                            <td>Rulmanlar ve Yataklar</td>
+                            <td>UOM-001</td>
+                            <td>AD</td>
+                            <td>Adet</td>
                             <td><span class="status-badge status-active">Active</span></td>
                             <td>
                                 <div class="action-buttons">
-                                    <a href="material-group-detail.html?mode=view&id=GRP-00001" class="btn btn-sm btn-info">Görüntüle</a>
-                                    <a href="material-group-detail.html?mode=edit&id=GRP-00001" class="btn btn-sm btn-primary">Düzenle</a>
+                                    <a href="unit-of-measure-detail.html?mode=view&id=UOM-001" class="btn btn-sm btn-info">Goruntule</a>
+                                    <a href="unit-of-measure-detail.html?mode=edit&id=UOM-001" class="btn btn-sm btn-primary">Duzenle</a>
                                 </div>
                             </td>
                         </tr>
                         <tr>
                             <td>2</td>
-                            <td>GRP-00002</td>
-                            <td>200234</td>
-                            <td>Elektrik Motorları</td>
+                            <td>UOM-002</td>
+                            <td>KG</td>
+                            <td>Kilogram</td>
                             <td><span class="status-badge status-active">Active</span></td>
                             <td>
                                 <div class="action-buttons">
-                                    <a href="material-group-detail.html?mode=view&id=GRP-00002" class="btn btn-sm btn-info">Görüntüle</a>
-                                    <a href="material-group-detail.html?mode=edit&id=GRP-00002" class="btn btn-sm btn-primary">Düzenle</a>
+                                    <a href="unit-of-measure-detail.html?mode=view&id=UOM-002" class="btn btn-sm btn-info">Goruntule</a>
+                                    <a href="unit-of-measure-detail.html?mode=edit&id=UOM-002" class="btn btn-sm btn-primary">Duzenle</a>
                                 </div>
                             </td>
                         </tr>
                         <tr>
                             <td>3</td>
-                            <td>GRP-00003</td>
-                            <td>200345</td>
-                            <td>Kayış ve Novnak Grupları</td>
+                            <td>UOM-003</td>
+                            <td>LT</td>
+                            <td>Litre</td>
                             <td><span class="status-badge status-active">Active</span></td>
                             <td>
                                 <div class="action-buttons">
-                                    <a href="material-group-detail.html?mode=view&id=GRP-00003" class="btn btn-sm btn-info">Görüntüle</a>
-                                    <a href="material-group-detail.html?mode=edit&id=GRP-00003" class="btn btn-sm btn-primary">Düzenle</a>
+                                    <a href="unit-of-measure-detail.html?mode=view&id=UOM-003" class="btn btn-sm btn-info">Goruntule</a>
+                                    <a href="unit-of-measure-detail.html?mode=edit&id=UOM-003" class="btn btn-sm btn-primary">Duzenle</a>
                                 </div>
                             </td>
                         </tr>
                         <tr>
                             <td>4</td>
-                            <td>GRP-00004</td>
-                            <td>200456</td>
-                            <td>Hidrolik Parçalar</td>
+                            <td>UOM-004</td>
+                            <td>M</td>
+                            <td>Metre</td>
                             <td><span class="status-badge status-active">Active</span></td>
                             <td>
                                 <div class="action-buttons">
-                                    <a href="material-group-detail.html?mode=view&id=GRP-00004" class="btn btn-sm btn-info">Görüntüle</a>
-                                    <a href="material-group-detail.html?mode=edit&id=GRP-00004" class="btn btn-sm btn-primary">Düzenle</a>
+                                    <a href="unit-of-measure-detail.html?mode=view&id=UOM-004" class="btn btn-sm btn-info">Goruntule</a>
+                                    <a href="unit-of-measure-detail.html?mode=edit&id=UOM-004" class="btn btn-sm btn-primary">Duzenle</a>
                                 </div>
                             </td>
                         </tr>
                         <tr>
                             <td>5</td>
-                            <td>GRP-00005</td>
-                            <td>200567</td>
-                            <td>Pnömatik Parçalar (Eski)</td>
-                            <td><span class="status-badge status-pending">Inactive</span></td>
+                            <td>UOM-005</td>
+                            <td>M2</td>
+                            <td>Metrekare</td>
+                            <td><span class="status-badge status-active">Active</span></td>
                             <td>
                                 <div class="action-buttons">
-                                    <a href="material-group-detail.html?mode=view&id=GRP-00005" class="btn btn-sm btn-info">Görüntüle</a>
-                                    <a href="material-group-detail.html?mode=edit&id=GRP-00005" class="btn btn-sm btn-primary">Düzenle</a>
+                                    <a href="unit-of-measure-detail.html?mode=view&id=UOM-005" class="btn btn-sm btn-info">Goruntule</a>
+                                    <a href="unit-of-measure-detail.html?mode=edit&id=UOM-005" class="btn btn-sm btn-primary">Duzenle</a>
                                 </div>
                             </td>
                         </tr>
                         <tr>
                             <td>6</td>
-                            <td>GRP-00006</td>
-                            <td>200678</td>
-                            <td>Yağlar ve Yağlama Malzemeleri</td>
+                            <td>UOM-006</td>
+                            <td>M3</td>
+                            <td>Metrekup</td>
                             <td><span class="status-badge status-active">Active</span></td>
                             <td>
                                 <div class="action-buttons">
-                                    <a href="material-group-detail.html?mode=view&id=GRP-00006" class="btn btn-sm btn-info">Görüntüle</a>
-                                    <a href="material-group-detail.html?mode=edit&id=GRP-00006" class="btn btn-sm btn-primary">Düzenle</a>
+                                    <a href="unit-of-measure-detail.html?mode=view&id=UOM-006" class="btn btn-sm btn-info">Goruntule</a>
+                                    <a href="unit-of-measure-detail.html?mode=edit&id=UOM-006" class="btn btn-sm btn-primary">Duzenle</a>
                                 </div>
                             </td>
                         </tr>
                         <tr>
                             <td>7</td>
-                            <td>GRP-00007</td>
-                            <td>200789</td>
-                            <td>Elektrik Malzemeleri</td>
+                            <td>UOM-007</td>
+                            <td>PKT</td>
+                            <td>Paket</td>
                             <td><span class="status-badge status-active">Active</span></td>
                             <td>
                                 <div class="action-buttons">
-                                    <a href="material-group-detail.html?mode=view&id=GRP-00007" class="btn btn-sm btn-info">Görüntüle</a>
-                                    <a href="material-group-detail.html?mode=edit&id=GRP-00007" class="btn btn-sm btn-primary">Düzenle</a>
+                                    <a href="unit-of-measure-detail.html?mode=view&id=UOM-007" class="btn btn-sm btn-info">Goruntule</a>
+                                    <a href="unit-of-measure-detail.html?mode=edit&id=UOM-007" class="btn btn-sm btn-primary">Duzenle</a>
                                 </div>
                             </td>
                         </tr>
                         <tr>
                             <td>8</td>
-                            <td>GRP-00008</td>
-                            <td>200890</td>
-                            <td>Contalar ve Sızdırmazlık</td>
+                            <td>UOM-008</td>
+                            <td>SET</td>
+                            <td>Takim</td>
+                            <td><span class="status-badge status-active">Active</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="unit-of-measure-detail.html?mode=view&id=UOM-008" class="btn btn-sm btn-info">Goruntule</a>
+                                    <a href="unit-of-measure-detail.html?mode=edit&id=UOM-008" class="btn btn-sm btn-primary">Duzenle</a>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>9</td>
+                            <td>UOM-009</td>
+                            <td>KT</td>
+                            <td>Kutu</td>
+                            <td><span class="status-badge status-active">Active</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="unit-of-measure-detail.html?mode=view&id=UOM-009" class="btn btn-sm btn-info">Goruntule</a>
+                                    <a href="unit-of-measure-detail.html?mode=edit&id=UOM-009" class="btn btn-sm btn-primary">Duzenle</a>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>10</td>
+                            <td>UOM-010</td>
+                            <td>TON</td>
+                            <td>Ton (Eski)</td>
                             <td><span class="status-badge status-pending">Inactive</span></td>
                             <td>
                                 <div class="action-buttons">
-                                    <a href="material-group-detail.html?mode=view&id=GRP-00008" class="btn btn-sm btn-info">Görüntüle</a>
-                                    <a href="material-group-detail.html?mode=edit&id=GRP-00008" class="btn btn-sm btn-primary">Düzenle</a>
+                                    <a href="unit-of-measure-detail.html?mode=view&id=UOM-010" class="btn btn-sm btn-info">Goruntule</a>
+                                    <a href="unit-of-measure-detail.html?mode=edit&id=UOM-010" class="btn btn-sm btn-primary">Duzenle</a>
                                 </div>
                             </td>
                         </tr>
@@ -470,23 +471,23 @@ USAGE IN SYSTEM
         document.addEventListener('DOMContentLoaded', function() {
             // Filter elements
             const filterCodeInput = document.getElementById('filterCode');
-            const filterNameInput = document.getElementById('filterName');
+            const filterTitleInput = document.getElementById('filterTitle');
             const filterStatusSelect = document.getElementById('filterStatus');
             const applyBtn = document.getElementById('applyFilterBtn');
             const clearBtn = document.getElementById('clearFilterBtn');
-            const table = document.getElementById('materialGroupTable');
+            const table = document.getElementById('uomTable');
 
             // Apply filters function
             function applyFilters() {
                 const filterCode = filterCodeInput.value.toLowerCase().trim();
-                const filterName = filterNameInput.value.toLowerCase().trim();
+                const filterTitle = filterTitleInput.value.toLowerCase().trim();
                 const filterStatus = filterStatusSelect.value;
 
                 const rows = table.querySelectorAll('tbody tr');
 
                 rows.forEach(row => {
                     const code = row.cells[2].textContent.toLowerCase().trim();
-                    const name = row.cells[3].textContent.toLowerCase().trim();
+                    const title = row.cells[3].textContent.toLowerCase().trim();
                     const statusBadge = row.cells[4].querySelector('.status-badge');
                     const status = statusBadge ? statusBadge.textContent.toLowerCase().trim() : '';
 
@@ -497,8 +498,8 @@ USAGE IN SYSTEM
                         showRow = false;
                     }
 
-                    // Filter by name
-                    if (filterName && !name.includes(filterName)) {
+                    // Filter by title
+                    if (filterTitle && !title.includes(filterTitle)) {
                         showRow = false;
                     }
 
@@ -517,7 +518,7 @@ USAGE IN SYSTEM
             // Clear filters function
             function clearFilters() {
                 filterCodeInput.value = '';
-                filterNameInput.value = '';
+                filterTitleInput.value = '';
                 filterStatusSelect.value = '';
 
                 const rows = table.querySelectorAll('tbody tr');
@@ -534,7 +535,7 @@ USAGE IN SYSTEM
             filterCodeInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') applyFilters();
             });
-            filterNameInput.addEventListener('keypress', function(e) {
+            filterTitleInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') applyFilters();
             });
 
@@ -545,52 +546,46 @@ USAGE IN SYSTEM
 
     <!-- DEVELOPER DOCUMENTATION PANEL -->
     <div id="devDocsPanel" class="dev-docs-panel">
-        <button class="dev-docs-toggle" onclick="toggleDevDocs()">📋 Geliştirici Dokümantasyonu</button>
+        <button class="dev-docs-toggle" onclick="toggleDevDocs()">📋 Gelistirici Dokumantasyonu</button>
         <div class="dev-docs-content" id="devDocsContent">
             <div class="dev-docs-header">
-                <h2>📋 6 MMG - Maintain Material Group</h2>
+                <h2>📋 29 UOM - Unit of Measure Maintenance</h2>
                 <button class="dev-docs-close" onclick="toggleDevDocs()">✕</button>
             </div>
             <div class="dev-docs-body">
                 <div class="dev-docs-tabs">
-                    <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
-                    <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
+                    <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapilari</button>
+                    <button class="dev-tab" onclick="showDevTab('businessRules')">Is Kurallari</button>
                 </div>
                 <div id="dataStructure" class="dev-tab-content active">
-                    <h3>Material Group Tablosu (Excel: 3 Alan)</h3>
+                    <h3>Unit of Measure Tablosu (Excel: 6 Alan)</h3>
                     <table class="dev-table"><thead><tr><th>Field Name</th><th>Type</th><th>Length</th><th>Description</th></tr></thead>
                         <tbody>
-                            <tr><td>Id</td><td>int</td><td>-</td><td>Primary key</td></tr>
-                            <tr><td>Code</td><td>int</td><td>6</td><td>Grup kodu (benzersiz)</td></tr>
-                            <tr><td>Title</td><td>text</td><td>64</td><td>Grup açıklaması</td></tr>
+                            <tr><td>id</td><td>int</td><td>4</td><td>Primary key</td></tr>
+                            <tr><td>Code</td><td>text</td><td>4</td><td>Olcu birimi kodu (benzersiz)</td></tr>
+                            <tr><td>Title</td><td>text</td><td>32</td><td>Olcu birimi adi</td></tr>
+                            <tr><td>created by user Id</td><td>int</td><td>8</td><td>Olusturan kullanici ID</td></tr>
+                            <tr><td>creation date time</td><td>datetime</td><td>-</td><td>Olusturma tarihi</td></tr>
+                            <tr><td>Inactivation check</td><td>bool</td><td>-</td><td>Inaktif durumu</td></tr>
                         </tbody>
                     </table>
-                    <div class="rules-section" style="margin-top:15px;background:#3d2d44;">
-                        <h4 style="color:#f0ad4e;">Ekran Tasarımı Ek Alanları (Excel'de YOK)</h4>
-                        <p style="font-size:12px;color:#aaa;">Bu alanlar Screen Designs 6 MMG'den geliyor:</p>
-                        <ul style="font-size:12px;">
-                            <li>Inactivation check (bool) - İnaktif mi?</li>
-                            <li>Inactivation datetime (datetime) - İnaktivasyon tarihi</li>
-                            <li>Inactivated by user Id (int, 8) - İnaktif eden kullanıcı</li>
-                            <li>Reactivation date time (datetime) - Yeniden aktif tarihi</li>
-                            <li>Reactivated by user info (int) - Yeniden aktif eden kullanıcı</li>
-                        </ul>
-                    </div>
                 </div>
                 <div id="businessRules" class="dev-tab-content">
-                    <h3>İş Kuralları</h3>
+                    <h3>Is Kurallari</h3>
                     <div class="rules-section">
                         <ul>
-                            <li>Code maxlength=6 (benzersiz)</li>
-                            <li>Title maxlength=64</li>
-                            <li>İnaktif grup ile malzeme oluşturulabilir ama yeni atama yapılamaz</li>
+                            <li>Code maxlength=4 (benzersiz)</li>
+                            <li>Title maxlength=32</li>
+                            <li>Sadece Admin rolu olusturabilir/duzenleyebilir</li>
+                            <li>Inaktif birimler malzeme atamasinda kullanilamaz</li>
+                            <li><strong>Otomatik Kaydetme (Excel):</strong> Tüm değişiklikler anında kaydedilir</li>
                         </ul>
                     </div>
-                    <h3>Liste Özellikleri</h3>
+                    <h3>Liste Ozellikleri</h3>
                     <div class="rules-section">
                         <ul>
                             <li>Filtreleme: Code, Title, Status</li>
-                            <li>Detay linki: material-group-detail.html?mode=view&id=</li>
+                            <li>Detay linki: unit-of-measure-detail.html?mode=view&id=</li>
                         </ul>
                     </div>
                 </div>

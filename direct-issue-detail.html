@@ -19,7 +19,7 @@ LAST UPDATED: 2025-12-18
 RELATED DATABASE TABLES
 --------------------------------------------------------------------------------
 
-TABLE: Direct Goods Issue Header
+TABLE: Direct Goods Issue Header (Data Structure IMMA.xlsx)
 | Field Name                 | Type     | Length | Description                  |
 |----------------------------|----------|--------|------------------------------|
 | Material Movement Header Id| int      | 8      | Primary key                  |
@@ -30,7 +30,7 @@ TABLE: Direct Goods Issue Header
 | Requesting user info       | int      | 8      | Talep eden kullanıcı         |
 | Priority                   | bool     | -      | Öncelikli mi                 |
 
-TABLE: Material Movement (for tracking)
+TABLE: Material Movement (Data Structure IMMA.xlsx - for tracking)
 | Field Name                 | Type     | Length | Description                  |
 |----------------------------|----------|--------|------------------------------|
 | Material Movement id       | int      | 12     | Hareket ID                   |
@@ -51,15 +51,37 @@ MOVEMENT TYPE FOR DIRECT ISSUE
 | 7    | Goods issue rollback| Çıkış iptali                  |
 
 --------------------------------------------------------------------------------
-BUSINESS RULES
+İŞ KURALLARI (Business Rules)
 --------------------------------------------------------------------------------
 
-1. Doğrudan çıkış, depodan masraf merkezi bazlı malzeme çıkışıdır
-2. Masraf merkezi (Cost Center) ve kullanıcı seçimi zorunlu
-3. FIFO kuralına göre en eski stoktan çıkış yapılır
-4. Çıkış miktarı mevcut stoktan fazla olamaz
-5. Priority işaretlenirse öncelikli olarak işlenir
-6. 3 seviyeli onay eklenebilir (opsiyonel)
+1. Kullanıcı onay ekranında mevcut stok ve diğer stok bilgilerini görebilmelidir
+   - Çıkış detayında mevcut stok ve diğer stok bilgileri görüntülenebilmeli
+
+3. Malzeme talebine stok tahsis edilirken ilk giren ilk çıkar (FIFO) prensibi uygulanır
+   - FIFO kuralına göre en eski stoktan çıkış yapılır
+
+10. Doğrudan mal çıkışında masraf merkezi ve kişi seçilmelidir
+    - Masraf merkezi (Cost Center) ve kullanıcı seçimi zorunlu
+    - Doğrudan çıkış, depodan masraf merkezi bazlı malzeme çıkışıdır
+
+11. Muhasebe ile ilgili raporlar için Excel dışa aktarımı gereklidir
+    - Muhasebe raporları için Excel dışa aktarımı desteklenmelidir
+
+13. Bazı malzeme talepleri imzalı form ile yapılır. Doğrudan talep fonksiyonu ile malzeme çıkışı bu işlemleri temsil eder
+    - Bazı malzeme talepleri imzalı form ile yapılır
+    - Doğrudan çıkış bu işlemleri temsil eder
+
+14. Kullanıcı seçerken arama alanında kullanıcı windows domain kodu kullanılabilir. Ayrıca ad, soyad ve departman kodu da kullanılabilir
+    - Kullanıcı seçiminde windows domain kodu, ad, soyad ve departman kodu kullanılabilir
+
+15. "Binler ve lokasyonlar arası malzeme transferleri" tüm mal hareketleri hareket tipi numarası ile işlem kaydı oluşturur
+    - Material Movement Type 6 (Goods issue) oluşur
+    - Tüm mal hareketleri hareket tipi numarası ile işlem kaydı oluşturur
+
+EK KURALLAR:
+- Çıkış miktarı mevcut stoktan fazla olamaz
+- Priority işaretlenirse öncelikli olarak işlenir
+- 3 seviyeli onay eklenebilir (opsiyonel)
 
 --------------------------------------------------------------------------------
 DISPLAYED INFORMATION
@@ -122,6 +144,16 @@ INTEGRATION NOTES
                         <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
                     </div>
                 </li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanıcı Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onayları</a>
+                    </div>
+                </li>
             </ul>
             <div class="navbar-user">
                 <span class="user-name">Ahmet Yılmaz</span>
@@ -148,20 +180,54 @@ INTEGRATION NOTES
             <div class="card-body">
                 <div class="info-grid">
                     <div class="info-item">
-                        <label>Issue ID:</label>
+                        <label>Material Movement Header Id:</label>
                         <span id="displayIssueId">-</span>
                     </div>
                     <div class="info-item">
-                        <label>Date:</label>
+                        <label>Creation date time:</label>
                         <span id="displayDate">-</span>
                     </div>
                     <div class="info-item">
-                        <label>Status:</label>
-                        <span id="displayStatus">-</span>
+                        <label>Created by user info:</label>
+                        <span id="displayUser">-</span>
                     </div>
                     <div class="info-item">
-                        <label>Performed by:</label>
-                        <span id="displayUser">-</span>
+                        <label>Created for user info:</label>
+                        <span id="displayCreatedFor">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Request Information</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Selected week number:</label>
+                        <span id="displayWeekNumber">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Selected weeks first day:</label>
+                        <span id="displayWeekFirstDay">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Description for the request:</label>
+                        <span id="displayDescription">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Requesting department:</label>
+                        <span id="displayDepartment">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Requesting user info:</label>
+                        <span id="displayRequestingUser">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Priority:</label>
+                        <span id="displayPriority">-</span>
                     </div>
                 </div>
             </div>
@@ -178,16 +244,16 @@ INTEGRATION NOTES
                         <span id="displayMaterialNo">-</span>
                     </div>
                     <div class="info-item">
-                        <label>Material title:</label>
-                        <span id="displayMaterialName">-</span>
-                    </div>
-                    <div class="info-item">
-                        <label>Quantity:</label>
+                        <label>Requested Quantity:</label>
                         <span id="displayQuantity">-</span>
                     </div>
                     <div class="info-item">
-                        <label>Unit of measure:</label>
+                        <label>Unit of Measure:</label>
                         <span id="displayUnit">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Stock record Id:</label>
+                        <span id="displayStockRecordId">-</span>
                     </div>
                 </div>
             </div>
@@ -200,20 +266,50 @@ INTEGRATION NOTES
             <div class="card-body">
                 <div class="info-grid">
                     <div class="info-item">
-                        <label>Source Storage:</label>
+                        <label>Assigned storage:</label>
                         <span id="displayWarehouse">-</span>
                     </div>
                     <div class="info-item">
-                        <label>Location:</label>
+                        <label>Assigned location:</label>
                         <span id="displayLocation">-</span>
                     </div>
                     <div class="info-item">
-                        <label>Bin:</label>
+                        <label>Assigned storage bin:</label>
                         <span id="displayBin">-</span>
                     </div>
                     <div class="info-item">
-                        <label>Cost Center:</label>
-                        <span id="displayCostCenter">-</span>
+                        <label>Cost Center No:</label>
+                        <span id="displayCostCenterNo">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Cost Center Title:</label>
+                        <span id="displayCostCenterTitle">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Approval Information</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Approver 1 user info:</label>
+                        <span id="displayApprover1">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Approver 2 user info:</label>
+                        <span id="displayApprover2">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Approver 3 user info:</label>
+                        <span id="displayApprover3">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Material Movement item number:</label>
+                        <span id="displayItemNumber">-</span>
                     </div>
                 </div>
             </div>
@@ -246,59 +342,103 @@ INTEGRATION NOTES
         const issues = {
             'DGI-2025-000789': {
                 id: 'DGI-2025-000789',
-                date: '2025-12-14',
-                status: 'Tamamlandı',
-                user: 'Ahmet Yılmaz',
+                date: '2025-12-14 09:30',
+                createdBy: 'Ahmet Yılmaz',
+                createdFor: 'Mehmet Demir',
+                weekNumber: 51,
+                weekFirstDay: '2025-12-16',
+                description: 'Hat 1 bakım malzemesi talebi',
+                department: 'BAKIM',
+                requestingUser: 'Ali Kaya',
+                priority: 'Normal',
                 materialNo: '01.00002-0001',
-                materialName: 'Rulman 6205-2RS',
                 quantity: 5,
                 unit: 'AD',
+                stockRecordId: 'STK-2025-001234',
                 warehouse: 'Merkez Storage',
                 location: 'A-01-03',
                 bin: 'SHELF-A-003',
-                costCenter: 'BAKIM-001'
+                costCenterNo: 'CC-BAKIM-001',
+                costCenterTitle: 'Bakım Masraf Merkezi',
+                approver1: 'Hasan Kara - Depo Sorumlusu',
+                approver2: '-',
+                approver3: '-',
+                itemNumber: 1
             },
             'DGI-2025-000788': {
                 id: 'DGI-2025-000788',
-                date: '2025-12-13',
-                status: 'Tamamlandı',
-                user: 'Mehmet Demir',
+                date: '2025-12-13 14:15',
+                createdBy: 'Mehmet Demir',
+                createdFor: 'Ali Veli',
+                weekNumber: 50,
+                weekFirstDay: '2025-12-09',
+                description: 'Üretim hattı sensör değişimi',
+                department: 'URETIM',
+                requestingUser: 'Fatma Öz',
+                priority: 'Acil',
                 materialNo: '02.00004-0001',
-                materialName: 'Sensör Endüktif M12',
                 quantity: 2,
                 unit: 'AD',
+                stockRecordId: 'STK-2025-001235',
                 warehouse: 'Merkez Storage',
                 location: 'B-02-01',
                 bin: 'SHELF-B-010',
-                costCenter: 'URETIM-001'
+                costCenterNo: 'CC-URETIM-001',
+                costCenterTitle: 'Üretim Masraf Merkezi',
+                approver1: 'Hasan Kara - Depo Sorumlusu',
+                approver2: 'Ayşe Yılmaz - Depo Müdürü',
+                approver3: '-',
+                itemNumber: 1
             },
             'DGI-2025-000787': {
                 id: 'DGI-2025-000787',
-                date: '2025-12-12',
-                status: 'Tamamlandı',
-                user: 'Ali Kaya',
+                date: '2025-12-12 11:00',
+                createdBy: 'Ali Kaya',
+                createdFor: 'Mehmet Demir',
+                weekNumber: 50,
+                weekFirstDay: '2025-12-09',
+                description: 'Elektrik tesisatı yenileme',
+                department: 'ELEKTRIK',
+                requestingUser: 'Hasan Kara',
+                priority: 'Normal',
                 materialNo: '03.00001-0001',
-                materialName: 'Elektrik Kablosu 3x1.5',
                 quantity: 50,
                 unit: 'M',
+                stockRecordId: 'STK-2025-001236',
                 warehouse: 'Merkez Storage',
                 location: 'C-03-01',
                 bin: 'ROLL-C-001',
-                costCenter: 'ELEKTRIK-001'
+                costCenterNo: 'CC-ELEKTRIK-001',
+                costCenterTitle: 'Elektrik Masraf Merkezi',
+                approver1: 'Hasan Kara - Depo Sorumlusu',
+                approver2: '-',
+                approver3: '-',
+                itemNumber: 1
             },
             'DGI-2025-000786': {
                 id: 'DGI-2025-000786',
-                date: '2025-12-11',
-                status: 'Tamamlandı',
-                user: 'Fatma Öz',
+                date: '2025-12-11 16:45',
+                createdBy: 'Fatma Öz',
+                createdFor: 'Ali Kaya',
+                weekNumber: 50,
+                weekFirstDay: '2025-12-09',
+                description: 'İSG ekipman talebi',
+                department: 'ISG',
+                requestingUser: 'Ayşe Yılmaz',
+                priority: 'Normal',
                 materialNo: '01.00005-0001',
-                materialName: 'Güvenlik Eldiveni',
                 quantity: 10,
                 unit: 'AD',
+                stockRecordId: 'STK-2025-001237',
                 warehouse: 'Merkez Storage',
                 location: 'D-01-01',
                 bin: 'BIN-D-100',
-                costCenter: 'ISG-001'
+                costCenterNo: 'CC-ISG-001',
+                costCenterTitle: 'İSG Masraf Merkezi',
+                approver1: 'Hasan Kara - Depo Sorumlusu',
+                approver2: '-',
+                approver3: '-',
+                itemNumber: 1
             }
         };
 
@@ -321,16 +461,27 @@ INTEGRATION NOTES
             document.getElementById('issueId').textContent = issue.id;
             document.getElementById('displayIssueId').textContent = issue.id;
             document.getElementById('displayDate').textContent = issue.date;
-            document.getElementById('displayStatus').innerHTML = `<span class="status-badge status-active">${issue.status}</span>`;
-            document.getElementById('displayUser').textContent = issue.user;
+            document.getElementById('displayUser').textContent = issue.createdBy;
+            document.getElementById('displayCreatedFor').textContent = issue.createdFor;
+            document.getElementById('displayWeekNumber').textContent = issue.weekNumber;
+            document.getElementById('displayWeekFirstDay').textContent = issue.weekFirstDay;
+            document.getElementById('displayDescription').textContent = issue.description;
+            document.getElementById('displayDepartment').textContent = issue.department;
+            document.getElementById('displayRequestingUser').textContent = issue.requestingUser;
+            document.getElementById('displayPriority').textContent = issue.priority;
             document.getElementById('displayMaterialNo').textContent = issue.materialNo;
-            document.getElementById('displayMaterialName').textContent = issue.materialName;
             document.getElementById('displayQuantity').textContent = issue.quantity;
             document.getElementById('displayUnit').textContent = issue.unit;
+            document.getElementById('displayStockRecordId').textContent = issue.stockRecordId;
             document.getElementById('displayWarehouse').textContent = issue.warehouse;
             document.getElementById('displayLocation').textContent = issue.location;
             document.getElementById('displayBin').textContent = issue.bin;
-            document.getElementById('displayCostCenter').textContent = issue.costCenter;
+            document.getElementById('displayCostCenterNo').textContent = issue.costCenterNo;
+            document.getElementById('displayCostCenterTitle').textContent = issue.costCenterTitle;
+            document.getElementById('displayApprover1').textContent = issue.approver1;
+            document.getElementById('displayApprover2').textContent = issue.approver2;
+            document.getElementById('displayApprover3').textContent = issue.approver3;
+            document.getElementById('displayItemNumber').textContent = issue.itemNumber;
         }
 
         document.addEventListener('DOMContentLoaded', initializePage);
@@ -347,6 +498,7 @@ INTEGRATION NOTES
             <div class="dev-docs-body">
                 <div class="dev-docs-tabs">
                     <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('formFields')">Form Alanları</button>
                     <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
                     <button class="dev-tab" onclick="showDevTab('movementTypes')">Hareket Tipleri</button>
                 </div>
@@ -374,6 +526,44 @@ INTEGRATION NOTES
                         </tbody>
                     </table>
                 </div>
+                <div id="formFields" class="dev-tab-content">
+                    <h3>Issue Header (Readonly)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Material Movement Header Id</td><td>Çıkış belge numarası</td></tr>
+                            <tr><td>Selected week number</td><td>Seçilen hafta numarası</td></tr>
+                            <tr><td>Selected weeks first day</td><td>Haftanın ilk günü</td></tr>
+                            <tr><td>Description for the request</td><td>Talep açıklaması</td></tr>
+                            <tr><td>Status</td><td>Durum badge</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Request Information (Readonly)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Requesting department</td><td>Talep eden departman</td></tr>
+                            <tr><td>Requesting user info</td><td>Talep eden kullanıcı</td></tr>
+                            <tr><td>Cost Center Code</td><td>Masraf merkezi</td></tr>
+                            <tr><td>Priority</td><td>Öncelikli mi badge</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Material Items Table (Readonly)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Kolon</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Item No</td><td>Satır numarası</td></tr>
+                            <tr><td>Material Number</td><td>Malzeme numarası</td></tr>
+                            <tr><td>Material Title</td><td>Malzeme başlığı</td></tr>
+                            <tr><td>Storage/Location/Bin</td><td>Çıkış lokasyonu</td></tr>
+                            <tr><td>Quantity</td><td>Çıkış miktarı</td></tr>
+                            <tr><td>Unit</td><td>Ölçü birimi</td></tr>
+                            <tr><td>Cost Id</td><td>Maliyet kaydı</td></tr>
+                            <tr><td>Unit Price (EUR)</td><td>Birim fiyat</td></tr>
+                            <tr><td>Total Value</td><td>Toplam değer</td></tr>
+                        </tbody>
+                    </table>
+                </div>
                 <div id="businessRules" class="dev-tab-content">
                     <div class="rules-section">
                         <h4>Doğrudan Çıkış Kuralları</h4>
@@ -383,6 +573,16 @@ INTEGRATION NOTES
                             <li>FIFO kuralına göre stok seçilir (en eski Cost ID önce)</li>
                             <li>3 seviyeli onay eklenebilir (isteğe bağlı)</li>
                             <li>Hafta numarası bütçe kontrolü için kullanılır</li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanıcı Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onayları</a>
+                    </div>
+                </li>
                         </ul>
                     </div>
                     <div class="rules-section">
@@ -391,6 +591,16 @@ INTEGRATION NOTES
                             <li>Stoktan fazla çıkış yapılamaz</li>
                             <li>Bloklu stoktan çıkış yapılamaz (Block for issue check)</li>
                             <li>İnaktif depodan çıkış yapılabilir</li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanıcı Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onayları</a>
+                    </div>
+                </li>
                         </ul>
                     </div>
                 </div>

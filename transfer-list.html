@@ -19,7 +19,7 @@ LAST UPDATED: 2025-12-18
 RELATED DATABASE TABLES
 --------------------------------------------------------------------------------
 
-TABLE: Material Request Header (Transfer için)
+TABLE: Material Request Header (Data Structure IMMA.xlsx - Transfer için)
 | Field Name                    | Type     | Length | Description                    |
 |-------------------------------|----------|--------|--------------------------------|
 | Material request header Id    | int      | 12     | Primary key                    |
@@ -27,7 +27,7 @@ TABLE: Material Request Header (Transfer için)
 | Requesting department         | text     | 8      | Talep eden departman           |
 | Delivery Location 1-5 id      | text     | 8      | Teslimat lokasyonları          |
 
-TABLE: Material Request Item
+TABLE: Material Request Item (Data Structure IMMA.xlsx)
 | Field Name                | Type     | Length | Description                    |
 |---------------------------|----------|--------|--------------------------------|
 | Material Request item id  | int      | 12     | Primary key                    |
@@ -38,36 +38,85 @@ TABLE: Material Request Item
 | Selected to transfer      | bool     | -      | Transfer için seçildi mi?      |
 | Material delivery finalized| bool    | -      | Teslimat tamamlandı mı?        |
 
-TABLE: Material Movement
+TABLE: Material Movement (Data Structure IMMA.xlsx)
 | Field Name          | Type     | Length | Description                    |
 |---------------------|----------|--------|--------------------------------|
 | Movement type       | char     | 1      | 6=Goods issue                  |
 | Quantity            | float    | 15     | Hareket miktarı                |
 
 --------------------------------------------------------------------------------
-BUSINESS RULES (İş Kuralları)
+SCREEN FIELDS (UI Elements) - Screen Designs: 18 CMTR / 19 TL P
 --------------------------------------------------------------------------------
 
-YAZDIRMA FORMATII:
-1. Transfer listesi A5 kağıda sığacak şekilde tasarlanmalı
-2. Öncelikli öğeler VURGULANMALI (kalın/renkli)
-3. Teslimat lokasyonu gösterilmeli
+FILTER SECTION:
+- Date range filter - Tarih aralığı
+- Department filter (dropdown) - Departman filtresi
+- Delivery location filter (dropdown) - Teslimat lokasyonu
+- Status filter (dropdown) - Durum (Bekliyor/Onaylandı/Teslim Edildi)
 
-SIRALAMA:
-1. Varsayılan: Approval finish date time'a göre
-2. Öncelikli olanlar üstte gösterilebilir
-3. Departman/lokasyon bazında gruplama
+APPROVED REQUESTS LIST:
+| Column              | Description                        |
+|---------------------|-----------------------------------|
+| Request number      | Talep numarası (link)              |
+| SL User             | Shift Leader                       |
+| Created for         | Talep sahibi                       |
+| Week number         | Hafta                              |
+| Department          | Departman                          |
+| Delivery Location   | Teslimat lokasyonu                 |
+| Item count          | Kalem sayısı                       |
+| Status              | Durum (badge)                      |
 
-KISMİ TESLİMAT:
-1. Talep edilen miktardan az teslim edilebilir
-2. Delivered quantity güncellenir
-3. Kalan miktar için transfer devam eder
-4. Material delivery finalized = true ile kapatılır
+ITEM DETAILS (Expandable):
+| Column              | Description                        |
+|---------------------|-----------------------------------|
+| Material number     | Malzeme numarası                   |
+| Material title      | Malzeme başlığı                    |
+| Requested qty       | Talep edilen miktar                |
+| Delivered qty       | Teslim edilen miktar               |
+| Priority            | Öncelik (badge)                    |
+| Storage/Location/Bin| Kaynak lokasyon                    |
+| Select checkbox     | Transfer için seç                  |
 
-STOK ÇIKIŞI:
-1. Transfer onaylandığında Material Movement oluşur (Type=6)
-2. FIFO ile cost kaydından düşüm yapılır
-3. Cost tablosu Consumed Quantity güncellenir
+ACTION BUTTONS:
+- Select All to Transfer - Tümünü seç
+- Transfer open quantity to Delivered - Açık miktarı teslim et
+- Print Transfer List - Transfer listesi yazdır
+- Print Individual Labels - Bireysel etiket yazdır
+- Print Enmasse - Toplu yazdır
+
+--------------------------------------------------------------------------------
+İŞ KURALLARI
+--------------------------------------------------------------------------------
+
+Kural 1: Kullanıcı onay ekranında mevcut stok ve diğer stok bilgilerini görebilmelidir.
+
+Kural 2: Talep kısmi olarak teslim edilebilir, kalan miktar açık tutulabilir veya eksik teslimatla kapatılabilir.
+
+Kural 3: Malzeme talebine stok tahsis edilirken FIFO prensibi uygulanır.
+
+Kural 4: Depo içinde lokasyonlar arası malzeme transferi doğrudan onaylanabilir veya talep olarak bırakılabilir ve transfer listesinde görünür, bittiğinde onaylanabilir. Bu tip transfer talebi herhangi bir malzeme rezerve etmez.
+
+Kural 5: Transfer listesi çıktısı A5 kağıda sığacak şekilde tasarlanmalı. Her formun transfer listesi numarası olmalı.
+
+Kural 6: Hangi yönetici önce onaylarsa, malzeme önce ona gönderilir. Bu nedenle "Onay bitiş tarihi" alanına göre alternatif sıralama gereklidir.
+
+Kural 7: Öncelikli kalem varsa vurgulanmalı ve öncelikli kalemlerin toplam sayısı tüm listede gösterilmeli.
+
+Kural 8: Transfer talep kalemleri kullanıcı ekranında görüldüğü sırada olmalı ve kullanıcının seçtiği birden fazla alana göre sıralanabilmeli.
+
+Kural 9: Kullanıcı malzemeyi başka bir lokasyon veya raftan toplayabilir, bu nedenle depo sorumlusu tarafından transfer onayı yapılmadan önce değiştirilebilir.
+
+Kural 10: Doğrudan mal çıkışında maliyet merkezi ve kişi seçilmelidir.
+
+Kural 11: Muhasebe ile ilgili raporlar için Excel dışa aktarımı gereklidir.
+
+Kural 12: Talep birden fazla raf ile karşılanabilir ve birden fazla maliyet olabilir.
+
+Kural 13: Bazı malzeme talepleri imzalı form ile yapılır. Doğrudan talep fonksiyonu ile malzeme çıkışı bu işlemleri temsil etmek içindir.
+
+Kural 14: Kullanıcı seçerken, arama alanında kullanıcının windows domain kodu kullanılabilir. Ayrıca ad, soyad ve departman kodu.
+
+Kural 15: "Raf ve lokasyonlar arası malzeme transferleri" - tüm mal hareketleri hareket tipi numarası ile işlem kaydı oluşturur ve sonradan görüntülenebilir.
 
 ================================================================================
 -->
@@ -100,6 +149,8 @@ STOK ÇIKIŞI:
                         <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
                         <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
                         <a href="material-group.html" class="dropdown-item">Malzeme Gruplari</a>
+                        <a href="unit-of-measure-list.html" class="dropdown-item">Olcu Birimleri</a>
+                        <a href="department-cost-center-list.html" class="dropdown-item">Dept-Masraf Merkezi</a>
                     </div>
                 </li>
                 <li class="nav-item">
@@ -150,6 +201,16 @@ STOK ÇIKIŞI:
                         <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
                         <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
                         <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanıcı Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onayları</a>
                     </div>
                 </li>
             </ul>
@@ -1229,11 +1290,21 @@ STOK ÇIKIŞI:
                     <h3>İş Kuralları</h3>
                     <div class="rules-section">
                         <ul>
-                            <li>Transfer listesi <strong>A5 kağıda</strong> sığacak şekilde</li>
-                            <li>Öncelikli öğeler <strong>vurgulanmalı</strong></li>
-                            <li>Kısmi teslimat yapılabilir</li>
-                            <li>Movement Type 6 (Goods issue) oluşur</li>
-                            <li>FIFO ile cost kaydından düşüm</li>
+                            <li><strong>Kural 1:</strong> Onay ekranında mevcut stok ve diğer stok bilgileri görüntülenebilmeli</li>
+                            <li><strong>Kural 2:</strong> Kısmi teslimat yapılabilir, kalan miktar açık kalabilir veya eksik teslimatla kapatılabilir</li>
+                            <li><strong>Kural 3:</strong> FIFO prensibi uygulanır - stok tahsisinde en eski önce</li>
+                            <li><strong>Kural 4:</strong> Depo içi transfer doğrudan onaylanabilir veya transfer listesinde kalabilir</li>
+                            <li><strong>Kural 5:</strong> Transfer listesi <strong>A5 kağıda</strong> sığmalı, her formun numarası olmalı</li>
+                            <li><strong>Kural 6:</strong> "Approval finish date time"'a göre sıralama - önce onaylayan önce alır</li>
+                            <li><strong>Kural 7:</strong> Öncelikli kalemler vurgulanmalı, toplam öncelikli sayısı gösterilmeli</li>
+                            <li><strong>Kural 8:</strong> Kalemler kullanıcı ekranındaki sırada, çoklu alana göre sıralanabilir</li>
+                            <li><strong>Kural 9:</strong> Transfer onayından önce lokasyon/bin değiştirilebilir</li>
+                            <li><strong>Kural 10:</strong> Doğrudan çıkışta maliyet merkezi ve kişi seçilmeli</li>
+                            <li><strong>Kural 11:</strong> Excel export - muhasebe raporları için gerekli</li>
+                            <li><strong>Kural 12:</strong> Talep birden fazla bin ile karşılanabilir, birden fazla maliyet olabilir</li>
+                            <li><strong>Kural 13:</strong> İmzalı form ile yapılan talepler - doğrudan talep fonksiyonu temsil eder</li>
+                            <li><strong>Kural 14:</strong> Kullanıcı aramasında: windows domain kodu, ad, soyad, departman kodu</li>
+                            <li><strong>Kural 15:</strong> Tüm mal hareketleri hareket tipi numarası ile işlem kaydı oluşturur</li>
                         </ul>
                     </div>
                 </div>

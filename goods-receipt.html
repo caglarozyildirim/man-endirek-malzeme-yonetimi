@@ -13,13 +13,13 @@ IMMA DEVELOPER DOCUMENTATION
 
 SCREEN: 13 GR - Goods Receipt
 FILE: goods-receipt.html
-LAST UPDATED: 2025-12-18
+LAST UPDATED: 2025-12-23
 
 --------------------------------------------------------------------------------
 RELATED DATABASE TABLES
 --------------------------------------------------------------------------------
 
-TABLE: Cost (Ana stok/maliyet tablosu)
+TABLE: Cost (Data Structure IMMA.xlsx - Ana stok/maliyet tablosu)
 | Field Name                         | Type     | Length | Description                          |
 |------------------------------------|----------|--------|--------------------------------------|
 | Cost ID                            | int      | 8      | Primary key - FIFO sıralaması için   |
@@ -33,33 +33,57 @@ TABLE: Cost (Ana stok/maliyet tablosu)
 | Storage code                       | text     | 12     | Depo kodu                            |
 | Location code                      | text     | 12     | Lokasyon kodu                        |
 | Bin code                           | text     | 12     | Bin kodu                             |
-| Block for issue check              | bool     | -      | Çıkış için bloklu mu?                |
 | Euro Unit cost                     | float    | 14     | Birim Euro maliyeti                  |
 | TRY Unit cost                      | float    | 14     | Birim TL maliyeti                    |
-| Original currency code             | text     | 3      | Orijinal para birimi (EUR, USD, TRY) |
+| Orginal currency code              | text     | 3      | Orijinal para birimi (EUR, USD, TRY) |
 | Original goods receipt unit price  | float    | 14     | Orijinal birim fiyatı                |
 | Goods receipt date time            | datetime | -      | Mal kabul tarihi/saati               |
 | Goods receipt document date        | date     | -      | Belge tarihi (irsaliye/fatura)       |
+| Material Movement Header number    | int      | 8      | İlgili hareket header ID             |
+| Material Movement Item number      | int      | 4      | İlgili hareket item ID               |
+| Block for issue check              | bool     | -      | Çıkış için blokaj kontrolü           |
 
-TABLE: Material Stock (Malzeme-Stok ilişkisi)
+NOT: Cost tablosu toplamda 20 alan içermektedir. Bu alan FIFO mantığıyla
+stok yönetimi ve maliyet takibi için kullanılır.
+
+TABLE: Material Stock (Data Structure IMMA.xlsx)
 | Field Name              | Type     | Length | Description                          |
 |-------------------------|----------|--------|--------------------------------------|
-| Material Stock Id       | int      | 8      | Primary key                          |
-| Material number         | text     | 13     | Malzeme numarası (FK)                |
-| Cost ID                 | int      | 8      | Cost tablosu referansı (FK)          |
-| Purchasing Order Item Id| int      | 12     | PO satırı referansı (FK)             |
+| Stock Id                | int      | 16     | Primary key                          |
+| Quantity                | float    | 15     | Mevcut stok miktarı                  |
+| Reserved quantity       | float    | 15     | Rezerve edilmiş miktar               |
+| Cost Id                 | int      | 8      | Cost tablosu referansı (FK)          |
 
-TABLE: Material Movement (Hareket kaydı)
-| Field Name              | Type     | Length | Description                          |
-|-------------------------|----------|--------|--------------------------------------|
-| Material Movement Id    | int      | 12     | Primary key                          |
-| Material number         | text     | 13     | Malzeme numarası                     |
-| Movement type           | char     | 1      | Hareket tipi (1-15)                  |
-| Quantity                | float    | 15     | Hareket miktarı                      |
-| Cost ID                 | int      | 8      | İlgili Cost kaydı                    |
-| Movement datetime       | datetime | -      | Hareket tarihi/saati                 |
-| Created by user info    | int      | 8      | İşlemi yapan kullanıcı               |
-| Document number         | text     | 20     | İrsaliye/Fatura numarası             |
+NOT: Data Structure'daki Material Stock tablosu yukarıdaki alanları içerir.
+"Material number" ve "Purchasing Order Item Id" alanları bu tabloda BULUNMUYOR.
+Malzeme-Stok ilişkisi Cost tablosu üzerinden sağlanıyor olabilir.
+
+TABLE: Material Movement Item (Hareket kaydı satır detayları)
+| Field Name                    | Type     | Length | Description                          |
+|-------------------------------|----------|--------|--------------------------------------|
+| Material Movement Item Id     | int      | 12     | Primary key                          |
+| Material number               | text     | 13     | Malzeme numarası                     |
+| Movement type                 | char     | 1      | Hareket tipi (1-15)                  |
+| Quantity                      | float    | 15     | Hareket miktarı                      |
+| Storage code                  | text     | 12     | Kaynak depo kodu                     |
+| Location code                 | text     | 12     | Kaynak lokasyon kodu                 |
+| Bin code                      | text     | 12     | Kaynak bin kodu                      |
+| Destination storage code      | text     | 12     | Hedef depo kodu (transfer için)      |
+| Destination location code     | text     | 12     | Hedef lokasyon kodu (transfer için)  |
+| Destination bin code          | text     | 12     | Hedef bin kodu (transfer için)       |
+| Goods receipt document date   | date     | -      | Mal kabul belge tarihi               |
+| Cost ID                       | int      | 8      | İlgili Cost kaydı (FK)               |
+| Movement datetime             | datetime | -      | Hareket tarihi/saati                 |
+| Created by user id            | int      | 8      | İşlemi yapan kullanıcı ID            |
+| Document number               | text     | 20     | İrsaliye/Fatura numarası             |
+| Material Movement Header number| int     | 8      | İlgili header kaydı (FK)             |
+| Comment                       | text     | 250    | Açıklama/Yorum                       |
+| Approver 1 user id            | int      | 8      | 1. Onaylayıcı kullanıcı ID           |
+| Approver 2 user id            | int      | 8      | 2. Onaylayıcı kullanıcı ID           |
+| Approver 3 user id            | int      | 8      | 3. Onaylayıcı kullanıcı ID           |
+
+NOT: Material Movement Item tablosu tüm hareket tiplerinin satır detaylarını içerir.
+Header ile Item ilişkisi 1:N'dir. Onay alanları Approver 1/2/3 şeklinde tutulur.
 
 TABLE: Purchasing Order Item (Sipariş satırı - referans)
 | Field Name                   | Type     | Length | Description                    |
@@ -73,6 +97,11 @@ TABLE: Purchasing Order Item (Sipariş satırı - referans)
 | Goods receipt quantity       | float    | 15     | Teslim alınan toplam miktar    |
 | currency code                | text     | 3      | Para birimi                    |
 | Unit price                   | float    | 14     | Birim fiyatı                   |
+| creation datetime            | datetime | -      | Kayıt oluşturma tarihi/saati   |
+| Created by user id           | int      | 8      | Kaydı oluşturan kullanıcı ID   |
+
+NOT: Purchasing Order Item toplamda 11 alan içermektedir. SAP entegrasyonu için
+SAP no ve SAP Item No alanları kullanılır.
 
 Material Movement Types:
 | Code | Description                              |
@@ -94,45 +123,120 @@ Material Movement Types:
 | 15   | Other material issue rollback            |
 
 --------------------------------------------------------------------------------
+SCREEN FIELDS (UI Elements) - Screen Designs: 13 GR
+--------------------------------------------------------------------------------
+
+SEARCH AND FILTER SECTION:
+- Search box (text) - PO no, SRM no veya malzeme numarası ara
+
+OPEN PO ITEMS TABLE:
+| Column           | Description                        |
+|------------------|-----------------------------------|
+| Order number     | PO numarası                        |
+| Item number      | PO satır numarası                  |
+| Material no      | Malzeme numarası                   |
+| Material Title   | Malzeme başlığı                    |
+| Supplier no      | Tedarikçi numarası                 |
+| Supplier Title   | Tedarikçi adı                      |
+| Unit of measure  | Ölçü birimi                        |
+| Order quantity   | Sipariş miktarı                    |
+| Open quantity    | Kalan miktar                       |
+| Unit prize       | Birim fiyatı                       |
+
+GOODS RECEIPT FORM:
+- Goods receipt Id (readonly) - GR numarası
+- SRM no (readonly) - İlişkili SRM
+- Purchasing Order no (readonly) - İlişkili PO
+- Material number (readonly) - Malzeme numarası
+- Material title (readonly) - Malzeme başlığı
+- Supplier number (readonly) - Tedarikçi no
+- Supplier title (readonly) - Tedarikçi adı
+- Supplier material number (readonly) - Tedarikçi malzeme no
+- Supplier material title (readonly) - Tedarikçi malzeme adı
+
+STORAGE ASSIGNMENT:
+- Default storage (dropdown) - Depo seçimi
+- Default Location (dropdown) - Lokasyon seçimi
+- Default bin (dropdown) - Bin seçimi
+
+COST INFORMATION:
+- Cost Id (readonly) - Maliyet kaydı ID
+- Euro Unit cost (readonly) - Euro birim maliyeti
+- TRY unit cost (readonly) - TL birim maliyeti
+- Cost date (date) - Maliyet tarihi
+
+QUANTITY AND DOCUMENT:
+- Order quantity (readonly) - Sipariş miktarı
+- Receipt quantity (number) - Teslim alınan miktar
+- Invoice number (text) - Fatura numarası
+- Delivery note number (text) - İrsaliye numarası
+- Invoice document Date (date) - Fatura tarihi
+- Delivery note document date (date) - İrsaliye tarihi
+- Entry date (readonly) - Kayıt tarihi
+- Order closed checkbox - Sipariş kapatıldı mı
+
+TRANSACTION TYPE:
+- Transaction type number (dropdown) - Hareket tipi
+- Transaction type title (readonly) - Hareket tipi açıklaması
+
+LABEL PRINTING:
+- Unit quantity in a package (number) - Paket içi birim
+- Print label button - Etiket yazdır
+- Label quantity (calculated) - Etiket adedi
+
+STOCK RECORD:
+- Stock Record Id (readonly) - Stok kaydı ID
+- Previous Stock Record Id (readonly) - Önceki stok kaydı
+- Stock (readonly) - Depo
+- Location (readonly) - Lokasyon
+- Bin (readonly) - Bin
+- Quantity (readonly) - Miktar
+
+ACTION BUTTONS:
+- Process Goods Receipt - Mal kabul işle
+- Print Label - Etiket yazdır
+- Rollback - Geri al
+- Close Order - Siparişi kapat
+
+--------------------------------------------------------------------------------
 BUSINESS RULES (İş Kuralları)
 --------------------------------------------------------------------------------
 
-FIFO PRENSİBİ (KRİTİK):
-1. Her mal kabul için YENİ Cost kaydı oluşturulur
-2. Cost ID sıralaması = FIFO sıralaması
-3. Stok çıkışlarında EN DÜŞÜK Cost ID'li kayıt önce kullanılır
-4. Totally consumed check = true olunca bir sonraki kayda geçilir
-5. Manuel FIFO müdahalesi YAPILAMAZ
+1. Maliyet, FIFO prensibi ve malzeme partisi bazında yönetilecektir.
+2. Süreç, mal kabul bekleyen açık satınalma siparişi kalemleri listesiyle başlar.
+3. Tüm stok değiştiren aktivitelerin, eylemi tanımlayan bir kodu ve başlığı olmalıdır: "mal kabul", "tedarikçiye iade", "malzeme çıkışı", "stok transferi" ve bu eylemlerin geri almaları gibi.
+4. Varsayılan Depo, lokasyonlar ve binler malzeme ana verisinden doldurulur ve mal kabul ekranında gerektiğinde değiştirilebilir.
+5. Etiket, mal kabul işlem ekranındaki bir buton ile yazdırılacaktır.
+6. En az bir irsaliye numarası veya fatura numarası girilmesi zorunludur. İkisi birden girilebilir. Aynı numara ile birden fazla kayıt oluşturulabilir ancak birden fazla kayıt oluşturulacaksa kullanıcı bilgilendirilmelidir. Tedarikçi önceki kayıtlardan farklıysa ek bir uyarı penceresi gösterilmelidir.
+7. Açık satınalma siparişi listeleri üzerinde bir arama kutusu olmalı ve metin girildiğinde açık satınalma siparişleri filtrelenmelidir.
+8. Satınalma siparişi ekranı, başlık ve kalem bilgilerini birlikte içeren bir görünüme sahip olmalıdır. Mal kabul ekranı da aynı satınalma siparişi bilgilerine sahip olmalıdır.
+9. Mal kabul belgesi birden fazla siparişten kalemler içerebilir, bu nedenle ekran tasarımı siparişleri filtrelemeye ve siparişlerden kalemleri mal kabul belgesine eklemeye izin vermelidir.
+10. Malzemede paket bilgisi varsa, etiket miktarı hesaplanmalı ve kullanıcıya gösterilmelidir. Kullanıcı etiket miktarını manuel değiştirebilir.
+11. Sipariş seçim ekranında siparişler üzerinde malzeme numarası, sipariş numarası, SRM numarası arayan bir arama alanı olmalıdır. Metin kısmen girilebilir.
+12. Satınalma siparişi orijinal para birimi ve değere sahip olacak, ancak mal kabul kayıtları belge tarihindeki kur ile Euro ve TL değerlerine sahip olacaktır.
+13. Mal kabul ekranında paket miktarı manuel değiştirildiğinde, etiket miktarı otomatik olarak hesaplanacaktır.
+14. Siparişler eksik teslimatla kapatılabilir. Kullanıcılar kalem için "Sipariş kapatıldı" işaretlediğinde.
+15. Malzemenin varsayılan depo, lokasyon ve bin numarası varsa, mal kabulde varsayılan olmalıdır. Kullanıcı değiştirmek istediğinde, aynı malzemeyi depolayan mevcut binler ve varsayılan bin önerilmelidir.
+16. İrsaliye numarası ve fatura numarası hareket raporlarında bulunmalıdır.
+17. Döviz kuru satış kurudur.
 
-MAL KABUL KURALLARI:
-1. PO (Purchasing Order) seçimi ZORUNLU
-2. En az bir belge numarası ZORUNLU (irsaliye VEYA fatura)
-3. Hem irsaliye hem fatura girilebilir
-4. Teslim miktarı sipariş miktarını AŞAMAZ
-5. Kısmi teslimat yapılabilir (Goods receipt quantity güncellenir)
-6. Kısmi teslimat ile sipariş KAPATILABİLİR (force close)
-
-DEPO/LOKASYON/BİN SEÇİMİ:
-1. Varsayılan: Malzemenin default depo/lokasyon/bin bilgisi
-2. Manuel değiştirilebilir (aktif depolar arasından)
-3. İnaktif depoya MAL KABUL YAPILAMAZ
-4. Seçilen depo, stok takibi için Cost kaydına yazılır
-
-DÖVİZ KURU:
-1. Orijinal para birimi (Original currency code) saklanır
-2. EUR çevrimi için SATIŞ KURU kullanılır
-3. TRY çevrimi için SATIŞ KURU kullanılır
-4. Kur tarihi: Goods receipt document date
-
-ETİKET HESAPLAMA:
-1. Unit quantity in a package değeri varsa etiket adedi hesaplanır
-2. Etiket adedi = Total Quantity / Unit quantity in a package
-3. Kesirli değerler yukarı yuvarlanır
-
-MALİYET HESAPLAMA:
-1. Euro Unit cost = Total Euro Cost / Total Quantity
-2. TRY Unit cost = Total TRY Cost / Total Quantity
-3. Birim maliyetler otomatik hesaplanır ve saklanır
+MOVEMENT TYPES (Hareket Tipleri):
+Tüm stok değiştiren aktivitelerin bir kodu ve başlığı olmalıdır:
+1-Goods Receipt (Mal Kabul)
+2-Goods Receipt Rollback (Mal Kabul İptali)
+3-Goods Return (Tedarikçiye İade)
+4-Material transfer entry (Malzeme Transfer Girişi)
+5-Material transfer exit (Malzeme Transfer Çıkışı)
+6-Goods issue (Malzeme Çıkışı)
+7-Goods issue rollback (Malzeme Çıkış İptali)
+8-Inventory positive (Sayım Fazlası)
+9-Inventory negative (Sayım Eksiği)
+10-Packing material receipt (Ambalaj Malzemesi Kabul)
+11-Packing material return (Ambalaj Malzemesi İade)
+12-Scrapping (Hurdaya Ayırma)
+13-Scrapping Rollback (Hurda İptali)
+14-Other material issue (Diğer Malzeme Çıkışı)
+15-Other material issue rollback (Diğer Malzeme Çıkış İptali)
 
 --------------------------------------------------------------------------------
 FIELD VALIDATIONS
@@ -260,6 +364,8 @@ Label Printing:
                         <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
                         <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
                         <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                        <a href="unit-of-measure-list.html" class="dropdown-item">Ölçü Birimleri</a>
+                        <a href="department-cost-center-list.html" class="dropdown-item">Departman-Masraf Merkezi</a>
                     </div>
                 </li>
                 <li class="nav-item">
@@ -310,6 +416,16 @@ Label Printing:
                         <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
                         <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
                         <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanıcı Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onayları</a>
                     </div>
                 </li>
             </ul>
@@ -641,46 +757,28 @@ Label Printing:
                         <input type="number" class="form-control" id="unitPerPackage" min="1" value="1">
                     </div>
                     <div class="form-group col-2">
-                        <label>Label Quantity (Label Qty)</label>
-                        <input type="number" class="form-control" id="labelQty" readonly style="background-color: #e8f5e9; font-weight: bold;">
-                        <small class="form-text text-muted">Hesaplanan</small>
-                    </div>
-                    <div class="form-group col-2">
                         <label>Unit price (Unit Price)</label>
                         <input type="text" class="form-control" id="formUnitPrice" readonly>
                     </div>
                 </div>
 
-                <!-- Cost Information - Screen Designs 13 GR / Data Structure Cost table -->
+                <!-- Cost Information - Screen Designs 13 GR -->
                 <div class="form-row" style="background-color: #f3e5f5; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                    <div class="form-group col-2">
+                    <div class="form-group col-3">
                         <label>Cost ID</label>
                         <input type="text" class="form-control" id="costId" readonly placeholder="Otomatik">
-                        <small class="form-text text-muted">Sistem oluşturur</small>
                     </div>
-                    <div class="form-group col-2">
-                        <label>Euro Unit price</label>
+                    <div class="form-group col-3">
+                        <label>Euro Unit cost</label>
                         <input type="number" class="form-control" id="euroUnitCost" step="0.01" readonly>
                     </div>
-                    <div class="form-group col-2">
-                        <label>TRY Unit price</label>
-                        <input type="number" class="form-control" id="tryUnitCost" step="0.01" readonly style="background-color: #e8f5e9; font-weight: bold;">
-                        <small class="form-text text-muted">EUR × Kur</small>
+                    <div class="form-group col-3">
+                        <label>TRY unit cost</label>
+                        <input type="number" class="form-control" id="tryUnitCost" step="0.01" readonly>
                     </div>
-                    <div class="form-group col-2">
-                        <label>Goods receipt date time</label>
+                    <div class="form-group col-3">
+                        <label>Cost date</label>
                         <input type="date" class="form-control" id="costDate">
-                    </div>
-                    <div class="form-group col-2">
-                        <label>Total Euro Cost</label>
-                        <input type="number" class="form-control" id="euroTotalCost" step="0.01" readonly>
-                    </div>
-                    <div class="form-group col-2">
-                        <label>Total TRY Cost</label>
-                        <input type="number" class="form-control" id="tryTotalCost" step="0.01" readonly style="background-color: #e8f5e9; font-weight: bold;">
-                    </div>
-                    <div class="col-12">
-                        <small class="text-info"><strong>FIFO Maliyet:</strong> TRY = EUR × Güncel Kur (SAP_ExchangeRate tablosundan)</small>
                     </div>
                 </div>
 
@@ -1740,7 +1838,6 @@ Label Printing:
             selectedItems.forEach((item, index) => {
                 const row = document.createElement('tr');
                 // Calculate initial label qty (default unit per package = 1)
-                const initialLabelQty = Math.ceil(item.openQty / 1);
                 row.innerHTML = `
                     <td>${item.poNumber}</td>
                     <td>${item.itemNo}</td>
@@ -1750,7 +1847,6 @@ Label Printing:
                     <td><input type="number" class="form-control batch-qty" data-index="${index}" value="${item.openQty}" min="0" step="0.01"></td>
                     <td>${item.uom}</td>
                     <td><input type="number" class="form-control batch-unit-pack" data-index="${index}" value="1" min="1" step="1"></td>
-                    <td><input type="number" class="form-control batch-label-qty" data-index="${index}" value="${initialLabelQty}" readonly style="background-color: #e8f5e9; font-weight: bold;"></td>
                     <td>${item.unitPrice.toFixed(2)}</td>
                     <td class="batch-try-cost">${(item.unitPrice * currentExchangeRate).toFixed(2)}</td>
                     <td>
@@ -1774,21 +1870,6 @@ Label Printing:
                 `;
                 tbody.appendChild(row);
             });
-
-            // Add event listeners for label quantity calculation
-            document.querySelectorAll('.batch-qty, .batch-unit-pack').forEach(input => {
-                input.addEventListener('input', function() {
-                    const idx = this.getAttribute('data-index');
-                    const qtyInput = document.querySelector(`.batch-qty[data-index="${idx}"]`);
-                    const unitPackInput = document.querySelector(`.batch-unit-pack[data-index="${idx}"]`);
-                    const labelQtyInput = document.querySelector(`.batch-label-qty[data-index="${idx}"]`);
-
-                    const qty = parseFloat(qtyInput.value) || 0;
-                    const unitPack = parseInt(unitPackInput.value) || 1;
-                    const labelQty = Math.ceil(qty / unitPack);
-                    labelQtyInput.value = labelQty;
-                });
-            });
         }
 
         // Calculate costs - TRY = EUR × Exchange Rate (from SAP_ExchangeRate table)
@@ -1799,23 +1880,8 @@ Label Printing:
             const rate = currentExchangeRate;
 
             const tryPrice = euroPrice * rate;
-            const euroTotal = euroPrice * qty;
-            const tryTotal = tryPrice * qty;
 
             document.getElementById('tryUnitCost').value = tryPrice.toFixed(2);
-            document.getElementById('euroTotalCost').value = euroTotal.toFixed(2);
-            document.getElementById('tryTotalCost').value = tryTotal.toFixed(2);
-        }
-
-        // Calculate label quantity - Screen Designs 13 GR
-        // Label Qty = ceil(Receipt Qty / Unit in Package)
-        function calculateLabelQty() {
-            const unitPerPackage = parseInt(document.getElementById('unitPerPackage').value) || 1;
-            const receivedQty = parseFloat(document.getElementById('receivedQty').value) || 0;
-
-            // Label qty = ceil(received qty / unit per package)
-            const labelQty = Math.ceil(receivedQty / unitPerPackage);
-            document.getElementById('labelQty').value = labelQty;
         }
 
         // Validate receipt form - Screen Designs 13 GR
@@ -1864,7 +1930,7 @@ Label Printing:
                 'Order number: ' + item.poNumber + '\n' +
                 'Malzeme: ' + item.materialNo + '\n' +
                 'Miktar: ' + document.getElementById('receivedQty').value + ' ' + item.uom + '\n' +
-                'TRY Maliyet: ' + document.getElementById('tryTotalCost').value + ' TL\n\n' +
+                'TRY Birim Maliyet: ' + document.getElementById('tryUnitCost').value + ' TL\n\n' +
                 'Devam etmek istiyor musunuz?')) {
 
                 alert('✅ Mal kabul başarıyla kaydedildi!\n\n' +
@@ -1919,32 +1985,6 @@ Label Printing:
             }
         }
 
-        // Print labels
-        function printLabels() {
-            const labelQty = document.getElementById('labelQty').value;
-            const materialNo = document.getElementById('formMaterialNo').value;
-            const warehouse = document.getElementById('warehouse').value;
-            const location = document.getElementById('location').value;
-            const bin = document.getElementById('bin').value;
-
-            if (!warehouse || !location || !bin) {
-                alert('⚠️ Etiket yazdırmak için önce depo, lokasyon ve raf bilgilerini girin.');
-                return;
-            }
-
-            alert('🏷️ Etiket yazdırma başlatıldı!\n\n' +
-                'Label Quantity: ' + labelQty + '\n' +
-                'Material number: ' + materialNo + '\n' +
-                'Location: ' + warehouse + '/' + location + '/' + bin + '\n\n' +
-                '(Zebra etiket yazıcı entegrasyonu)');
-        }
-
-        // Print batch labels
-        function printBatchLabels() {
-            alert('🏷️ Toplu etiket yazdırma başlatıldı!\n\n' +
-                'Toplam ' + selectedItems.length + ' malzeme için etiket hazırlanıyor.\n\n' +
-                '(Zebra etiket yazıcı entegrasyonu)');
-        }
 
         // Cancel receipt
         function cancelReceipt() {
@@ -2325,6 +2365,7 @@ Label Printing:
             <div class="dev-docs-body">
                 <div class="dev-docs-tabs">
                     <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('formFields')">Form Alanları</button>
                     <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
                     <button class="dev-tab" onclick="showDevTab('movementTypes')">Hareket Tipleri</button>
                 </div>
@@ -2352,6 +2393,8 @@ Label Printing:
                             <tr><td>Original goods receipt unit price</td><td>float</td><td>14</td><td>Orijinal birim fiyat</td></tr>
                             <tr><td>Goods receipt date time</td><td>datetime</td><td>-</td><td>Mal kabul tarihi</td></tr>
                             <tr><td>Goods receipt document date</td><td>date</td><td>-</td><td>Belge tarihi</td></tr>
+                            <tr><td>Material Movement Header number</td><td>int</td><td>8</td><td>İlgili hareket header ID</td></tr>
+                            <tr><td>Material Movement Item number</td><td>int</td><td>4</td><td>İlgili hareket item ID</td></tr>
                         </tbody>
                     </table>
 
@@ -2363,10 +2406,98 @@ Label Printing:
                             <tr><td>Purchasing Order SAP no</td><td>int</td><td>10</td><td>SAP sipariş no</td></tr>
                             <tr><td>Purchasing Order SAP Item No</td><td>int</td><td>4</td><td>SAP kalem no</td></tr>
                             <tr><td>Material number</td><td>text</td><td>13</td><td>Malzeme numarası</td></tr>
+                            <tr><td>Unit of measure code</td><td>text</td><td>3</td><td>Ölçü birimi kodu</td></tr>
                             <tr><td>Order quantity</td><td>float</td><td>15</td><td>Sipariş miktarı</td></tr>
                             <tr><td>Goods receipt quantity</td><td>float</td><td>15</td><td>Kabul edilen miktar</td></tr>
                             <tr><td>Unit price</td><td>float</td><td>14</td><td>Birim fiyat</td></tr>
                             <tr><td>currency code</td><td>text</td><td>3</td><td>Para birimi</td></tr>
+                            <tr><td>creation datetime</td><td>datetime</td><td>-</td><td>Kayıt oluşturma tarihi</td></tr>
+                            <tr><td>Created by user id</td><td>int</td><td>8</td><td>Oluşturan kullanıcı ID</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="formFields" class="dev-tab-content">
+                    <h3>Goods Receipt Form (Sipariş Bilgileri - Readonly)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Goods receipt Id</td><td>readonly</td><td>GR numarası (otomatik)</td></tr>
+                            <tr><td>SRM no</td><td>readonly</td><td>İlişkili SRM numarası</td></tr>
+                            <tr><td>Purchasing Order no</td><td>readonly</td><td>Satınalma sipariş no</td></tr>
+                            <tr><td>Material number</td><td>readonly</td><td>Malzeme numarası</td></tr>
+                            <tr><td>Material title</td><td>readonly</td><td>Malzeme başlığı</td></tr>
+                            <tr><td>Supplier number</td><td>readonly</td><td>Tedarikçi numarası</td></tr>
+                            <tr><td>Supplier title</td><td>readonly</td><td>Tedarikçi adı</td></tr>
+                            <tr><td>Supplier material number</td><td>readonly</td><td>Tedarikçi malzeme no</td></tr>
+                            <tr><td>Supplier material title</td><td>readonly</td><td>Tedarikçi malzeme adı</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Storage Assignment (Depo Atama)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Default storage *</td><td>dropdown</td><td>Depo seçimi (malzeme master'dan varsayılan)</td></tr>
+                            <tr><td>Default Location *</td><td>dropdown</td><td>Lokasyon seçimi</td></tr>
+                            <tr><td>Default bin *</td><td>dropdown</td><td>Bin seçimi</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Cost Information (Maliyet Bilgileri)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Cost Id</td><td>readonly</td><td>Maliyet kaydı ID (otomatik)</td></tr>
+                            <tr><td>Euro Unit cost</td><td>readonly</td><td>Euro birim maliyeti (hesaplanan)</td></tr>
+                            <tr><td>Exchange Rate (EUR/TRY)</td><td>readonly</td><td>Merkez Bankası satış kuru</td></tr>
+                            <tr><td>TRY unit cost</td><td>readonly</td><td>TL birim maliyeti (EUR × Kur)</td></tr>
+                            <tr><td>Cost date</td><td>date</td><td>Maliyet tarihi</td></tr>
+                            <tr><td>Exchange Rate Date</td><td>readonly</td><td>Kur tarihi (belge tarihinden)</td></tr>
+                            <tr><td>Total Euro Cost</td><td>readonly</td><td>Toplam Euro maliyet</td></tr>
+                            <tr><td>Total TRY Cost</td><td>readonly</td><td>Toplam TL maliyet</td></tr>
+                            <tr><td>Quality Check Status</td><td>dropdown</td><td>Kalite kontrol durumu</td></tr>
+                            <tr><td>Blocked for Material Request</td><td>checkbox</td><td>Malzeme taleplerinde bloklu</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Quantity and Document (Miktar ve Belge)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Order quantity</td><td>readonly</td><td>Sipariş miktarı</td></tr>
+                            <tr><td>Receipt quantity *</td><td>number</td><td>Teslim alınan miktar</td></tr>
+                            <tr><td>Invoice number</td><td>text</td><td>Fatura numarası (en az biri zorunlu)</td></tr>
+                            <tr><td>Delivery note number</td><td>text</td><td>İrsaliye numarası (en az biri zorunlu)</td></tr>
+                            <tr><td>Invoice document Date</td><td>date</td><td>Fatura tarihi</td></tr>
+                            <tr><td>Delivery note document date</td><td>date</td><td>İrsaliye tarihi</td></tr>
+                            <tr><td>Entry date</td><td>readonly</td><td>Kayıt tarihi (otomatik)</td></tr>
+                            <tr><td>Order closed checkbox</td><td>checkbox</td><td>Sipariş kapatıldı mı?</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Transaction Type (İşlem Tipi)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Transaction type number</td><td>dropdown</td><td>Hareket tipi seçimi (1-15)</td></tr>
+                            <tr><td>Transaction type title</td><td>readonly</td><td>Hareket tipi açıklaması</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Label Printing (Etiket Yazdırma)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Unit quantity in a package</td><td>number</td><td>Paket içi birim sayısı</td></tr>
+                            <tr><td>Label quantity</td><td>readonly</td><td>Etiket adedi (hesaplanan)</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Stock Record (Stok Kaydı - Readonly)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Stock Record Id</td><td>readonly</td><td>Stok kaydı ID</td></tr>
+                            <tr><td>Previous Stock Record Id</td><td>readonly</td><td>Önceki stok kaydı</td></tr>
+                            <tr><td>Stock</td><td>readonly</td><td>Depo</td></tr>
+                            <tr><td>Location</td><td>readonly</td><td>Lokasyon</td></tr>
+                            <tr><td>Bin</td><td>readonly</td><td>Bin</td></tr>
+                            <tr><td>Quantity</td><td>readonly</td><td>Miktar</td></tr>
                         </tbody>
                     </table>
                 </div>

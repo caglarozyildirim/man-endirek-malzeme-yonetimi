@@ -13,13 +13,13 @@ IMMA DEVELOPER DOCUMENTATION
 
 SCREEN: 7 MS - Maintain Supplier
 FILE: supplier-data.html
-LAST UPDATED: 2025-12-18
+LAST UPDATED: 2025-12-23
 
 --------------------------------------------------------------------------------
 RELATED DATABASE TABLES
 --------------------------------------------------------------------------------
 
-TABLE: Supplier
+TABLE: Supplier (Data Structure IMMA.xlsx)
 | Field Name                           | Type     | Length | Description                    |
 |--------------------------------------|----------|--------|--------------------------------|
 | Supplier Id                          | int      | 8      | Primary key                    |
@@ -31,7 +31,7 @@ TABLE: Supplier
 | Supplier status id                   | char     | 1      | 1:Active, 2:Disqualified, 3:Inactive |
 | Average delivery time as business days| int     | 4      | Ortalama teslimat süresi (gün) |
 
-TABLE: Supplier Status
+TABLE: Supplier Status (Data Structure IMMA.xlsx)
 | Code | Description                    |
 |------|--------------------------------|
 | 1    | Active - Normal kullanımda     |
@@ -39,13 +39,39 @@ TABLE: Supplier Status
 | 3    | Inactive - Kullanım dışı       |
 
 --------------------------------------------------------------------------------
+SCREEN FIELDS (UI Elements) - Screen Designs: 7 MS
+--------------------------------------------------------------------------------
+
+SUPPLIER INFORMATION SECTION:
+- Supplier Id (readonly) - Sistem ID (create modunda boş)
+- Supplier SAP no (text, 10) - SAP tedarikçi numarası, ZORUNLU
+- Supplier title 1 (text, 50) - Tedarikçi adı 1, ZORUNLU
+- Supplier title 2 (text, 50) - Tedarikçi adı 2 (opsiyonel)
+- Supplier status (dropdown) - 1:Active, 2:Disqualified, 3:Inactive
+- Average delivery time as business days (number) - Ortalama teslimat süresi
+- Created By (readonly) - Oluşturan kullanıcı bilgisi
+
+SUPPLIER LIST TABLE:
+| Column             | Description                        |
+|--------------------|-----------------------------------|
+| Supplier SAP no    | SAP numarası                      |
+| Supplier title 1   | Tedarikçi adı                     |
+| Supplier title 2   | Tedarikçi adı 2                   |
+| Status             | Active/Inactive/Disqualified      |
+
+ACTION BUTTONS:
+- Create Supplier (Tedarikçi Oluştur) - Yeni kayıt
+- Save Changes (Değişiklikleri Kaydet) - Güncelleme
+- Clear Selection (Seçimi Temizle) - Form temizle
+- Select Suppliers (Tedarikçileri Seç) - Çoklu seçim
+
+--------------------------------------------------------------------------------
 BUSINESS RULES (İş Kuralları)
 --------------------------------------------------------------------------------
 
-1. Supplier SAP no: SAP sisteminden gelen tedarikçi numarası
-2. Disqualified (2): Kalite problemleri nedeniyle askıya alınmış
-3. Inactive (3): Artık iş yapılmayan tedarikçi
-4. Average delivery time: MRP hesaplamalarında kullanılır
+1. Birincil tedarikçi, aktif info kayıtlarında "Tedarikçi tercih sırası" alanında en düşük değere göre otomatik seçilir ve değiştirilebilir.
+2. Tedarikçi tercih sırası alanı tedarikçinin tercih sırasını belirler. Boşsa en az tercih edilendir. İlk sıradaki varsayılan tedarikçidir.
+3. Tedarikçi malzeme info kaydı inaktif yapılırsa geçerli olmaz ve sözleşme tarihi geçmişse otomatik inaktif yapılır. Kontroller her gün başlangıcında yapılır. Bitiş tarihi değiştiğinde sistem kontrol eder ve yeni tarih geçmişteyse info kaydını inaktif yapar.
 
 --------------------------------------------------------------------------------
 FIELD VALIDATIONS
@@ -87,6 +113,8 @@ FIELD VALIDATIONS
                         <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
                         <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
                         <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                        <a href="unit-of-measure-list.html" class="dropdown-item">Ölçü Birimleri</a>
+                        <a href="department-cost-center-list.html" class="dropdown-item">Departman-Masraf Merkezi</a>
                     </div>
                 </li>
                 <li class="nav-item">
@@ -137,6 +165,16 @@ FIELD VALIDATIONS
                         <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
                         <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
                         <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanıcı Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onayları</a>
                     </div>
                 </li>
             </ul>
@@ -533,6 +571,7 @@ FIELD VALIDATIONS
             <div class="dev-docs-body">
                 <div class="dev-docs-tabs">
                     <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('formFields')">Form Alanları</button>
                     <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
                 </div>
                 <div id="dataStructure" class="dev-tab-content active">
@@ -546,7 +585,7 @@ FIELD VALIDATIONS
                             <tr><td>Created by user info</td><td>int</td><td>8</td><td>Oluşturan kullanıcı</td></tr>
                             <tr><td>Creation date time</td><td>datetime</td><td>-</td><td>Oluşturma tarihi</td></tr>
                             <tr><td>Supplier status id</td><td>char</td><td>1</td><td>1:Active, 2:Disqualified, 3:Inactive</td></tr>
-                            <tr><td>Average delivery time</td><td>int</td><td>4</td><td>Ortalama teslimat süresi (gün)</td></tr>
+                            <tr><td>Average delivery time as business days</td><td>int</td><td>4</td><td>Ortalama teslimat süresi (iş günü)</td></tr>
                         </tbody>
                     </table>
                     <h3>Supplier Status Kodları</h3>
@@ -558,24 +597,39 @@ FIELD VALIDATIONS
                         </tbody>
                     </table>
                 </div>
+                <div id="formFields" class="dev-tab-content">
+                    <h3>Supplier Form</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Supplier Id</td><td>readonly</td><td>Tedarikçi ID (otomatik)</td></tr>
+                            <tr><td>Supplier SAP no *</td><td>text</td><td>SAP tedarikçi numarası</td></tr>
+                            <tr><td>Supplier title 1 *</td><td>text</td><td>Tedarikçi adı 1</td></tr>
+                            <tr><td>Supplier title 2</td><td>text</td><td>Tedarikçi adı 2</td></tr>
+                            <tr><td>Supplier status *</td><td>dropdown</td><td>Durum (Active/Disqualified/Inactive)</td></tr>
+                            <tr><td>Average delivery time</td><td>number</td><td>Ortalama teslimat süresi (gün)</td></tr>
+                            <tr><td>Created by</td><td>readonly</td><td>Oluşturan kullanıcı</td></tr>
+                            <tr><td>Creation datetime</td><td>readonly</td><td>Oluşturma tarihi</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Status Kodları</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Kod</th><th>Durum</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>1</td><td>Active</td><td>Normal kullanımda</td></tr>
+                            <tr><td>2</td><td>Disqualified</td><td>Kalite problemleri nedeniyle askıya alınmış</td></tr>
+                            <tr><td>3</td><td>Inactive</td><td>Artık iş yapılmayan tedarikçi</td></tr>
+                        </tbody>
+                    </table>
+                </div>
                 <div id="businessRules" class="dev-tab-content">
                     <h3>İş Kuralları</h3>
                     <div class="rules-section">
-                        <ul>
-                            <li><strong>Supplier SAP no</strong>: SAP sisteminden gelen tedarikçi numarası</li>
-                            <li><strong>Disqualified (2)</strong>: Kalite problemleri nedeniyle askıya alınmış</li>
-                            <li><strong>Inactive (3)</strong>: Artık iş yapılmayan tedarikçi</li>
-                            <li><strong>Average delivery time</strong>: MRP hesaplamalarında kullanılır</li>
-                        </ul>
-                    </div>
-                    <h3>Validasyonlar</h3>
-                    <div class="rules-section">
-                        <ul>
-                            <li>Supplier SAP no: maxlength=10, ZORUNLU</li>
-                            <li>Supplier title 1: maxlength=50, ZORUNLU</li>
-                            <li>Supplier title 2: maxlength=50</li>
-                            <li>Average delivery time: >= 0</li>
-                        </ul>
+                        <ol>
+                            <li>Birincil tedarikçi, aktif bilgi kayıtlarındaki "Tedarikçi tercih sırası" alanının en düşük değerine göre otomatik olarak seçilir ve değiştirilebilir.</li>
+                            <li>Tedarikçi tercih sırası alanı tedarikçinin tercih sırasını belirler. Boşsa en az tercih edilendir. Birincisi varsayılan tedarikçidir.</li>
+                            <li>Tedarikçi malzeme bilgi kaydı inaktif edilirse etkili olmayacaktır ve sözleşme tarihi geçmişse otomatik olarak inaktif edilecektir. Kontroller her gün başlangıçta yapılır. Bitiş tarihi değiştiğinde sistem kontrol eder ve yeni tarih geçmişteyse bilgi kaydını inaktif eder.</li>
+                        </ol>
                     </div>
                 </div>
             </div>

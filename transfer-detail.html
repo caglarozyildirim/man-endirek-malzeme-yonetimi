@@ -19,7 +19,7 @@ LAST UPDATED: 2025-12-18
 RELATED DATABASE TABLES
 --------------------------------------------------------------------------------
 
-TABLE: Material Transfer Within Stock
+TABLE: Material Transfer Within Stock (Data Structure IMMA.xlsx)
 | Field Name                        | Type  | Length | Description                  |
 |-----------------------------------|-------|--------|------------------------------|
 | Material stock transfer request id| int   | 8      | Primary key                  |
@@ -28,7 +28,7 @@ TABLE: Material Transfer Within Stock
 | Transferred quantity              | float | 15     | Transfer edilen miktar       |
 | Delivery Finalized                | bool  | -      | Transfer tamamlandı mı       |
 
-TABLE: Material Movement (for tracking)
+TABLE: Material Movement (Data Structure IMMA.xlsx - for tracking)
 | Field Name                 | Type     | Length | Description                  |
 |----------------------------|----------|--------|------------------------------|
 | Material Movement id       | int      | 12     | Hareket ID                   |
@@ -49,15 +49,33 @@ MOVEMENT TYPES FOR TRANSFER
 | 5    | Material transfer exit from storage   | Kaynak depodan çıkış     |
 
 --------------------------------------------------------------------------------
-BUSINESS RULES
+İŞ KURALLARI
 --------------------------------------------------------------------------------
 
-1. Transfer aynı depo içinde farklı lokasyon/bin'ler arasında yapılabilir
-2. Transfer işlemi iki hareket kaydı oluşturur: Exit (5) ve Entry (4)
-3. Stock Record Id kaynak stoğu belirtir
-4. Transferred quantity <= Transferring Quantity olmalı
-5. Kısmi transfer yapılabilir (Delivery Finalized = false)
-6. Transfer tamamlandığında Delivery Finalized = true
+Kural 1: Kullanıcı onay ekranında mevcut stok ve diğer stok bilgilerini görebilmelidir.
+   - Transfer detayında mevcut stok ve diğer stok bilgileri görüntülenebilmeli
+
+Kural 2: Talep kısmen teslim edilebilir, kalan miktar açık tutulabilir veya eksik teslimatla kapatılabilir.
+   - Kısmi transfer yapılabilir (Delivery Finalized = false), tamamlandığında true
+
+Kural 3: Malzeme talebine stok tahsis edilirken İlk Giren İlk Çıkar (FIFO) prensibi uygulanır.
+   - FIFO prensibi uygulanır, Cost ID korunur
+
+Kural 4: Depo içindeki depolama lokasyonları arasında malzeme transferi doğrudan onaylanabilir veya transfer listesinde talep olarak bırakılabilir.
+   - Aynı depo içinde farklı lokasyon/bin'ler arasında transfer yapılabilir
+   - İki hareket kaydı oluşturur: Exit (5) ve Entry (4)
+
+Kural 5: Transfer listesi çıktısı A5 kağıda sığacak şekilde tasarlanmıştır. Her formun bir transfer listesi numarası olmalıdır.
+   - Her transfer kaydının benzersiz numarası olmalı
+
+Kural 6: Kullanıcı malzemeyi başka bir lokasyon veya raftan toplayabilir, bu yüzden transfer onayından önce değiştirilebilir.
+   - Transfer onayından önce kaynak lokasyon değiştirilebilir
+
+Kural 9: Talep birden fazla raf ile karşılanabilir ve ayrıca birden fazla maliyet olabilir.
+   - Transferred quantity <= Transferring Quantity olmalı
+
+Kural 15: "Raflar ve lokasyonlar arasında malzeme transferleri" - tüm mal hareketleri hareket tipi numarası ile işlem kaydı oluşturur.
+    - Tüm mal hareketleri hareket tipi numarası ile işlem kaydı oluşturur (Movement Type 4 ve 5)
 
 --------------------------------------------------------------------------------
 DISPLAYED INFORMATION
@@ -114,6 +132,8 @@ Stock Record Information:
                         <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
                         <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
                         <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                        <a href="unit-of-measure-list.html" class="dropdown-item">Ölçü Birimleri</a>
+                        <a href="department-cost-center-list.html" class="dropdown-item">Departman-Masraf Merkezi</a>
                     </div>
                 </li>
                 <li class="nav-item">
@@ -166,6 +186,16 @@ Stock Record Information:
                         <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
                     </div>
                 </li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanıcı Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onayları</a>
+                    </div>
+                </li>
             </ul>
             <div class="navbar-user">
                 <span class="user-name">Ahmet Yılmaz</span>
@@ -194,35 +224,27 @@ Stock Record Information:
             <div class="card-body">
                 <div class="info-grid">
                     <div class="info-item">
-                        <label>Material Movement Id:</label>
-                        <span id="displayTransferId">-</span>
-                    </div>
-                    <div class="info-item">
-                        <label>Status:</label>
-                        <span id="displayStatus">-</span>
-                    </div>
-                    <div class="info-item">
-                        <label>Date:</label>
-                        <span id="displayDate">-</span>
+                        <label>Stock Record Id:</label>
+                        <span id="displayStockRecordIdHeader">-</span>
                     </div>
                     <div class="info-item">
                         <label>Material number:</label>
                         <span id="displayMaterialNo">-</span>
                     </div>
                     <div class="info-item">
-                        <label>Material description:</label>
-                        <span id="displayMaterialDesc">-</span>
+                        <label>Cost Id:</label>
+                        <span id="displayCostIdHeader">-</span>
                     </div>
                     <div class="info-item">
-                        <label>Quantity:</label>
+                        <label>Transferring Quantity:</label>
                         <span id="displayQuantity">-</span>
                     </div>
                     <div class="info-item">
-                        <label>Movement type ID:</label>
+                        <label>Movement type id:</label>
                         <span id="displayMovementTypeId">-</span>
                     </div>
                     <div class="info-item">
-                        <label>Movement type Description:</label>
+                        <label>Movement Type title:</label>
                         <span id="displayMovementTypeTitle">-</span>
                     </div>
                 </div>
@@ -440,11 +462,9 @@ Stock Record Information:
         // Load transfer data
         function loadTransferData(transfer) {
             document.getElementById('transferId').textContent = transfer.id;
-            document.getElementById('displayTransferId').textContent = transfer.id;
-            document.getElementById('displayStatus').innerHTML = `<span class="status-badge ${transfer.statusClass}">${transfer.status}</span>`;
-            document.getElementById('displayDate').textContent = transfer.date;
+            document.getElementById('displayStockRecordIdHeader').textContent = transfer.stockRecordId;
             document.getElementById('displayMaterialNo').textContent = transfer.materialNo;
-            document.getElementById('displayMaterialDesc').textContent = transfer.materialDesc;
+            document.getElementById('displayCostIdHeader').textContent = transfer.costId;
             document.getElementById('displayQuantity').textContent = transfer.quantity;
             document.getElementById('displayMovementTypeId').textContent = transfer.movementTypeId;
             document.getElementById('displayMovementTypeTitle').textContent = transfer.movementTypeTitle;
@@ -478,6 +498,7 @@ Stock Record Information:
             <div class="dev-docs-body">
                 <div class="dev-docs-tabs">
                     <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('formFields')">Form Alanları</button>
                     <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
                     <button class="dev-tab" onclick="showDevTab('movementTypes')">Hareket Tipleri</button>
                 </div>
@@ -505,6 +526,56 @@ Stock Record Information:
                         </tbody>
                     </table>
                 </div>
+                <div id="formFields" class="dev-tab-content">
+                    <h3>Transfer Header (Readonly)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Transfer Request Id</td><td>Transfer talep numarası</td></tr>
+                            <tr><td>Status</td><td>Durum (Beklemede/Devam Ediyor/Tamamlandı)</td></tr>
+                            <tr><td>Created By</td><td>Oluşturan kullanıcı</td></tr>
+                            <tr><td>Creation Date</td><td>Oluşturma tarihi</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Material Information (Readonly)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Material Number</td><td>Malzeme numarası</td></tr>
+                            <tr><td>Material Title</td><td>Malzeme başlığı</td></tr>
+                            <tr><td>Unit of Measure</td><td>Ölçü birimi</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Source Location (Kaynak)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Source Storage</td><td>Kaynak depo</td></tr>
+                            <tr><td>Source Location</td><td>Kaynak lokasyon</td></tr>
+                            <tr><td>Source Bin</td><td>Kaynak bin</td></tr>
+                            <tr><td>Cost Id</td><td>Maliyet kaydı (FIFO)</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Target Location (Hedef)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Target Storage</td><td>Hedef depo</td></tr>
+                            <tr><td>Target Location</td><td>Hedef lokasyon</td></tr>
+                            <tr><td>Target Bin</td><td>Hedef bin</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Quantities</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Transferring Quantity</td><td>readonly</td><td>Transfer edilecek miktar</td></tr>
+                            <tr><td>Transferred quantity</td><td>readonly</td><td>Transfer edilen miktar</td></tr>
+                            <tr><td>Remaining</td><td>readonly</td><td>Kalan miktar</td></tr>
+                            <tr><td>Delivery Finalized</td><td>readonly</td><td>Tamamlandı mı?</td></tr>
+                        </tbody>
+                    </table>
+                </div>
                 <div id="businessRules" class="dev-tab-content">
                     <div class="rules-section">
                         <h4>Depo İçi Transfer Kuralları</h4>
@@ -514,6 +585,16 @@ Stock Record Information:
                             <li>Stok kaydı güncellenir, yeni kayıt oluşmaz</li>
                             <li>Kısmi transfer yapılabilir</li>
                             <li>İnaktif lokasyona transfer yapılamaz</li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanıcı Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onayları</a>
+                    </div>
+                </li>
                         </ul>
                     </div>
                     <div class="rules-section">

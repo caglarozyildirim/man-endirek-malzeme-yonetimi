@@ -104,13 +104,13 @@ IMMA DEVELOPER DOCUMENTATION
 
 SCREEN: 5 MNS - Maintain Number Series
 FILE: number-series.html
-LAST UPDATED: 2025-12-18
+LAST UPDATED: 2025-12-23
 
 --------------------------------------------------------------------------------
 RELATED DATABASE TABLES
 --------------------------------------------------------------------------------
 
-TABLE: Material Serial
+TABLE: Material Serial (Data Structure IMMA.xlsx)
 | Field Name                    | Type     | Length | Description                    |
 |-------------------------------|----------|--------|--------------------------------|
 | Material Serial Id            | int      | 4      | Primary key                    |
@@ -124,14 +124,48 @@ TABLE: Material Serial
 | Inactivation date time        | datetime | -      | İnaktivasyon tarihi            |
 
 --------------------------------------------------------------------------------
-BUSINESS RULES (İş Kuralları)
+SCREEN FIELDS (UI Elements) - Screen Designs: 5 MNS
 --------------------------------------------------------------------------------
 
-1. Material Serial (prefix) maksimum 2 karakter
-2. Her seri için son oluşturulan numara takip edilir
-3. Yeni malzeme oluşturulunca Last created material number artar
-4. İnaktif seri ile yeni malzeme OLUŞTURULAMAZ
-5. Seri formatı: [Prefix]-[Number] (örn: PN-12848)
+NUMBER SERIES FORM:
+- Material Serial Id (readonly) - Seri ID
+- Material Serial (text, 2) - Prefix (2 karakter)
+- Material Serial Title (text, 32) - Seri açıklaması
+- Last created material number (readonly) - Son numara
+- Created By (readonly) - Oluşturan kullanıcı
+- Inactivated (readonly) - İnaktif eden kullanıcı
+
+ACTION BUTTONS (Form):
+- Create Number Series - Yeni seri oluştur
+- Inactivate Number Series - Seriyi inaktif et
+- Clear selection - Seçimi temizle
+
+NUMBER SERIES LIST TABLE:
+| Column                       | Description                   |
+|------------------------------|-------------------------------|
+| Material Serial Id           | Seri ID                       |
+| Material Serial              | Prefix                        |
+| Material Serial Title        | Seri açıklaması               |
+| Last created material number | Son oluşturulan numara        |
+| Status                       | Active/Inactive               |
+
+SELECTION BEHAVIOR:
+- Satır seçildiğinde form üstüne doldurulur
+- Seçili satır vurgulanır
+
+--------------------------------------------------------------------------------
+İŞ KURALLARI (Business Rules)
+--------------------------------------------------------------------------------
+
+NUMARA SERİSİ KURALLARI:
+1. Malzeme numarası seçilen seriden prefix + sonraki numara olarak verilebilir
+2. Seri prefix + sıralı numara formatı
+3. Finalize edilince değiştirilemez
+4. İnaktif seri ile yeni malzeme oluşturulamaz
+
+NUMARA FORMATI:
+- Format: [Prefix]-[Sıralı Numara]
+- Örnek: PN-12848 (PN serisi, 12848. malzeme)
 
 ================================================================================
 -->
@@ -163,6 +197,8 @@ BUSINESS RULES (İş Kuralları)
                         <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
                         <a href="number-series.html" class="dropdown-item active">Numara Serileri</a>
                         <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                        <a href="unit-of-measure-list.html" class="dropdown-item">Ölçü Birimleri</a>
+                        <a href="department-cost-center-list.html" class="dropdown-item">Departman-Masraf Merkezi</a>
                     </div>
                 </li>
                 <li class="nav-item">
@@ -213,6 +249,16 @@ BUSINESS RULES (İş Kuralları)
                         <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
                         <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
                         <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanıcı Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onayları</a>
                     </div>
                 </li>
             </ul>
@@ -444,24 +490,28 @@ BUSINESS RULES (İş Kuralları)
                             <tr><td>Created by user info</td><td>int</td><td>8</td><td>Oluşturan kullanıcı</td></tr>
                             <tr><td>Last created material number</td><td>int</td><td>8</td><td>Son oluşturulan numara</td></tr>
                             <tr><td>Inactivation status</td><td>bool</td><td>-</td><td>İnaktif durumu</td></tr>
+                            <tr><td>Inactivated by user info</td><td>int</td><td>8</td><td>İnaktif eden kullanıcı ID</td></tr>
+                            <tr><td>Inactivation date time</td><td>datetime</td><td>-</td><td>İnaktivasyon tarihi</td></tr>
                         </tbody>
                     </table>
                 </div>
                 <div id="businessRules" class="dev-tab-content">
-                    <h3>İş Kuralları</h3>
+                    <h3>Numara Serisi Kuralları</h3>
                     <div class="rules-section">
                         <ul>
-                            <li>Material Serial (prefix) <strong>2 karakterlik</strong> benzersiz kod</li>
-                            <li>Title maxlength=32 karakter</li>
+                            <li>Malzeme numarası seçilen seriden <strong>prefix + sonraki numara</strong> olarak verilebilir</li>
+                            <li>Seri prefix + sıralı numara formatı</li>
+                            <li><strong>Finalize edilince değiştirilemez</strong></li>
                             <li>İnaktif seri ile <strong>yeni malzeme oluşturulamaz</strong></li>
                         </ul>
                     </div>
-                    <h3>Material Number Format</h3>
+                    <h3>Malzeme Numara Formatı</h3>
                     <div class="rules-section">
                         <ul>
-                            <li>Format: <strong>##.#####-####</strong></li>
-                            <li>İlk 2 karakter: Material Serial (prefix)</li>
-                            <li>Örnek: MK.00847-0001 (MK serisi, 847. malzeme)</li>
+                            <li>Format: <strong>[Prefix]-[Sıralı Numara]</strong></li>
+                            <li>Prefix: Material Serial (2 karakter)</li>
+                            <li>Sıralı Numara: Son oluşturulan numara + 1</li>
+                            <li>Örnek: PN-12848 (PN serisi, 12848. malzeme)</li>
                         </ul>
                     </div>
                 </div>

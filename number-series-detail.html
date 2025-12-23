@@ -13,13 +13,13 @@ IMMA DEVELOPER DOCUMENTATION
 
 SCREEN: 5 MNS - Maintain Number Series (Detail)
 FILE: number-series-detail.html
-LAST UPDATED: 2025-12-18
+LAST UPDATED: 2025-12-23
 
 --------------------------------------------------------------------------------
 RELATED DATABASE TABLES
 --------------------------------------------------------------------------------
 
-TABLE: Material Serial
+TABLE: Material Serial (Data Structure IMMA.xlsx)
 | Field Name                    | Type     | Length | Description                    |
 |-------------------------------|----------|--------|--------------------------------|
 | Material Serial Id            | int      | 4      | Primary key                    |
@@ -33,28 +33,55 @@ TABLE: Material Serial
 | Inactivation date time        | datetime | -      | İnaktif edilme tarihi          |
 
 --------------------------------------------------------------------------------
-BUSINESS RULES
+SCREEN FIELDS (UI Elements) - Screen Designs: 5 MNS Detail
 --------------------------------------------------------------------------------
 
-1. Material Serial (prefix) 2 karakterlik benzersiz kod olmalı
-2. Title maxlength=32 karakter
-3. Last created material number sadece okunabilir, sistem tarafından güncellenir
-4. İnaktif seri ile yeni malzeme oluşturulamaz
-5. İnaktif edildiğinde tarih ve kullanıcı bilgisi otomatik set edilir
+FORM SECTION:
+- Material Serial Id (text, readonly) - Otomatik oluşturulur, SER-##### format
+- Material Serial (text, zorunlu, maxlength=2) - Seri prefix kodu, sadece alfanumerik
+- Material Serial Title (text, zorunlu, maxlength=32) - Seri açıklaması
+- Last created material number (text, readonly) - Son oluşturulan malzeme numarası
+- Creation datetime (text, readonly) - Oluşturma tarihi, sistem tarafından set edilir
+- Created by user info (text, readonly) - Oluşturan kullanıcı bilgisi
+- Inactivation status (checkbox) - İnaktif durumu kontrolü
+- Inactivation date time (text, readonly) - İnaktivasyon tarihi (checkbox seçilince görünür)
+- Inactivated by user info (text, readonly) - İnaktif eden kullanıcı (checkbox seçilince görünür)
+
+ACTION BUTTONS:
+- Listeye Dön (outline button) - number-series.html'e yönlendirir
+- Düzenle (primary button) - view modunda görünür, edit moduna geçiş
+- Kaydet (primary button) - create/edit modunda görünür, formu kaydeder
+- İptal (outline button) - Listeye geri döner
+
+INACTIVATION DETAILS SECTION:
+- İnaktif checkbox işaretlendiğinde görünür
+- Tarih ve kullanıcı bilgisi otomatik doldurulur
+
+--------------------------------------------------------------------------------
+İŞ KURALLARI (Business Rules)
+--------------------------------------------------------------------------------
+
+NUMARA SERİSİ KURALLARI:
+1. Malzeme numarası seçilen seriden prefix + sonraki numara olarak verilebilir
+2. Seri prefix + sıralı numara formatı
+3. Material Serial (prefix) 2 karakterlik benzersiz kod olmalı
+4. Title maxlength=32 karakter
+5. Last created material number sadece okunabilir, sistem tarafından güncellenir
+6. Finalize edilince değiştirilemez
+7. İnaktif seri ile yeni malzeme oluşturulamaz
+8. İnaktif edildiğinde tarih ve kullanıcı bilgisi otomatik set edilir
 
 --------------------------------------------------------------------------------
 MATERIAL NUMBER FORMAT
 --------------------------------------------------------------------------------
 
-Malzeme numarası formatı: ##.#####-####
-- İlk 2 karakter: Material Serial (prefix)
-- Sonraki 5 karakter: Sıra numarası
-- Son 4 karakter: Alt sıra numarası
+Malzeme numarası formatı: [Prefix]-[Sequential Number]
+- Prefix: Material Serial (2 karakter)
+- Sequential Number: Son oluşturulan numara + 1
 
-Örnek: MK.00847-0001
-- MK: Mekanik Parça serisi
-- 00847: 847. malzeme
-- 0001: İlk varyant
+Örnek: PN-12848
+- PN: Pnomatik Parça serisi
+- 12848: 12848. malzeme (sequential number)
 
 --------------------------------------------------------------------------------
 FORM MODES
@@ -109,6 +136,8 @@ FIELD VALIDATIONS
                         <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
                         <a href="number-series.html" class="dropdown-item active">Numara Serileri</a>
                         <a href="material-group.html" class="dropdown-item">Malzeme Gruplari</a>
+                        <a href="unit-of-measure-list.html" class="dropdown-item">Olcu Birimleri</a>
+                        <a href="department-cost-center-list.html" class="dropdown-item">Dept-Masraf Merkezi</a>
                     </div>
                 </li>
                 <li class="nav-item">
@@ -159,6 +188,16 @@ FIELD VALIDATIONS
                         <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
                         <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
                         <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanıcı Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onayları</a>
                     </div>
                 </li>
             </ul>
@@ -363,6 +402,7 @@ FIELD VALIDATIONS
             <div class="dev-docs-body">
                 <div class="dev-docs-tabs">
                     <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('formFields')">Form Alanları</button>
                     <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
                     <button class="dev-tab" onclick="showDevTab('validations')">Validasyonlar</button>
                 </div>
@@ -383,26 +423,66 @@ FIELD VALIDATIONS
                         </tbody>
                     </table>
                     <h3>Malzeme Numarası Formatı</h3>
-                    <p style="background:#2d2d44;padding:10px;border-radius:4px;font-family:monospace;">##.#####-#### (Örnek: 01.00001-0001)</p>
+                    <p style="background:#2d2d44;padding:10px;border-radius:4px;font-family:monospace;">[Prefix]-[Sequential Number]<br><br>Örnek: PN-12848</p>
+                </div>
+                <div id="formFields" class="dev-tab-content">
+                    <h3>Form Alanları</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Material Serial Id</td><td>readonly</td><td>Sistem otomatik oluşturur</td></tr>
+                            <tr><td>Material Serial (Prefix) *</td><td>text</td><td>2 karakter, büyük harf (ör: MK, EL, HY)</td></tr>
+                            <tr><td>Material Serial Title *</td><td>text</td><td>Seri başlığı (maxlength=32)</td></tr>
+                            <tr><td>Last created material number</td><td>readonly</td><td>Son oluşturulan numara (sistem yönetir)</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Audit Section (Readonly)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Creation datetime</td><td>Oluşturma tarihi</td></tr>
+                            <tr><td>Created by user info</td><td>Oluşturan kullanıcı</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Inactivation Section</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Inactivation status</td><td>checkbox</td><td>İnaktif durumu</td></tr>
+                            <tr><td>Inactivated by user info</td><td>readonly</td><td>İnaktif eden kullanıcı</td></tr>
+                            <tr><td>Inactivation date time</td><td>readonly</td><td>İnaktivasyon tarihi</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Action Buttons</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Buton</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Kaydet</td><td>create/edit modunda görünür</td></tr>
+                            <tr><td>İptal</td><td>Listeye geri döner</td></tr>
+                        </tbody>
+                    </table>
                 </div>
                 <div id="businessRules" class="dev-tab-content">
                     <div class="rules-section">
                         <h4>Numara Serisi Kuralları</h4>
                         <ul>
+                            <li>Malzeme numarası seçilen seriden <strong>prefix + sonraki numara</strong> olarak verilebilir</li>
+                            <li>Seri prefix + sıralı numara formatı</li>
                             <li>Prefix maksimum 2 karakter olmalıdır</li>
                             <li>Prefix benzersiz olmalıdır</li>
-                            <li>Yeni malzeme oluşturulduğunda Last created material number otomatik artar</li>
-                            <li>İnaktif seri kullanılamaz</li>
-                            <li>Mevcut malzemeleri olan seri inaktif yapılabilir ama silinmemeli</li>
+                            <li><strong>Finalize edilince değiştirilemez</strong></li>
+                            <li>İnaktif seri ile yeni malzeme oluşturulamaz</li>
+                            <li>Yeni malzeme oluşturulduğunda Son oluşturulan malzeme numarası otomatik artar</li>
                         </ul>
                     </div>
                     <div class="rules-section">
                         <h4>Numara Atama Akışı</h4>
                         <ul>
                             <li>1. Kullanıcı seri seçer</li>
-                            <li>2. Sistem son numarayı kontrol eder</li>
-                            <li>3. Yeni numara = son numara + 1</li>
-                            <li>4. Format: [Prefix]-[5 haneli sayı]</li>
+                            <li>2. Sistem son numarayı kontrol eder (Last created material number)</li>
+                            <li>3. Yeni numara = son numara + 1 (sequential increment)</li>
+                            <li>4. Format: [Prefix]-[Sequential Number]</li>
+                            <li>5. Örnek: PN-12848 (PN serisi, 12848. malzeme)</li>
                         </ul>
                     </div>
                 </div>

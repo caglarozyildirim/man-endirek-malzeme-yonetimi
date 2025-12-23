@@ -13,13 +13,13 @@ IMMA DEVELOPER DOCUMENTATION
 
 SCREEN: 15 BP - Budget Preference (Detail)
 FILE: budget-preference-detail.html
-LAST UPDATED: 2025-12-18
+LAST UPDATED: 2025-12-23
 
 --------------------------------------------------------------------------------
 RELATED DATABASE TABLES
 --------------------------------------------------------------------------------
 
-TABLE: Budget Preference
+TABLE: Budget Preference (Data Structure IMMA.xlsx)
 | Field Name                    | Type | Length | Description                 |
 |-------------------------------|------|--------|-----------------------------|
 | Budget Preference Id          | int  | 8      | Primary key                 |
@@ -40,14 +40,60 @@ BUDGET APPROVAL REQUEST TYPES
 | 6    | Budget approval doesn't required    | Bütçe onayı gerekmez               |
 
 --------------------------------------------------------------------------------
-BUSINESS RULES
+SCREEN FIELDS (UI Elements) - Screen Designs: 15 BP Detail
 --------------------------------------------------------------------------------
 
-1. Her departman için tek bir Budget Preference olabilir
-2. Approval Type departmanın tüm talep akışlarını belirler
-3. Department code benzersiz olmalı (unique per department)
-4. Aktif/Pasif durumu belirlenebilir
-5. Geçerlilik başlangıç tarihi belirlenebilir
+FORM SECTION:
+- Budget Preference Id (text, readonly) - Otomatik oluşturulur
+- Budget Approval Request Type (select, zorunlu) - 1-6 arası seçim
+- Department Code (select, zorunlu) - BAKIM/URETIM/KALITE/LOJISTIK/ARASTIRMA
+- Threshold Value (number) - Hibrit tip için limit değeri
+- Active Status (select) - Aktif/Pasif
+- Validity Start Date (date) - Tercih başlangıç tarihi
+
+ACTION BUTTONS:
+- Kaydet (primary button) - create/edit modunda görünür
+- İptal (outline button) - create/edit modunda görünür
+- Düzenle (primary button) - view modunda görünür
+- Listeye Dön (link) - Her modda görünür
+
+--------------------------------------------------------------------------------
+İŞ KURALLARI
+--------------------------------------------------------------------------------
+
+BÜTÇE TERCİHİ YAPILANDIRMASI:
+1. Her departmanın tanımlı bir Bütçe Tercihi olabilir
+2. Onay Tipi departman için tüm talep akışlarını belirler
+3. Departman kodu benzersiz olmalıdır (departman başına benzersiz)
+4. Aktif/İnaktif durumu ayarlanabilir
+5. Geçerlilik başlangıç tarihi tanımlanabilir
+
+BÜTÇE ONAY TALEP TİPLERİ:
+Tip 1 - SL Onayı: Tüm talepler SL onayı gerektirir
+Tip 2 - SL bütçe aşımı onayı: Sadece bütçe aşımı talepleri SL onayı gerektirir
+Tip 3 - Yönetici onayı: Tüm talepler yönetici onayı gerektirir
+Tip 4 - Yönetici bütçe aşımı onayı: Sadece bütçe aşımı talepleri yönetici onayı gerektirir
+Tip 5 - Sadece TL ve üstü malzeme talebi: Sadece Takım Lideri ve üstü pozisyonlar talep oluşturabilir
+Tip 6 - Bütçe onayı gerekli değil: Onay gerekmez, talepler doğrudan işlenir
+
+TERCİHE GÖRE BÜTÇE TÜKETİMİ:
+6. Talep eden kullanıcı bir SL'ye bağlıysa, SL bütçesi tanımlı değilse ancak SL onayı gerekiyorsa "SL bütçesi gerekli" uyarısı gösterilmelidir
+7. Talep eden kullanıcı bir SL'ye bağlıysa, SL bütçesi tanımlıysa ve SL onayı gerekiyorsa: SL aylık bütçesi, Departman aylık bütçesi ve departman yıllık bütçesi tüketilir
+8. Talep eden kullanıcı bir SL'ye bağlı değilse talep Departman Aylık bütçesini ve departman yıllık bütçesini tüketir
+9. Talep eden kullanıcı bir SL'ye bağlıysa, SL bütçesi tanımlı değilse ve SL onayı gerekmiyorsa; departman Aylık bütçesi ve departman yıllık bütçesi tüketilir
+10. Kullanıcı bir SL'ye bağlı değilse ve Departman Aylık bütçesi tanımlıysa ancak yönetici onayı gerekiyorsa: Departman yıllık ve aylık bütçesi tüketilir
+
+GENEL KURALLAR:
+11. Tüm bütçe aktiviteleri için para birimi Euro'dur
+12. Malzeme fiyatı onaylardan önce ve sonra değiştirilebilir
+13. Fiyat onaylandıysa yeni fiyatlar için ek onay gerekmez
+14. Yöneticiler istedikleri zaman bütçeyi değiştirebilir veya bütçe aşımı taleplerini onaylayabilir
+15. Tüm bütçeler SL'lere veya aylara dağıtılmaz, bir kısmı yedekte tutulabilir
+16. Hafta bütçesi iki ay arasındaysa, bütçe ve tüketim 6 gün faktörüyle iki aya dağıtılır (Pazar hesaba katılmaz)
+17. SL'nin kendisinde tanımlı haftalık bütçesi varsa bu bütçenin de tüketilmesi gerekir
+
+BÜTÇE HİYERARŞİSİ:
+Yıl → Ay → SL Aylık → SL Haftalık
 
 --------------------------------------------------------------------------------
 FORM MODES
@@ -108,6 +154,8 @@ INTEGRATION NOTES
                         <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
                         <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
                         <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                        <a href="unit-of-measure-list.html" class="dropdown-item">Ölçü Birimleri</a>
+                        <a href="department-cost-center-list.html" class="dropdown-item">Departman-Masraf Merkezi</a>
                     </div>
                 </li>
                 <li class="nav-item">
@@ -158,6 +206,16 @@ INTEGRATION NOTES
                         <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
                         <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
                         <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanıcı Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onayları</a>
                     </div>
                 </li>
             </ul>
@@ -475,6 +533,7 @@ INTEGRATION NOTES
             <div class="dev-docs-body">
                 <div class="dev-docs-tabs">
                     <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('formFields')">Form Alanları</button>
                     <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
                 </div>
                 <div id="dataStructure" class="dev-tab-content active">
@@ -498,14 +557,78 @@ INTEGRATION NOTES
                         </tbody>
                     </table>
                 </div>
+                <div id="formFields" class="dev-tab-content">
+                    <h3>Form Alanları</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Budget Preference Id</td><td>readonly</td><td>Sistem otomatik oluşturur</td></tr>
+                            <tr><td>Department code *</td><td>dropdown</td><td>Departman seçimi (unique)</td></tr>
+                            <tr><td>Budget Approval request Type *</td><td>dropdown</td><td>Onay tipi seçimi (1-6)</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Budget Approval Request Types</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Kod</th><th>Tip Adı</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>1</td><td>SL Approval</td><td>Her talep için SL onayı</td></tr>
+                            <tr><td>2</td><td>SL over budget approval</td><td>Sadece bütçe aşımında SL onayı</td></tr>
+                            <tr><td>3</td><td>Manager approval</td><td>Her talep için yönetici onayı</td></tr>
+                            <tr><td>4</td><td>Manager Over budget Approval</td><td>Sadece bütçe aşımında yönetici</td></tr>
+                            <tr><td>5</td><td>Only TL and above</td><td>Sadece TL+ talep yapabilir</td></tr>
+                            <tr><td>6</td><td>Not required</td><td>Onay gerekmez</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Action Buttons</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Buton</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Kaydet</td><td>Preference kaydet</td></tr>
+                            <tr><td>İptal</td><td>Listeye geri döner</td></tr>
+                        </tbody>
+                    </table>
+                </div>
                 <div id="businessRules" class="dev-tab-content">
                     <h3>İş Kuralları</h3>
                     <div class="rules-section">
+                        <h4>📋 Budget Preference Konfigürasyonu</h4>
                         <ul>
-                            <li>Her departman için <strong>tek bir preference</strong> olabilir</li>
-                            <li>Department code benzersiz olmalı (unique)</li>
+                            <li>Her departman için <strong>tek bir Budget Preference</strong> tanımlanabilir</li>
                             <li>Approval Type departmanın tüm talep akışlarını belirler</li>
+                            <li>Department code benzersiz olmalı (unique)</li>
+                            <li>Aktif/Pasif durumu ayarlanabilir</li>
                             <li>Geçerlilik başlangıç tarihi belirlenebilir</li>
+                        </ul>
+                        <h4>✅ Bütçe Onay Talep Tipleri</h4>
+                        <ul>
+                            <li><strong>Tip 1 - SL Approval:</strong> Tüm talepler SL onayı gerektirir</li>
+                            <li><strong>Tip 2 - SL over budget approval:</strong> Sadece bütçe aşan talepler SL onayı gerektirir</li>
+                            <li><strong>Tip 3 - Manager approval:</strong> Tüm talepler yönetici onayı gerektirir</li>
+                            <li><strong>Tip 4 - Manager Over budget Approval:</strong> Sadece bütçe aşan talepler yönetici onayı gerektirir</li>
+                            <li><strong>Tip 5 - Only TL and above material request:</strong> Sadece Team Leader ve üzeri pozisyonlar talep oluşturabilir</li>
+                            <li><strong>Tip 6 - Budget approval doesn't required:</strong> Onay gerekmez, talepler doğrudan işleme alınır</li>
+                        </ul>
+                        <h4>🔄 Preference'a Göre Bütçe Tüketimi</h4>
+                        <ul>
+                            <li><strong>Senaryo 1:</strong> Talep eden kullanıcı bir SL'ye bağlıysa, SL bütçesi tanımlı değilse ancak SL onayı gerekiyorsa: "SL budget required" engelleyici uyarı gösterilmeli</li>
+                            <li><strong>Senaryo 2:</strong> Talep eden kullanıcı bir SL'ye bağlıysa, SL bütçesi tanımlıysa ve SL onayı gerekiyorsa: SL aylık bütçe, Departman aylık bütçe ve Departman yıllık bütçe tüketilir</li>
+                            <li><strong>Senaryo 3:</strong> Talep eden kullanıcı bir SL'ye bağlı değilse: Departman aylık bütçe ve Departman yıllık bütçe tüketilir</li>
+                            <li><strong>Senaryo 4:</strong> Talep eden kullanıcı bir SL'ye bağlıysa, SL bütçesi tanımlı değilse ve SL onayı gerekmiyorsa: Departman aylık bütçe ve Departman yıllık bütçe tüketilir</li>
+                            <li><strong>Senaryo 5:</strong> Kullanıcı bir SL'ye bağlı değilse ve Departman aylık bütçe tanımlıysa ancak yönetici onayı gerekiyorsa: Departman yıllık ve aylık bütçe tüketilir</li>
+                        </ul>
+                        <h4>💰 Genel Kurallar</h4>
+                        <ul>
+                            <li>Tüm bütçe aktiviteleri <strong>Euro cinsindendir</strong></li>
+                            <li>Malzeme fiyatı onaylardan önce ve sonra değiştirilebilir</li>
+                            <li>Fiyat onaylandıysa yeni fiyatlar için ek onay gerekmez</li>
+                            <li>Yöneticiler istedikleri zaman bütçeyi değiştirebilir veya bütçe aşan talepleri onaylayabilir</li>
+                            <li>Tüm bütçelerin SL'lere veya aylara dağıtılması zorunlu değil, bir kısmı ayrılabilir</li>
+                            <li>Hafta iki aya denk gelirse bütçe ve tüketim 6 günlük faktöre göre iki aya dağıtılır (Pazar hesaba katılmaz)</li>
+                            <li>SL'nin kendisine tanımlı haftalık bütçesi varsa bu bütçe de tüketilmeli</li>
+                        </ul>
+                        <h4>📊 Bütçe Hiyerarşisi</h4>
+                        <ul>
+                            <li>Year → Month → SL Monthly → SL Weekly</li>
                         </ul>
                     </div>
                 </div>

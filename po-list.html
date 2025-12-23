@@ -13,13 +13,13 @@ IMMA DEVELOPER DOCUMENTATION
 
 SCREEN: 12 PO L - Purchasing Orders List
 FILE: po-list.html
-LAST UPDATED: 2025-12-18
+LAST UPDATED: 2025-12-23
 
 --------------------------------------------------------------------------------
 RELATED DATABASE TABLES
 --------------------------------------------------------------------------------
 
-TABLE: Purchasing Order
+TABLE: Purchasing Order (Data Structure IMMA.xlsx)
 | Field Name                  | Type     | Length | Description                    |
 |-----------------------------|----------|--------|--------------------------------|
 | Purchasing Order Id         | int      | 8      | Primary key                    |
@@ -29,7 +29,7 @@ TABLE: Purchasing Order
 | creation datetime           | datetime | -      | Oluşturma tarihi               |
 | Created by user id          | int      | 8      | Oluşturan kullanıcı            |
 
-TABLE: Purchasing Order Item
+TABLE: Purchasing Order Item (Data Structure IMMA.xlsx)
 | Field Name                   | Type     | Length | Description                    |
 |------------------------------|----------|--------|--------------------------------|
 | Purchasing Order item Id     | int      | 12     | Primary key                    |
@@ -41,25 +41,102 @@ TABLE: Purchasing Order Item
 | Goods receipt quantity       | float    | 15     | Teslim alınan toplam           |
 | currency code                | text     | 3      | Para birimi                    |
 | Unit price                   | float    | 14     | Birim fiyat                    |
+| creation datetime            | datetime | -      | Kayıt oluşturma tarihi/saati   |
+| Created by user id           | int      | 8      | Kaydı oluşturan kullanıcı ID   |
+
+NOT: Purchasing Order Item tablosu toplamda 11 alan içermektedir. SAP entegrasyonu için
+SAP no ve SAP Item No alanları kullanılır.
 
 --------------------------------------------------------------------------------
-BUSINESS RULES (İş Kuralları)
+SCREEN FIELDS (UI Elements) - Screen Designs: 12 PO L
 --------------------------------------------------------------------------------
 
-PO DURUMU:
-1. Açık: Goods receipt quantity < Order quantity
-2. Kısmen Teslim: 0 < Goods receipt quantity < Order quantity
-3. Tamamlandı: Goods receipt quantity >= Order quantity
-4. Kapatıldı: Manuel kapatma (kısmi teslimle)
+FILTER SECTION:
+- Search box (text) - PO no, malzeme no veya tedarikçi ara
+- Status filter (dropdown) - PO durumu (Açık/Kısmen Teslim/Tamamlandı/Kapatıldı)
+- Date range filter - Tarih aralığı
+- Supplier filter (dropdown) - Tedarikçi filtrele
+
+PO LIST TABLE:
+| Column              | Description                        |
+|---------------------|-----------------------------------|
+| PO SAP Number       | SAP sipariş numarası (link)        |
+| Supplier no         | Tedarikçi numarası                 |
+| Supplier Title      | Tedarikçi adı                      |
+| Creation Date       | Oluşturma tarihi                   |
+| SRM Number          | İlişkili SRM numarası              |
+| Total Value         | Toplam değer                       |
+| Currency            | Para birimi                        |
+| Status              | Durum (badge)                      |
+
+EXPANDABLE ITEM DETAILS:
+| Column              | Description                        |
+|---------------------|-----------------------------------|
+| Item no             | Satır numarası                     |
+| Material no         | Malzeme numarası                   |
+| Material Title      | Malzeme başlığı                    |
+| Order quantity      | Sipariş miktarı                    |
+| Received quantity   | Teslim alınan miktar               |
+| Open quantity       | Kalan miktar                       |
+| Unit price          | Birim fiyatı                       |
+
+ACTION BUTTONS:
+- Export to Excel - Excel'e aktar
+- Refresh - Yenile
+- Go to Goods Receipt - Mal kabul sayfasına git
+
+--------------------------------------------------------------------------------
+İŞ KURALLARI (Business Rules)
+--------------------------------------------------------------------------------
+
+1. Birincil tedarikçi, aktif bilgi kayıtlarında "Tedarikçi tercih sırası" alanındaki en düşük değere göre otomatik olarak seçilir ve değiştirilebilir.
+
+2. Kullanıcı tedarikçi numarası veya başlığına tıkladığında alternatif tedarikçi ve tüm fiyat alternatifleri görülebilmelidir.
+
+3. SL'ler ve üstü açık SRM talepleri ve satınalma siparişlerini görebilmelidir.
+
+4. SRM talep ekranı hem başlık hem de kalem bilgisini birlikte içeren bir görünüme sahip olmalıdır.
+
+5. Tedarikçi tercih sırası alanı tedarikçinin tercih sırasını belirler. Boşsa en az tercih edilendir. Birincisi varsayılan tedarikçidir.
+
+6. Bir tedarikçi malzeme bilgi kaydı inaktif edilirse etkili olmayacaktır ve sözleşme tarihi geçmişse otomatik olarak inaktif edilecektir.
+
+7. SRM önerileri "Endirek malzeme yönetimi" programı tarafından malzeme ihtiyaç planlama ana süreci ile oluşturulur. SRM Talepleri kullanıcı tarafından bireysel olarak veya bir SRM önerisini dönüştürerek oluşturulur. SRM'ler "SAP SRM" sisteminde oluşturulur. Satınalma siparişleri "SAP"ta oluşturulur ancak "Endirek Malzeme Yönetimi" programına aktarılır.
+
+8. SRM'ler tedarikçi ve sözleşme bazında oluşturulur. Sözleşmeli ve sözleşmesiz malzemeler bir SRM içinde karıştırılamaz.
+
+9. Aktif bir sözleşme mevcut olsa bile kullanıcı tedarik performansı ve malzemenin aciliyeti nedeniyle sözleşmesi olmayan başka bir tedarikçiyi seçebilir.
+
+10. Kullanıcı SRM talebi oluştururken yeni tedarikçi malzeme bilgi kaydı girmek için "yeni bilgi kaydı ekle" butonu mevcut ve aktif olacaktır.
+
+11. SRM numaraları SRM taleplerine girildiğinde bu talep "SRM'e Aktarıldı" olarak onaylanacak ve başka değişiklik yapılamayacaktır.
+
+12. Bir SRM farklı malzeme gruplarına sahip malzemeler içeriyorsa SAP MP2 sistemi her malzeme grubu için otomatik olarak farklı PO oluşturur.
+
+13. Tedarikçi malzeme bilgi kaydı mevcutsa ve kullanıcı fiyat ve para birimini manuel olarak değiştirirse mevcut bilgi kaydı inaktif edilecek ve yeni bir bilgi kaydı otomatik olarak oluşturulacaktır. Bu kural sözleşmelerde çalışmayacaktır.
+
+14. Bir satınalma siparişi fiyatı sözleşme fiyatına sahip aktif tedarikçi malzeme bilgi kaydından farklıysa Satınalma siparişi görüntülenirken bir uyarı gösterilecektir.
+
+15. Yeni bir satınalma siparişi fiyatı mevcut "tedarikçi malzeme bilgi kaydından" farklıysa bu bilgi kaydı inaktif edilecek ve yeni bir bilgi kaydı oluşturulacaktır. Bu kural sözleşme numarası olan bilgi kayıtları için çalışmayacaktır.
+
+16. Bir sözleşmenin açık limiti şu şekilde hesaplanır: "sözleşme limiti" – "kullanılan limit" – "Açık SRM talepleri" – "Aktarılan SRM Talebi"
+
+17. Açık satınalma siparişi kayıtları girildiğinde kalemler ilgili SRM Talebindeki sipariş edilen miktara eklenir. Sipariş edilen miktar sipariş miktarına ulaşırsa SRM talep kalemlerinin "Talep kapatıldı" onay kutusu işaretlenir.
+
+PO DURUM KURALLARI:
+- Açık: Mal kabul miktarı < Sipariş miktarı
+- Kısmi Teslim: 0 < Mal kabul miktarı < Sipariş miktarı
+- Tamamlandı: Mal kabul miktarı >= Sipariş miktarı
+- Kapatıldı: Manuel kapatma (kısmi teslimat ile)
 
 MAL KABUL ENTEGRASYONU:
-1. Mal kabul yapılınca Goods receipt quantity güncellenir
-2. Kısmi teslimat yapılabilir
-3. Fazla teslimat YAPILAMAZ
+- Mal kabul yapıldığında mal kabul miktarı güncellenir
+- Kısmi teslimat yapılabilir
+- Fazla teslimat YAPILAMAZ
 
 SAP ENTEGRASYONU:
-- PO bilgileri SAP'dan senkronize edilir
-- Purchasing Order SAP number = SAP belge numarası
+- PO bilgisi SAP'tan senkronize edilir
+- Purchasing Order SAP number = SAP doküman numarası
 - Mal kabul SAP MIGO ile eşleşir
 
 --------------------------------------------------------------------------------
@@ -102,6 +179,8 @@ LIST SCREEN FEATURES
                         <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
                         <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
                         <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                        <a href="unit-of-measure-list.html" class="dropdown-item">Ölçü Birimleri</a>
+                        <a href="department-cost-center-list.html" class="dropdown-item">Departman-Masraf Merkezi</a>
                     </div>
                 </li>
                 <li class="nav-item">
@@ -152,6 +231,16 @@ LIST SCREEN FEATURES
                         <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
                         <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
                         <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanıcı Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onayları</a>
                     </div>
                 </li>
             </ul>
@@ -235,7 +324,7 @@ LIST SCREEN FEATURES
                 <h3>Open Order Items</h3>
                 <span class="result-count" id="resultCount">8 kayıt bulundu</span>
             </div>
-            <div class="card-body" style="padding: 0;">
+            <div class="card-body" style="padding: 0; overflow-x: auto;">
                 <!--
                     Data Structure Referansları:
                     - Purchasing Order: Purchasing Order SAP number, Supplier number, SRM number, creation datetime
@@ -383,83 +472,7 @@ LIST SCREEN FEATURES
 
     </main>
 
-    <!-- PO Detay Modal - "Purchasing order screen should have a view and it include both header and item information together" -->
-    <div id="poDetailModal" class="modal" style="display: none;">
-        <div class="modal-content" style="max-width: 900px;">
-            <div class="modal-header">
-                <h3 id="modalTitle">Order Details</h3>
-                <button class="modal-close" onclick="closeModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <!-- Header Information - Purchasing Order tablosundan -->
-                <div class="card" style="margin-bottom: 15px;">
-                    <div class="card-header">
-                        <h4>Order Header Information</h4>
-                    </div>
-                    <div class="card-body">
-                        <div class="form-row">
-                            <div class="form-group col-3">
-                                <label>Order number (PO SAP Number)</label>
-                                <input type="text" class="form-control" id="modalPoNo" readonly>
-                            </div>
-                            <div class="form-group col-3">
-                                <label>SRM number</label>
-                                <input type="text" class="form-control" id="modalSrmNo" readonly>
-                            </div>
-                            <div class="form-group col-3">
-                                <label>Supplier number (Supplier Number)</label>
-                                <input type="text" class="form-control" id="modalSupplierNo" readonly>
-                            </div>
-                            <div class="form-group col-3">
-                                <label>Creation date time (Creation DateTime)</label>
-                                <input type="text" class="form-control" id="modalCreationDate" readonly>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group col-6">
-                                <label>Supplier title (Supplier Title)</label>
-                                <input type="text" class="form-control" id="modalSupplierTitle" readonly>
-                            </div>
-                            <div class="form-group col-3">
-                                <label>Created by user info (Created by User)</label>
-                                <input type="text" class="form-control" id="modalCreatedBy" readonly>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Item Information - Purchasing Order Item tablosundan -->
-                <div class="card">
-                    <div class="card-header">
-                        <h4>Order Items</h4>
-                    </div>
-                    <div class="card-body" style="padding: 0; overflow-x: auto;">
-                        <table class="table" id="modalItemsTable" style="min-width: 700px;">
-                            <thead>
-                                <tr>
-                                    <th>Purchasing Order SAP Item No</th>
-                                    <th>Material number</th>
-                                    <th>Material title</th>
-                                    <th>Unit of measure code</th>
-                                    <th class="text-right">Order quantity</th>
-                                    <th class="text-right">Goods receipt quantity</th>
-                                    <th class="text-right">Open quantity</th>
-                                    <th class="text-right">Unit price</th>
-                                    <th>Currency code</th>
-                                </tr>
-                            </thead>
-                            <tbody id="modalItemsBody">
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-outline" onclick="closeModal()">Kapat</button>
-            </div>
-        </div>
-    </div>
+    <!-- PO Detay artık ayrı sayfa: po-detail.html -->
 
     <style>
         /* Compact table styling */
@@ -474,50 +487,6 @@ LIST SCREEN FEATURES
         .btn-xs {
             padding: 2px 8px;
             font-size: 11px;
-        }
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        .modal-content {
-            background: white;
-            border-radius: 8px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        .modal-header h3 {
-            margin: 0;
-        }
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #666;
-        }
-        .modal-body {
-            padding: 20px;
-        }
-        .modal-footer {
-            padding: 15px 20px;
-            border-top: 1px solid #e0e0e0;
-            text-align: right;
         }
     </style>
 
@@ -640,60 +609,12 @@ LIST SCREEN FEATURES
             document.getElementById('resultCount').textContent = rows.length + ' kayıt bulundu';
         }
 
-        // Görüntüle - CVCD'nin "View" işlevi
+        // Görüntüle - Sipariş detay sayfasına yönlendir
         // "Purchasing order screen should have a view and it include both header and item information together"
         function viewPO(poNo, itemNo) {
-            // İlgili siparişin tüm kalemlerini bul
-            const poItems = mockOpenOrders.filter(item => item.poNo === poNo);
-
-            if (poItems.length === 0) return;
-
-            // Header bilgilerini doldur (Purchasing Order tablosundan)
-            const firstItem = poItems[0];
-            document.getElementById('modalTitle').textContent = 'Sipariş Detayı - ' + poNo;
-            document.getElementById('modalPoNo').value = poNo;
-            document.getElementById('modalSrmNo').value = firstItem.srmNo;
-            document.getElementById('modalSupplierNo').value = firstItem.supplierNo;
-            document.getElementById('modalSupplierTitle').value = firstItem.supplierTitle;
-            document.getElementById('modalCreationDate').value = firstItem.creationDate;
-            document.getElementById('modalCreatedBy').value = 'SAP Entegrasyon';
-
-            // Item listesini doldur (Purchasing Order Item tablosundan)
-            const itemsBody = document.getElementById('modalItemsBody');
-            itemsBody.innerHTML = '';
-
-            poItems.forEach(item => {
-                const openQty = item.orderQty - item.grQty;
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${item.itemNo}</td>
-                    <td>${item.materialNo}</td>
-                    <td>${item.materialTitle}</td>
-                    <td>${item.uom}</td>
-                    <td class="text-right">${item.orderQty}</td>
-                    <td class="text-right">${item.grQty}</td>
-                    <td class="text-right"><strong>${openQty}</strong></td>
-                    <td class="text-right">${item.unitPrice.toLocaleString('tr-TR', {minimumFractionDigits: 2})}</td>
-                    <td>${item.currency}</td>
-                `;
-                itemsBody.appendChild(row);
-            });
-
-            // Modalı göster
-            document.getElementById('poDetailModal').style.display = 'flex';
+            // po-detail.html sayfasına yönlendir
+            window.location.href = `po-detail.html?po=${poNo}`;
         }
-
-        // Modalı kapat
-        function closeModal() {
-            document.getElementById('poDetailModal').style.display = 'none';
-        }
-
-        // ESC tuşu ile modalı kapat
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeModal();
-            }
-        });
     </script>
 
     <!-- DEVELOPER DOCUMENTATION PANEL -->
@@ -728,10 +649,13 @@ LIST SCREEN FEATURES
                             <tr><td>Purchasing Order SAP no</td><td>int</td><td>10</td><td>Header referansı</td></tr>
                             <tr><td>Purchasing Order SAP Item No</td><td>int</td><td>4</td><td>SAP item numarası</td></tr>
                             <tr><td>Material number</td><td>text</td><td>13</td><td>Malzeme numarası</td></tr>
+                            <tr><td>Unit of measure code</td><td>text</td><td>3</td><td>Ölçü birimi</td></tr>
                             <tr><td>Order quantity</td><td>float</td><td>15</td><td>Sipariş miktarı</td></tr>
                             <tr><td>Goods receipt quantity</td><td>float</td><td>15</td><td>Mal kabul miktarı</td></tr>
                             <tr><td>Unit price</td><td>float</td><td>14</td><td>Birim fiyat</td></tr>
                             <tr><td>currency code</td><td>text</td><td>3</td><td>Döviz kodu</td></tr>
+                            <tr><td>creation datetime</td><td>datetime</td><td>-</td><td>Kayıt oluşturma tarihi</td></tr>
+                            <tr><td>Created by user id</td><td>int</td><td>8</td><td>Oluşturan kullanıcı ID</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -740,9 +664,9 @@ LIST SCREEN FEATURES
                     <div class="rules-section">
                         <ul>
                             <li>PO'lar SAP entegrasyonu ile oluşturulur</li>
-                            <li><strong>Open quantity</strong> = Order quantity - Goods receipt quantity</li>
-                            <li>Detay modal'da header ve item bilgileri birlikte görünür</li>
-                            <li>Item tıklandığında goods-receipt.html sayfasına yönlendirme</li>
+                            <li><strong>Açık miktar</strong> = Sipariş miktarı - Mal kabul miktarı</li>
+                            <li>Detay modal'da başlık ve kalem bilgileri birlikte görünür</li>
+                            <li>Kalem tıklandığında goods-receipt.html sayfasına yönlendirme</li>
                         </ul>
                     </div>
                     <h3>Liste Özellikleri</h3>

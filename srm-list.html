@@ -13,13 +13,13 @@ IMMA DEVELOPER DOCUMENTATION
 
 SCREEN: 11 SRM RL - SRM Request List
 FILE: srm-list.html
-LAST UPDATED: 2025-12-18
+LAST UPDATED: 2025-12-23
 
 --------------------------------------------------------------------------------
 RELATED DATABASE TABLES
 --------------------------------------------------------------------------------
 
-TABLE: SRM Request Header
+TABLE: SRM Request Header (Data Structure IMMA.xlsx)
 | Field Name              | Type     | Length | Description                       |
 |-------------------------|----------|--------|-----------------------------------|
 | SRM Request number      | int      | 12     | Primary key                       |
@@ -32,35 +32,100 @@ TABLE: SRM Request Header
 | Contract number         | int      | 10     | Sözleşme numarası                 |
 | SRM Number              | int      | 10     | SAP SRM numarası                  |
 
-TABLE: SRM Request Item
+TABLE: SRM Request Item (Data Structure IMMA.xlsx)
 | Field Name                        | Type     | Length | Description                    |
 |-----------------------------------|----------|--------|--------------------------------|
 | SRM Request item id               | int      | 16     | Primary key                    |
-| SRM Request number                | int      | 12     | Header referansı               |
+| SRM Request number                | int      | 12     | Header referansı (FK)          |
 | Material Number                   | text     | 13     | Malzeme numarası               |
 | unit of measure code              | text     | 3      | Ölçü birimi                    |
 | Order Quantity                    | float    | 15     | Sipariş miktarı                |
 | Item Prize                        | float    | 14     | Birim fiyat                    |
-| Supplier Material info record Id  | int      | 8      | Info record referansı          |
+| Supplier Material info record Id  | int      | 8      | Info record referansı (FK)     |
+| Created by user info              | int      | 8      | Kaydı oluşturan kullanıcı ID   |
+| Creation date time                | datetime | -      | Kayıt oluşturma tarihi/saati   |
 | SRM ItemNumber                    | int      | 4      | Satır numarası                 |
 | Ordered quantity                  | float    | 14     | Siparişe dönüşen miktar        |
 | Request closed check box          | bool     | -      | Talep kapatıldı mı?            |
 
+NOT: SRM Request Item tablosu toplamda 12 alan içermektedir. Header ile Item
+ilişkisi 1:N'dir (bir SRM talebi birden fazla satır içerebilir).
+
 --------------------------------------------------------------------------------
-BUSINESS RULES (İş Kuralları)
+SCREEN FIELDS (UI Elements) - Screen Designs: 11 SRM RL
 --------------------------------------------------------------------------------
 
-SRM DURUMU:
-1. Taslak: Henüz SAP'a gönderilmedi
-2. Gönderildi: SAP'a aktarıldı, SRM Number atandı
-3. PO Oluşturuldu: Sipariş oluşturuldu
-4. Kısmen Teslim: Mal kabul başladı
-5. Tamamlandı: Tüm satırlar teslim alındı
-6. Kapatıldı: Manuel kapatma
+FILTER SECTION:
+- Search box (text) - SRM no, malzeme no veya tedarikçi ara
+- Status filter (dropdown) - SRM durumu filtrele
+- Date range filter - Tarih aralığı
+- Supplier filter (dropdown) - Tedarikçi filtrele
 
-TEDARİKÇİ GRUPLAMASI:
-- Her tedarikçi için ayrı SRM satırı
-- Sözleşmeli ve sözleşmesiz ayrı gösterilir
+SRM LIST TABLE:
+| Column           | Description                        |
+|------------------|-----------------------------------|
+| SRM Request no   | SRM numarası (link → detail)       |
+| Supplier no      | Tedarikçi numarası                 |
+| Supplier Title   | Tedarikçi adı                      |
+| Order date       | Sipariş tarihi                     |
+| Expected delivery| Beklenen teslimat                  |
+| Total value      | Toplam değer (EUR)                 |
+| Currency         | Para birimi                        |
+| Status           | Durum (badge)                      |
+| SRM Number       | SAP SRM numarası                   |
+
+EXPANDABLE ITEM DETAILS:
+| Column           | Description                        |
+|------------------|-----------------------------------|
+| Item no          | Satır numarası                     |
+| Material no      | Malzeme numarası                   |
+| Material Title   | Malzeme başlığı                    |
+| Order quantity   | Sipariş miktarı                    |
+| Open quantity    | Kalan miktar                       |
+| Unit prize       | Birim fiyatı                       |
+
+ACTION BUTTONS:
+- New SRM Request - Yeni SRM oluştur
+- Export to Excel - Excel'e aktar
+- Refresh - Yenile
+
+--------------------------------------------------------------------------------
+İŞ KURALLARI (Business Rules)
+--------------------------------------------------------------------------------
+
+Kural 1: Birincil tedarikçi, aktif bilgi kayıtlarındaki "Tedarikçi tercih sırası" alanının en düşük değerine göre otomatik olarak seçilir ve değiştirilebilir.
+
+Kural 2: Kullanıcı tedarikçi numarasına veya adına tıkladığında alternatif tedarikçi ve tüm fiyat alternatifleri görüntülenebilmelidir.
+
+Kural 3: SL ve üstü seviyeler açık SRM taleplerini ve satınalma siparişlerini görebilmelidir.
+
+Kural 4: SRM talep ekranı hem başlık hem de kalem bilgilerini bir arada içeren bir görünüme sahip olmalıdır.
+
+Kural 5: Tedarikçi tercih sırası alanı tedarikçinin tercih sırasını belirler. Boşsa en az tercih edilendir. Birincisi varsayılan tedarikçidir.
+
+Kural 6: Tedarikçi malzeme bilgi kaydı inaktif edilirse etkili olmayacaktır ve sözleşme tarihi geçmişse otomatik olarak inaktif edilecektir.
+
+Kural 7: SRM önerileri "Endirek malzeme yönetimi" programı tarafından malzeme ihtiyaç planlama ana süreciyle oluşturulur. SRM Talepleri kullanıcı tarafından bireysel olarak veya bir SRM önerisini dönüştürerek oluşturulur. SRM'ler "SAP SRM" sisteminde oluşturulur. Satınalma siparişleri "SAP"ta oluşturulur ancak "Endirek Malzeme Yönetimi" programına aktarılır.
+
+Kural 8: SRM'ler tedarikçi ve sözleşme bazında oluşturulur. Sözleşmeli ve sözleşmesiz malzemeler bir SRM içinde karıştırılamaz.
+
+Kural 9: Aktif bir sözleşme mevcut olsa bile kullanıcı, tedarik performansı ve malzemenin aciliyeti nedeniyle sözleşmesiz başka bir tedarikçi seçebilir.
+
+Kural 10: Kullanıcı SRM talebi oluştururken yeni tedarikçi malzeme bilgi kaydı girmek için "yeni bilgi kaydı ekle" butonu mevcut ve aktif olacaktır.
+
+Kural 11: SRM numaraları SRM taleplerine girildiğinde bu talep "SRM'ye Aktarıldı" olarak onaylanacak ve başka değişiklik yapılamayacaktır.
+
+Kural 12: Bir SRM'de farklı malzeme gruplarına sahip malzemeler varsa SAP MP2 sistemi her malzeme grubu için otomatik olarak farklı PO oluşturur.
+
+Kural 13: Tedarikçi malzeme bilgi kaydı mevcutsa ve kullanıcı fiyat ve dövizi manuel olarak değiştirirse mevcut bilgi kaydı inaktif edilecek ve yeni bir bilgi kaydı otomatik olarak oluşturulacaktır. Bu kural sözleşmeler için geçerli değildir.
+
+Kural 14: Bir satınalma siparişi fiyatı sözleşme fiyatına sahip aktif tedarikçi malzeme bilgi kaydından farklıysa satınalma siparişi görüntülenirken bir uyarı gösterilecektir.
+
+Kural 15: Yeni bir satınalma siparişi fiyatı mevcut "tedarikçi malzeme bilgi kaydından" farklıysa bu bilgi kaydı inaktif edilecek ve yeni bir bilgi kaydı oluşturulacaktır. Bu kural sözleşme numarasına sahip bilgi kayıtları için geçerli değildir.
+
+Kural 16: Bir sözleşmenin açık limiti "sözleşme limiti" - "kullanılan limit" - "Açık SRM talepleri" - "Aktarılan SRM Talebi" olarak hesaplanır.
+
+Kural 17: Açık satınalma siparişleri kayıtları girildiğinde kalemler ilgili SRM Talebindeki sipariş edilen miktara eklenir. Sipariş edilen miktar sipariş miktarına ulaşırsa SRM talep kalemlerinin "Talep kapatıldı" onay kutusu işaretlenir.
 
 --------------------------------------------------------------------------------
 LIST SCREEN FEATURES
@@ -102,6 +167,8 @@ LIST SCREEN FEATURES
                         <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
                         <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
                         <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                        <a href="unit-of-measure-list.html" class="dropdown-item">Ölçü Birimleri</a>
+                        <a href="department-cost-center-list.html" class="dropdown-item">Departman-Masraf Merkezi</a>
                     </div>
                 </li>
                 <li class="nav-item">
@@ -152,6 +219,16 @@ LIST SCREEN FEATURES
                         <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
                         <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
                         <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanıcı Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onayları</a>
                     </div>
                 </li>
             </ul>
@@ -812,23 +889,45 @@ LIST SCREEN FEATURES
                             <tr><td>Expected delivery date</td><td>date</td><td>-</td><td>Beklenen teslimat</td></tr>
                             <tr><td>Currency Code</td><td>text</td><td>3</td><td>Döviz kodu</td></tr>
                             <tr><td>Contract number</td><td>int</td><td>10</td><td>Sözleşme numarası</td></tr>
+                            <tr><td>SRM Number</td><td>int</td><td>10</td><td>SAP SRM numarası</td></tr>
                         </tbody>
                     </table>
                 </div>
                 <div id="businessRules" class="dev-tab-content">
                     <h3>İş Kuralları</h3>
                     <div class="rules-section">
+                        <ol>
+                            <li>Birincil tedarikçi, aktif bilgi kayıtlarındaki "Tedarikçi tercih sırası" alanının en düşük değerine göre otomatik olarak seçilir ve değiştirilebilir.</li>
+                            <li>Kullanıcı tedarikçi numarasına veya adına tıkladığında alternatif tedarikçi ve tüm fiyat alternatifleri görüntülenebilmelidir.</li>
+                            <li>SL ve üstü seviyeler açık SRM taleplerini ve satınalma siparişlerini görebilmelidir.</li>
+                            <li>SRM talep ekranı hem başlık hem de kalem bilgilerini bir arada içeren bir görünüme sahip olmalıdır.</li>
+                            <li>Tedarikçi tercih sırası alanı tedarikçinin tercih sırasını belirler. Boşsa en az tercih edilendir. Birincisi varsayılan tedarikçidir.</li>
+                            <li>Tedarikçi malzeme bilgi kaydı inaktif edilirse etkili olmayacaktır ve sözleşme tarihi geçmişse otomatik olarak inaktif edilecektir.</li>
+                            <li>SRM önerileri "Endirek malzeme yönetimi" programı tarafından malzeme ihtiyaç planlama ana süreciyle oluşturulur. SRM Talepleri kullanıcı tarafından bireysel olarak veya bir SRM önerisini dönüştürerek oluşturulur.</li>
+                            <li>SRM'ler tedarikçi ve sözleşme bazında oluşturulur. Sözleşmeli ve sözleşmesiz malzemeler bir SRM içinde karıştırılamaz.</li>
+                            <li>Aktif bir sözleşme mevcut olsa bile kullanıcı, tedarik performansı ve malzemenin aciliyeti nedeniyle sözleşmesiz başka bir tedarikçi seçebilir.</li>
+                            <li>Kullanıcı SRM talebi oluştururken yeni tedarikçi malzeme bilgi kaydı girmek için "yeni bilgi kaydı ekle" butonu mevcut ve aktif olacaktır.</li>
+                            <li>SRM numaraları SRM taleplerine girildiğinde bu talep "SRM'ye Aktarıldı" olarak onaylanacak ve başka değişiklik yapılamayacaktır.</li>
+                            <li>Bir SRM'de farklı malzeme gruplarına sahip malzemeler varsa SAP MP2 sistemi her malzeme grubu için otomatik olarak farklı PO oluşturur.</li>
+                            <li>Tedarikçi malzeme bilgi kaydı mevcutsa ve kullanıcı fiyat ve dövizi manuel olarak değiştirirse mevcut bilgi kaydı inaktif edilecek ve yeni bir bilgi kaydı otomatik olarak oluşturulacaktır. Bu kural sözleşmeler için geçerli değildir.</li>
+                            <li>Bir satınalma siparişi fiyatı sözleşme fiyatına sahip aktif tedarikçi malzeme bilgi kaydından farklıysa satınalma siparişi görüntülenirken bir uyarı gösterilecektir.</li>
+                            <li>Yeni bir satınalma siparişi fiyatı mevcut "tedarikçi malzeme bilgi kaydından" farklıysa bu bilgi kaydı inaktif edilecek ve yeni bir bilgi kaydı oluşturulacaktır. Bu kural sözleşme numarasına sahip bilgi kayıtları için geçerli değildir.</li>
+                            <li>Bir sözleşmenin açık limiti "sözleşme limiti" - "kullanılan limit" - "Açık SRM talepleri" - "Aktarılan SRM Talebi" olarak hesaplanır.</li>
+                            <li>Açık satınalma siparişleri kayıtları girildiğinde kalemler ilgili SRM Talebindeki sipariş edilen miktara eklenir. Sipariş edilen miktar sipariş miktarına ulaşırsa SRM talep kalemlerinin "Talep kapatıldı" onay kutusu işaretlenir.</li>
+                        </ol>
+                    </div>
+                    <h3>Durum Kuralları</h3>
+                    <div class="rules-section">
                         <ul>
                             <li><strong>Taslak</strong>: Düzenlenebilir, silinebilir</li>
                             <li><strong>Onay Bekliyor</strong>: Onaylanabilir, reddedilebilir</li>
                             <li><strong>Onaylandı</strong>: Sadece görüntülenebilir</li>
-                            <li>Sözleşmeli ve sözleşmesiz malzemeler aynı SRM'de karıştırılamaz</li>
                         </ul>
                     </div>
                     <h3>Liste Özellikleri</h3>
                     <div class="rules-section">
                         <ul>
-                            <li>Filtreleme: SRM No, Requester, Department, Status, Tarih</li>
+                            <li>Filtreleme: SRM No, Talep Eden, Departman, Durum, Tarih</li>
                             <li>Detay linki: srm-request.html?id=&mode=view</li>
                         </ul>
                     </div>

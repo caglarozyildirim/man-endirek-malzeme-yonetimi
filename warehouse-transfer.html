@@ -85,13 +85,13 @@ IMMA DEVELOPER DOCUMENTATION
 
 SCREEN: 21 TWW - Transfer Within Warehouse
 FILE: warehouse-transfer.html
-LAST UPDATED: 2025-12-18
+LAST UPDATED: 2025-12-23
 
 --------------------------------------------------------------------------------
 RELATED DATABASE TABLES
 --------------------------------------------------------------------------------
 
-TABLE: Material Transfer Within Stock
+TABLE: Material Transfer Within Stock (Data Structure IMMA.xlsx)
 | Field Name                        | Type     | Length | Description                    |
 |-----------------------------------|----------|--------|--------------------------------|
 | Material stock transfer request id| int      | 8      | Primary key                    |
@@ -101,28 +101,84 @@ TABLE: Material Transfer Within Stock
 | Delivery Finalized                | bool     | -      | Transfer tamamlandı mı?        |
 
 --------------------------------------------------------------------------------
-BUSINESS RULES (İş Kuralları)
+SCREEN FIELDS (UI Elements) - Screen Designs: 21 TWW
 --------------------------------------------------------------------------------
 
-DEPO İÇİ TRANSFER:
-1. Aynı malzeme farklı lokasyona taşınır
-2. Kaynak: Mevcut Storage/Location/Bin
-3. Hedef: Farklı Storage/Location/Bin
+MATERIAL SELECTION:
+- Material number (search) - Malzeme numarası arama
+- Material title (readonly) - Malzeme başlığı
+- Unit of measure (readonly) - Ölçü birimi
+- Total available stock (readonly) - Toplam mevcut stok
 
-HAREKET KAYITLARI:
-- Type 5: Material transfer exit (çıkış)
-- Type 4: Material transfer entry (giriş)
-- Her iki hareket aynı anda oluşur
+SOURCE LOCATION:
+- Source Storage (dropdown) - Kaynak depo
+- Source Location (dropdown) - Kaynak lokasyon
+- Source Bin (dropdown) - Kaynak bin
+- Source Stock Record Id (readonly) - Kaynak stok kaydı
+- Available quantity (readonly) - Seçili lokasyondaki miktar
 
-COST KAYDI:
-1. Eski Cost kaydından düşüm (Consumed Quantity artar)
-2. Yeni Cost kaydı oluşur (hedef depo bilgileriyle)
-3. Maliyet bilgileri korunur
+TARGET LOCATION:
+- Target Storage (dropdown) - Hedef depo
+- Target Location (dropdown) - Hedef lokasyon
+- Target Bin (dropdown) - Hedef bin
 
-KISMİ TRANSFER:
-1. Transferred quantity < Transferring Quantity
-2. Kalan miktar için transfer devam eder
-3. Delivery Finalized = true ile kapatılır
+TRANSFER DETAILS:
+- Transfer quantity (number) - Transfer miktarı
+- Transfer request id (readonly) - Transfer talep ID (oluşturulunca)
+
+TRANSFER LIST TABLE:
+| Column              | Description                    |
+|---------------------|--------------------------------|
+| Material number     | Malzeme numarası               |
+| Source location     | Kaynak lokasyon                |
+| Target location     | Hedef lokasyon                 |
+| Transfer quantity   | Transfer miktarı               |
+| Status              | Bekliyor/Tamamlandı            |
+
+ACTION BUTTONS:
+- Add to Transfer List - Listeye ekle
+- Remove from List - Listeden çıkar
+- Process Transfer - Transferi işle
+- Cancel - İptal
+
+--------------------------------------------------------------------------------
+İŞ KURALLARI (Business Rules)
+--------------------------------------------------------------------------------
+
+1. Kullanıcı onay ekranında mevcut stok ve diğer stok bilgilerini görebilmelidir
+   - Transfer işleminde mevcut stok ve diğer stok bilgileri görüntülenebilmeli
+
+2. Talep kısmi olarak teslim edilebilir, kalan miktar açık tutulabilir veya eksik teslimatla kapatılabilir
+   - Kısmi transfer yapılabilir: Transferred quantity < Transferring Quantity
+   - Kalan miktar için transfer devam edebilir veya kapatılabilir
+   - Delivery Finalized = true ile kapatılır
+
+3. Malzeme talebine stok tahsis edilirken ilk giren ilk çıkar (FIFO) prensibi uygulanır
+   - FIFO prensibi uygulanır
+   - Maliyet bilgileri korunur (Cost kaydından düşüm)
+
+4. Depo içi lokasyonlar arası malzeme transferi doğrudan onaylanabilir veya transfer listesinde talep olarak bırakılabilir
+   - Aynı depo içinde lokasyonlar arası transfer doğrudan onaylanabilir
+   - Transfer listesinde talep olarak bırakılabilir
+   - Kaynak: Mevcut Storage/Location/Bin
+   - Hedef: Farklı Storage/Location/Bin
+
+8. Transfer talebi kalemleri kullanıcı ekranında görüldüğü sırada olmalı ve birden fazla alana göre sıralanabilmelidir
+   - Transfer kalemleri kullanıcı ekranında görüldüğü sırada olmalı
+
+9. Kullanıcı malzemeyi başka bir lokasyon veya bin'den toplayabilir, transfer onayından önce değiştirilebilir
+   - Kullanıcı malzemeyi başka bir lokasyon veya bin'den toplayabilir
+   - Transfer onayından önce değiştirilebilir
+
+12. Talep birden fazla bin ile karşılanabilir ve birden fazla maliyet olabilir
+    - Talep birden fazla bin ile karşılanabilir
+    - Birden fazla maliyet olabilir
+
+15. "Binler ve lokasyonlar arası malzeme transferleri" tüm mal hareketleri hareket tipi numarası ile işlem kaydı oluşturur
+    - Tip 5: Malzeme transfer çıkışı
+    - Tip 4: Malzeme transfer girişi
+    - Her iki hareket aynı anda oluşur
+    - Tüm mal hareketleri hareket tipi numarası ile işlem kaydı oluşturur
 
 ================================================================================
 -->
@@ -155,6 +211,8 @@ KISMİ TRANSFER:
                         <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
                         <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
                         <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                        <a href="unit-of-measure-list.html" class="dropdown-item">Ölçü Birimleri</a>
+                        <a href="department-cost-center-list.html" class="dropdown-item">Departman-Masraf Merkezi</a>
                     </div>
                 </li>
                 <li class="nav-item">
@@ -205,6 +263,16 @@ KISMİ TRANSFER:
                         <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
                         <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
                         <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanıcı Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onayları</a>
                     </div>
                 </li>
             </ul>
@@ -988,6 +1056,7 @@ KISMİ TRANSFER:
             <div class="dev-docs-body">
                 <div class="dev-docs-tabs">
                     <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('formFields')">Form Alanları</button>
                     <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
                 </div>
                 <div id="dataStructure" class="dev-tab-content active">
@@ -1004,14 +1073,81 @@ KISMİ TRANSFER:
                     <h3>Movement Types</h3>
                     <p>4: Material transfer entry / 5: Material transfer exit</p>
                 </div>
+                <div id="formFields" class="dev-tab-content">
+                    <h3>Material Selection</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Material number *</td><td>search</td><td>Malzeme numarası arama</td></tr>
+                            <tr><td>Material title</td><td>readonly</td><td>Malzeme başlığı</td></tr>
+                            <tr><td>Unit of measure</td><td>readonly</td><td>Ölçü birimi</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Source Stock (Kaynak)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Source Storage *</td><td>dropdown</td><td>Kaynak depo</td></tr>
+                            <tr><td>Source Location *</td><td>dropdown</td><td>Kaynak lokasyon</td></tr>
+                            <tr><td>Source Bin *</td><td>dropdown</td><td>Kaynak bin</td></tr>
+                            <tr><td>Available quantity</td><td>readonly</td><td>Mevcut miktar</td></tr>
+                            <tr><td>Stock Record Id</td><td>readonly</td><td>Stok kaydı ID</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Destination (Hedef)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Target Storage *</td><td>dropdown</td><td>Hedef depo</td></tr>
+                            <tr><td>Target Location *</td><td>dropdown</td><td>Hedef lokasyon</td></tr>
+                            <tr><td>Target Bin *</td><td>dropdown</td><td>Hedef bin</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Transfer Quantity</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Transferring Quantity *</td><td>number</td><td>Transfer edilecek miktar</td></tr>
+                            <tr><td>Transferred quantity</td><td>readonly</td><td>Transfer edilen miktar</td></tr>
+                            <tr><td>Remaining quantity</td><td>readonly</td><td>Kalan miktar</td></tr>
+                            <tr><td>Delivery Finalized</td><td>checkbox</td><td>Teslimat tamamlandı mı</td></tr>
+                        </tbody>
+                    </table>
+                </div>
                 <div id="businessRules" class="dev-tab-content">
                     <h3>İş Kuralları</h3>
                     <div class="rules-section">
                         <ul>
-                            <li>Depo içi lokasyon/bin değişikliği</li>
-                            <li>Source ve Target lokasyon seçilmeli</li>
-                            <li>Transfer miktarı mevcut stoktan fazla olamaz</li>
-                            <li>Movement Type 4 (entry) ve 5 (exit) oluşur</li>
+                            <li><strong>Kural 1:</strong> Transfer işleminde mevcut stok ve diğer stok bilgileri görüntülenebilmeli</li>
+                            <li><strong>Kural 2:</strong> Kısmi transfer yapılabilir
+                                <ul>
+                                    <li>Transferred quantity &lt; Transferring Quantity</li>
+                                    <li>Kalan miktar için transfer devam edebilir veya kapatılabilir</li>
+                                    <li>Delivery Finalized = true ile kapatılır</li>
+                                </ul>
+                            </li>
+                            <li><strong>Kural 3:</strong> FIFO prensibi uygulanır - maliyet bilgileri korunur</li>
+                            <li><strong>Kural 4:</strong> Aynı depo içinde lokasyonlar arası transfer
+                                <ul>
+                                    <li>Doğrudan onaylanabilir veya transfer listesinde talep olarak bırakılabilir</li>
+                                    <li>Kaynak: Mevcut Storage/Location/Bin</li>
+                                    <li>Hedef: Farklı Storage/Location/Bin</li>
+                                </ul>
+                            </li>
+                            <li><strong>Kural 8:</strong> Transfer kalemleri kullanıcı ekranındaki sırada olmalı</li>
+                            <li><strong>Kural 9:</strong> Kullanıcı malzemeyi başka bir lokasyon/bin'den toplayabilir
+                                <ul>
+                                    <li>Transfer onayından önce değiştirilebilir</li>
+                                </ul>
+                            </li>
+                            <li><strong>Kural 12:</strong> Talep birden fazla bin ile karşılanabilir, birden fazla maliyet olabilir</li>
+                            <li><strong>Kural 15:</strong> Tüm mal hareketleri hareket tipi numarası ile işlem kaydı oluşturur
+                                <ul>
+                                    <li>Hareket Tipi 5: Malzeme transfer çıkışı</li>
+                                    <li>Hareket Tipi 4: Malzeme transfer girişi</li>
+                                    <li>Her iki hareket aynı anda oluşur</li>
+                                </ul>
+                            </li>
                         </ul>
                     </div>
                 </div>

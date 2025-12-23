@@ -13,13 +13,13 @@ IMMA DEVELOPER DOCUMENTATION
 
 SCREEN: 3 STM - Storage Type Maintenance
 FILE: storage-type.html
-LAST UPDATED: 2025-12-18
+LAST UPDATED: 2025-12-23
 
 --------------------------------------------------------------------------------
 RELATED DATABASE TABLES
 --------------------------------------------------------------------------------
 
-TABLE: Storage Type
+TABLE: Storage Type (Data Structure IMMA.xlsx)
 | Field Name                    | Type     | Length | Description                    |
 |-------------------------------|----------|--------|--------------------------------|
 | Storage type Id               | int      | -      | Primary key                    |
@@ -40,29 +40,47 @@ Storage Type Values:
 - 3: Bin (Raf) - Lokasyon altında
 
 --------------------------------------------------------------------------------
-BUSINESS RULES (İş Kuralları)
+SCREEN FIELDS (UI Elements) - Screen Designs: 3 STM Detail
 --------------------------------------------------------------------------------
 
-HIYERARŞİ:
-1. Storage → Location → Bin (3 seviyeli)
-2. Location oluşturulurken Storage ZORUNLU
-3. Bin oluşturulurken Location ZORUNLU
+FORM SECTION:
+- Depo Tipi ID (text, readonly) - Sistem otomatik oluşturur (Storage type Id)
+- Depo Tipi (select, zorunlu) - Storage Type seçimi:
+  - "1" = Storage (Depo)
+  - "2" = Location (Lokasyon)
+  - "3" = Bin (Raf)
+- Storage Kodu (text, zorunlu, maxlength=12) - Benzersiz depo/lokasyon/bin kodu
+- Storage Adı (text, zorunlu, maxlength=16) - Depo/lokasyon/bin başlığı
+- İlişkili Location Kodu (text, maxlength=12) - Üst seviye lokasyon referansı
+- Varsayılan Alt Depo Tipi Kodu (text, maxlength=12) - Default alt depo ataması
 
-VARSAYILAN ATAMA:
-1. İlk Location otomatik olarak Storage'ın default'u olur
-2. İlk Bin otomatik olarak Location'ın default'u olur
-3. Default ayarı manuel değiştirilebilir
+AUDIT SECTION:
+- Created by user info (text, readonly) - Oluşturan kullanıcı bilgisi
+- Creation date time (text, readonly) - Oluşturma tarihi
 
-BIN CODE LAYOUT:
-1. "-" karakteri ayırıcı olarak kullanılır
-2. "#" karakteri numara alanını temsil eder
-3. Örnek: "##-##" → 00-00, 00-01, ..., 99-99
-4. Bin oluştururken layout'a göre otomatik numara
+INACTIVATION SECTION:
+- Inactivation (checkbox) - Pasif durumu kontrolü
+- Inactivated by user info (text, readonly) - Pasif eden kullanıcı
+- Inactivation date time (text, readonly) - Pasif edilme tarihi
 
-İNAKTİVASYON:
-1. İnaktif depodan malzeme ÇIKARILABİLİR
-2. İnaktif depoya malzeme KONULAMAZ
-3. İnaktivasyon üst seviyeyi de etkiler
+ACTION BUTTONS:
+- Kaydet (primary button) - create/edit modunda görünür
+- Düzenle (primary button) - view modunda görünür, edit moduna geçiş
+- İptal/Listeye Dön (secondary button) - storage-type-list.html'e yönlendirir
+
+--------------------------------------------------------------------------------
+İŞ KURALLARI (Paragraf 256-263)
+--------------------------------------------------------------------------------
+
+DEPO İÇİN:
+Kural 1: İnaktif edilmiş depo, lokasyon ve raflardan malzeme çıkarılabilir ancak malzeme konulamaz.
+Kural 2: İlk lokasyon ilgili depo için varsayılan lokasyon olarak otomatik atanır. Daha sonra endirek malzeme anahtar kullanıcısı tarafından değiştirilebilir.
+Kural 3: İlk raf ilgili lokasyon için varsayılan raf olarak otomatik atanır. Daha sonra endirek malzeme anahtar kullanıcısı tarafından değiştirilebilir.
+Kural 4: Raf kodu düzeni 3 farklı girişten oluşur. "-" ayırıcıdır, "#" 0 ile başlayıp artacak sayı alanını belirtir, Sayılar sayımın bu numaradan başlayacağını gösterir.
+Kural 5: "##-##" raf numaralarının "00-00"dan başlayıp artacağı anlamına gelir.
+Kural 6: "1#-##" "10-00" ile başlar ve "10-01" ile devam eder.
+Kural 7: "12-34-56" eğer # sayı alanı yoksa sadece bu tek raf oluşturulacaktır.
+Kural 8: "-" ayırıcı zorunlu değildir, bu yüzden "12##" tanımlanabilir.
 
 ================================================================================
 -->
@@ -94,6 +112,8 @@ BIN CODE LAYOUT:
                         <a href="storage-type-list.html" class="dropdown-item active">Depo Tipi Listesi</a>
                         <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
                         <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                        <a href="unit-of-measure-list.html" class="dropdown-item">Ölçü Birimleri</a>
+                        <a href="department-cost-center-list.html" class="dropdown-item">Departman-Masraf Merkezi</a>
                     </div>
                 </li>
                 <li class="nav-item">
@@ -144,6 +164,16 @@ BIN CODE LAYOUT:
                         <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
                         <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
                         <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanıcı Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onayları</a>
                     </div>
                 </li>
             </ul>
@@ -596,6 +626,7 @@ BIN CODE LAYOUT:
             <div class="dev-docs-body">
                 <div class="dev-docs-tabs">
                     <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('formFields')">Form Alanları</button>
                     <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
                 </div>
                 <div id="dataStructure" class="dev-tab-content active">
@@ -609,6 +640,8 @@ BIN CODE LAYOUT:
                             <tr><td>Created By user info</td><td>int</td><td>8</td><td>Oluşturan kullanıcı</td></tr>
                             <tr><td>Creation date time</td><td>datetime</td><td>-</td><td>Oluşturma tarihi</td></tr>
                             <tr><td>Inactivation check box</td><td>bool</td><td>-</td><td>İnaktif mi?</td></tr>
+                            <tr><td>Inactivation date time</td><td>datetime</td><td>-</td><td>İnaktivasyon tarihi</td></tr>
+                            <tr><td>Inactivated by user info</td><td>int</td><td>8</td><td>İnaktif eden kullanıcı ID</td></tr>
                             <tr><td>Related Location Code</td><td>text</td><td>12</td><td>Üst lokasyon kodu</td></tr>
                             <tr><td>Default sub storage type code</td><td>text</td><td>12</td><td>Varsayılan alt depo</td></tr>
                         </tbody>
@@ -622,36 +655,58 @@ BIN CODE LAYOUT:
                         </tbody>
                     </table>
                 </div>
+                <div id="formFields" class="dev-tab-content">
+                    <h3>Form Section</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Depo Tipi ID</td><td>readonly</td><td>Sistem otomatik oluşturur (Storage type Id)</td></tr>
+                            <tr><td>Depo Tipi *</td><td>dropdown</td><td>1:Storage, 2:Location, 3:Bin</td></tr>
+                            <tr><td>Storage Kodu *</td><td>text</td><td>Benzersiz kod (maxlength=12)</td></tr>
+                            <tr><td>Storage Adı *</td><td>text</td><td>Başlık/açıklama (maxlength=16)</td></tr>
+                            <tr><td>İlişkili Location Kodu</td><td>dropdown</td><td>Üst seviye lokasyon referansı</td></tr>
+                            <tr><td>Varsayılan Alt Depo Tipi Kodu</td><td>dropdown</td><td>Default alt depo ataması</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Audit Section (Readonly)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Created by user info</td><td>Oluşturan kullanıcı bilgisi</td></tr>
+                            <tr><td>Creation date time</td><td>Oluşturma tarihi</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Inactivation Section</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Inactivation checkbox</td><td>checkbox</td><td>Pasif durumu kontrolü</td></tr>
+                            <tr><td>Inactivated by user info</td><td>readonly</td><td>Pasif eden kullanıcı</td></tr>
+                            <tr><td>Inactivation date time</td><td>readonly</td><td>Pasif edilme tarihi</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Action Buttons</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Buton</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Kaydet</td><td>create/edit modunda görünür</td></tr>
+                            <tr><td>Düzenle</td><td>view modunda görünür, edit moduna geçiş</td></tr>
+                            <tr><td>İptal/Listeye Dön</td><td>storage-type-list.html'e yönlendirir</td></tr>
+                        </tbody>
+                    </table>
+                </div>
                 <div id="businessRules" class="dev-tab-content">
-                    <h3>Hiyerarşi Kuralları</h3>
+                    <h3>Depo İş Kuralları (Paragraf 256-263)</h3>
                     <div class="rules-section">
                         <ul>
-                            <li><strong>Storage → Location → Bin</strong> (3 seviyeli hiyerarşi)</li>
-                            <li>Location oluşturulurken <strong>Storage ZORUNLU</strong></li>
-                            <li>Bin oluşturulurken <strong>Location ZORUNLU</strong></li>
-                        </ul>
-                    </div>
-                    <h3>Varsayılan Atama</h3>
-                    <div class="rules-section">
-                        <ul>
-                            <li>İlk Location otomatik olarak Storage'ın default'u olur</li>
-                            <li>İlk Bin otomatik olarak Location'ın default'u olur</li>
-                            <li>Default ayarı manuel değiştirilebilir</li>
-                        </ul>
-                    </div>
-                    <h3>Bin Code Layout</h3>
-                    <div class="rules-section">
-                        <ul>
-                            <li>"-" karakteri ayırıcı olarak kullanılır</li>
-                            <li>"#" karakteri numara alanını temsil eder</li>
-                            <li>Örnek: "##-##" → 00-00, 00-01, ..., 99-99</li>
-                        </ul>
-                    </div>
-                    <h3>İnaktivasyon</h3>
-                    <div class="rules-section">
-                        <ul>
-                            <li>İnaktif depodan malzeme <strong>ÇIKARILABİLİR</strong></li>
-                            <li>İnaktif depoya malzeme <strong>KONULAMAZ</strong></li>
+                            <li>İnaktif depo, lokasyon ve bin'lerden malzeme çıkışı yapılabilir ancak giriş yapılamaz.</li>
+                            <li>İlk lokasyon ilgili depo için varsayılan lokasyon olarak otomatik atanır. Daha sonra endirek malzeme anahtar kullanıcısı tarafından değiştirilebilir.</li>
+                            <li>İlk bin ilgili lokasyon için varsayılan bin olarak otomatik atanır. Daha sonra endirek malzeme anahtar kullanıcısı tarafından değiştirilebilir.</li>
+                            <li>Bin kodu düzeni 3 farklı girdiden oluşur. "-" ayırıcıdır, "#" 0'dan başlayıp artacak sayı alanını belirler, Sayılar sayımın bu numaradan başlayacağını gösterir.</li>
+                            <li>"##-##" bin numaralarının "00-00"dan başlayıp artacağı anlamına gelir</li>
+                            <li>"1#-##" "10-00" ile başlar ve "10-01" ile devam eder</li>
+                            <li>"12-34-56" eğer # sayı alanı yoksa sadece bu bir bin oluşturulur</li>
+                            <li>"-" ayırıcı zorunlu değildir, "12##" tanımlanabilir</li>
                         </ul>
                     </div>
                 </div>

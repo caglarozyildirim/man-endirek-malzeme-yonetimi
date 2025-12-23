@@ -6,6 +6,144 @@
     <title>Kullanıcı Bilgileri - IMMA</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
+<!--
+================================================================================
+IMMA DEVELOPER DOCUMENTATION
+================================================================================
+
+SCREEN: View User Info
+FILE: user-info.html
+LAST UPDATED: 2025-12-18
+
+--------------------------------------------------------------------------------
+RELATED DATABASE TABLES
+--------------------------------------------------------------------------------
+
+TABLE: User (Data Structure IMMA.xlsx)
+| Field Name          | Type     | Length | Description                        |
+|---------------------|----------|--------|------------------------------------|
+| User Id             | int      | 8      | Primary key - Sistem kullanıcı ID  |
+| Name                | text     | 50     | Kullanıcı adı                      |
+| Surname             | text     | 50     | Kullanıcı soyadı                   |
+| Windows Id          | text     | 20     | Active Directory kullanıcı adı     |
+| Company Id          | text     | 10     | Şirket sicil numarası              |
+| Last Login          | datetime | -      | Son giriş tarihi/saati             |
+| Status              | char     | 1      | 1:Active, 2:Inactive, 3:Locked     |
+
+TABLE: User Department Assignment (Data Structure IMMA.xlsx)
+| Field Name          | Type     | Length | Description                        |
+|---------------------|----------|--------|------------------------------------|
+| Assignment Id       | int      | 8      | Primary key                        |
+| User Id             | int      | 8      | Kullanıcı referansı (FK)           |
+| Department Code     | text     | 8      | Departman kodu                     |
+| Department Title    | text     | 64     | Departman adı                      |
+| Role in Department  | text     | 32     | Departmandaki rol (Member/GL/TL/SL)|
+| Inactivation Check  | bool     | -      | Atama inaktif mi?                  |
+
+TABLE: User Role Assignment (Data Structure IMMA.xlsx)
+| Field Name          | Type     | Length | Description                        |
+|---------------------|----------|--------|------------------------------------|
+| Role Assignment Id  | int      | 8      | Primary key                        |
+| User Id             | int      | 8      | Kullanıcı referansı (FK)           |
+| Role Id             | int      | 8      | Rol referansı (FK)                 |
+| Assignment Type     | char     | 1      | D:Direct, O:OnBehalf               |
+| Start Date          | date     | -      | Atama başlangıcı                   |
+| End Date            | date     | -      | Atama bitişi (vekalet için)        |
+
+TABLE: On Behalf Assignment (Data Structure IMMA.xlsx - Vekalet)
+| Field Name              | Type     | Length | Description                    |
+|-------------------------|----------|--------|--------------------------------|
+| On Behalf Id            | int      | 8      | Primary key                    |
+| Acting User Id          | int      | 8      | Vekalet eden kullanıcı         |
+| Original User Id        | int      | 8      | Vekalet edilen kullanıcı       |
+| Start Date              | date     | -      | Vekalet başlangıcı             |
+| End Date                | date     | -      | Vekalet bitişi                 |
+| Status                  | char     | 1      | A:Active, C:Completed          |
+
+--------------------------------------------------------------------------------
+SCREEN FIELDS (UI Elements) - Screen Designs: View User Info
+--------------------------------------------------------------------------------
+
+PROFILE INFORMATION:
+- Name (Ad)
+- Surname (Soyad)
+- User System ID (Sistem Kullanıcı ID)
+- User Windows ID (Windows Kullanıcı ID)
+- User Company Id (Şirket Sicil No)
+- Last Login (Son Giriş)
+- Switch to Common User butonu
+
+DEPARTMENT ASSIGNMENTS TABLE:
+- Department Code (Departman Kodu)
+- Department Title (Departman Adı)
+- Role in Department (Departmandaki Rol)
+
+AUTHORIZATION ROLES:
+- Direct roles user have (Doğrudan Sahip Olunan Roller)
+- Roles gained due to acting on behalf (Vekalet ile Kazanılan Roller)
+- User information that user acts on behalf (Vekalet Bilgileri)
+- Click for the history of on behalf responsibilities (Vekalet Geçmişi linki)
+
+PERMISSIONS TABLE:
+- Module (Modül adı)
+- View (Görüntüle)
+- Create (Oluştur)
+- Edit (Düzenle)
+- Delete (Sil)
+- Approve (Onayla)
+
+SESSION INFO:
+- Login Time (Giriş Zamanı)
+- Last Activity (Son Aktivite)
+- IP Address (IP Adresi)
+- Browser (Tarayıcı)
+- Session Duration (Oturum Süresi)
+- Token Validity (Token Geçerliliği)
+
+ACTIVITY LOG TABLE:
+- Date/Time (Tarih/Saat)
+- Action (İşlem)
+- Detail (Detay)
+
+--------------------------------------------------------------------------------
+BUSINESS RULES (İş Kuralları)
+--------------------------------------------------------------------------------
+
+USER ROLES:
+1. Indirect Material Key User - Tüm master data işlemleri
+2. Indirect Material Responsible - Genel süreç denetimi
+3. SL (Shift Leader) and above - Açık talepleri görme, onay yetkileri
+4. TL (Team Leader) and above - Malzeme talebi oluşturabilir
+5. Managers - Bütçe onay yetkisi
+6. Department Heads - Bütçe belirleme yetkisi
+
+SWITCH TO COMMON USER:
+1. Kullanıcı departman bazlı yetkilerini geçici olarak devre dışı bırakabilir
+2. Bu modda sadece temel görüntüleme yetkileri aktif
+3. Oturum sonlandırıldığında normal yetkiler geri gelir
+
+ON BEHALF (VEKALET):
+1. Vekalet başlangıç ve bitiş tarihleri tanımlanmalı
+2. Vekalet süresince vekalet eden kişi, edilen kişinin yetkilerini kullanır
+3. Vekalet tamamlandığında sistem otomatik olarak yetkileri geri alır
+4. Vekalet geçmişi saklanır ve raporlanabilir
+
+SESSION MANAGEMENT:
+1. Oturum zaman aşımı: Varsayılan 2 saat
+2. Inaktivite zaman aşımı: 30 dakika
+3. Token yenileme: Aktivite ile otomatik
+4. Eşzamanlı oturum: Tek cihazda tek oturum
+
+--------------------------------------------------------------------------------
+FORM MODES
+--------------------------------------------------------------------------------
+
+- view: Kullanıcı bilgilerini görüntüleme (varsayılan ve tek mod)
+- Bu sayfa sadece görüntüleme amaçlıdır
+- Kullanıcı düzenleme admin panelinden yapılır
+
+================================================================================
+-->
 <body>
     <!-- NAVBAR - Top Navigation (Maximo Style) -->
     <nav class="modern-navbar">
@@ -35,6 +173,8 @@
                         <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
                         <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
                         <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                        <a href="unit-of-measure-list.html" class="dropdown-item">Ölçü Birimleri</a>
+                        <a href="department-cost-center-list.html" class="dropdown-item">Departman-Masraf Merkezi</a>
                     </div>
                 </li>
                 <li class="nav-item">
@@ -85,6 +225,16 @@
                         <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
                         <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
                         <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanıcı Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onayları</a>
                     </div>
                 </li>
             </ul>
@@ -430,5 +580,124 @@
                 '3. 15.03.2025 - 31.03.2025: Fatma Kaya (FIDA) - Tamamlandi');
         }
     </script>
+
+    <!-- DEVELOPER DOCUMENTATION PANEL -->
+    <div id="devDocsPanel" class="dev-docs-panel">
+        <button class="dev-docs-toggle" onclick="toggleDevDocs()">📋 Geliştirici Dokümantasyonu</button>
+        <div class="dev-docs-content" id="devDocsContent">
+            <div class="dev-docs-header">
+                <h2>📋 View User Info</h2>
+                <button class="dev-docs-close" onclick="toggleDevDocs()">✕</button>
+            </div>
+            <div class="dev-docs-body">
+                <div class="dev-docs-tabs">
+                    <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
+                    <button class="dev-tab" onclick="showDevTab('screenFields')">Ekran Alanları</button>
+                </div>
+                <div id="dataStructure" class="dev-tab-content active">
+                    <h3>User Tablosu (Data Structure IMMA.xlsx)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Uzunluk</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>User Id</td><td>int</td><td>8</td><td>Primary key - Sistem kullanıcı ID</td></tr>
+                            <tr><td>Name</td><td>text</td><td>50</td><td>Kullanıcı adı</td></tr>
+                            <tr><td>Surname</td><td>text</td><td>50</td><td>Kullanıcı soyadı</td></tr>
+                            <tr><td>Windows Id</td><td>text</td><td>20</td><td>Active Directory kullanıcı adı</td></tr>
+                            <tr><td>Company Id</td><td>text</td><td>10</td><td>Şirket sicil numarası</td></tr>
+                            <tr><td>Last Login</td><td>datetime</td><td>-</td><td>Son giriş tarihi/saati</td></tr>
+                            <tr><td>Status</td><td>char</td><td>1</td><td>1:Active, 2:Inactive, 3:Locked</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>User Department Assignment Tablosu</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Uzunluk</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Assignment Id</td><td>int</td><td>8</td><td>Primary key</td></tr>
+                            <tr><td>User Id</td><td>int</td><td>8</td><td>Kullanıcı referansı (FK)</td></tr>
+                            <tr><td>Department Code</td><td>text</td><td>8</td><td>Departman kodu</td></tr>
+                            <tr><td>Department Title</td><td>text</td><td>64</td><td>Departman adı</td></tr>
+                            <tr><td>Role in Department</td><td>text</td><td>32</td><td>Departmandaki rol (Member/GL/TL/SL)</td></tr>
+                            <tr><td>Inactivation Check</td><td>bool</td><td>-</td><td>Atama inaktif mi?</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>On Behalf Assignment Tablosu (Vekalet)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Uzunluk</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>On Behalf Id</td><td>int</td><td>8</td><td>Primary key</td></tr>
+                            <tr><td>Acting User Id</td><td>int</td><td>8</td><td>Vekalet eden kullanıcı</td></tr>
+                            <tr><td>Original User Id</td><td>int</td><td>8</td><td>Vekalet edilen kullanıcı</td></tr>
+                            <tr><td>Start Date</td><td>date</td><td>-</td><td>Vekalet başlangıcı</td></tr>
+                            <tr><td>End Date</td><td>date</td><td>-</td><td>Vekalet bitişi</td></tr>
+                            <tr><td>Status</td><td>char</td><td>1</td><td>A:Active, C:Completed</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="businessRules" class="dev-tab-content">
+                    <div class="rules-section">
+                        <h4>User Roles</h4>
+                        <ul>
+                            <li><strong>Indirect Material Key User:</strong> Tüm master data işlemleri</li>
+                            <li><strong>Indirect Material Responsible:</strong> Genel süreç denetimi</li>
+                            <li><strong>SL (Shift Leader) and above:</strong> Açık talepleri görme, onay yetkileri</li>
+                            <li><strong>TL (Team Leader) and above:</strong> Malzeme talebi oluşturabilir</li>
+                            <li><strong>Managers:</strong> Bütçe onay yetkisi</li>
+                            <li><strong>Department Heads:</strong> Bütçe belirleme yetkisi</li>
+                        </ul>
+                    </div>
+                    <div class="rules-section">
+                        <h4>On Behalf (Vekalet) Kuralları</h4>
+                        <ul>
+                            <li>Vekalet başlangıç ve bitiş tarihleri tanımlanmalı</li>
+                            <li>Vekalet süresince vekalet eden kişi, edilen kişinin yetkilerini kullanır</li>
+                            <li>Vekalet tamamlandığında sistem otomatik olarak yetkileri geri alır</li>
+                            <li>Vekalet geçmişi saklanır ve raporlanabilir</li>
+                        </ul>
+                    </div>
+                    <div class="rules-section">
+                        <h4>Session Management</h4>
+                        <ul>
+                            <li>Oturum zaman aşımı: Varsayılan 2 saat</li>
+                            <li>Inaktivite zaman aşımı: 30 dakika</li>
+                            <li>Token yenileme: Aktivite ile otomatik</li>
+                            <li>Eşzamanlı oturum: Tek cihazda tek oturum</li>
+                        </ul>
+                    </div>
+                </div>
+                <div id="screenFields" class="dev-tab-content">
+                    <div class="rules-section">
+                        <h4>Profile Information</h4>
+                        <ul>
+                            <li>Name (Ad)</li>
+                            <li>Surname (Soyad)</li>
+                            <li>User System ID (Sistem Kullanıcı ID)</li>
+                            <li>User Windows ID (Windows Kullanıcı ID)</li>
+                            <li>User Company Id (Şirket Sicil No)</li>
+                            <li>Last Login (Son Giriş)</li>
+                        </ul>
+                    </div>
+                    <div class="rules-section">
+                        <h4>Department Assignments Table</h4>
+                        <ul>
+                            <li>Department Code (Departman Kodu)</li>
+                            <li>Department Title (Departman Adı)</li>
+                            <li>Role in Department (Departmandaki Rol)</li>
+                        </ul>
+                    </div>
+                    <div class="rules-section">
+                        <h4>Authorization Roles</h4>
+                        <ul>
+                            <li>Direct roles user have (Doğrudan Sahip Olunan Roller)</li>
+                            <li>Roles gained due to acting on behalf (Vekalet ile Kazanılan Roller)</li>
+                            <li>Permissions Table (Module, View, Create, Edit, Delete, Approve)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>.dev-docs-panel{position:fixed;bottom:0;left:0;right:0;z-index:9999;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}.dev-docs-toggle{width:100%;padding:12px 20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;cursor:pointer;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px}.dev-docs-toggle:hover{background:linear-gradient(135deg,#5a6fd6 0%,#6a4190 100%)}.dev-docs-content{display:none;background:#1a1a2e;color:#eee;max-height:70vh;overflow-y:auto}.dev-docs-content.active{display:block}.dev-docs-header{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;background:#16213e;border-bottom:2px solid #667eea}.dev-docs-header h2{margin:0;font-size:16px;color:#fff}.dev-docs-close{background:#e74c3c;color:#fff;border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px}.dev-docs-body{padding:20px}.dev-docs-tabs{display:flex;gap:10px;margin-bottom:20px;border-bottom:2px solid #333;padding-bottom:10px}.dev-tab{padding:8px 16px;background:#2d2d44;color:#aaa;border:none;border-radius:6px 6px 0 0;cursor:pointer;font-size:13px}.dev-tab.active,.dev-tab:hover{background:#667eea;color:#fff}.dev-tab-content{display:none}.dev-tab-content.active{display:block}.dev-table{width:100%;border-collapse:collapse;margin:15px 0;font-size:13px}.dev-table th,.dev-table td{padding:10px;text-align:left;border:1px solid #333}.dev-table th{background:#2d2d44;color:#667eea;font-weight:600}.dev-table tr:nth-child(even){background:#1f1f35}.rules-section{margin-bottom:20px}.rules-section h4{color:#667eea;margin-bottom:10px;font-size:14px}.rules-section ul{margin:0;padding-left:20px}.rules-section li{margin-bottom:6px;line-height:1.5;font-size:13px}</style>
+    <script>function toggleDevDocs(){document.getElementById('devDocsContent').classList.toggle('active')}function showDevTab(tabId){document.querySelectorAll('.dev-tab-content').forEach(c=>c.classList.remove('active'));document.querySelectorAll('.dev-tab').forEach(t=>t.classList.remove('active'));document.getElementById(tabId).classList.add('active');event.target.classList.add('active')}</script>
 </body>
 </html>

@@ -160,13 +160,13 @@ IMMA DEVELOPER DOCUMENTATION
 
 SCREEN: 22 IC-C - Inventory Counting
 FILE: inventory-counting.html
-LAST UPDATED: 2025-12-18
+LAST UPDATED: 2025-12-23
 
 --------------------------------------------------------------------------------
 RELATED DATABASE TABLES
 --------------------------------------------------------------------------------
 
-TABLE: Inventory Counting Header
+TABLE: Inventory Counting Header (Data Structure IMMA.xlsx)
 | Field Name                    | Type     | Length | Description                    |
 |-------------------------------|----------|--------|--------------------------------|
 | Inventory Counting Header Id  | int      | 8      | Primary key                    |
@@ -179,7 +179,7 @@ TABLE: Inventory Counting Header
 | Document group Id             | int      | 8      | Doküman grubu                  |
 | Correction finalized check    | bool     | -      | Sayım tamamlandı mı?           |
 
-TABLE: Inventory Counting Item
+TABLE: Inventory Counting Item (Data Structure IMMA.xlsx)
 | Field Name                    | Type     | Length | Description                    |
 |-------------------------------|----------|--------|--------------------------------|
 | Inventory Counting item id    | int      | 8      | Primary key                    |
@@ -190,25 +190,107 @@ TABLE: Inventory Counting Item
 | Counting result quantity      | float    | 15     | Sayım sonucu                   |
 
 --------------------------------------------------------------------------------
+SCREEN FIELDS (UI Elements) - Screen Designs: 22 IC-C
+--------------------------------------------------------------------------------
+
+COUNTING SESSION SETUP:
+- Counting session Id (readonly) - Oturum ID (otomatik)
+- Document group Id (readonly) - Döküman grubu
+- Correction type (dropdown) - Sayım tipi seçimi
+- Counted by user info (dropdown) - Sayan kişi
+- Entered by user info (readonly) - Giren kişi
+- Counting date (date) - Sayım tarihi
+
+FILTER SECTION:
+- Storage filter (dropdown) - Depo filtresi
+- Location filter (dropdown) - Lokasyon filtresi
+- Bin filter (dropdown) - Bin filtresi
+- Material group filter (dropdown) - Malzeme grubu filtresi
+
+COUNTING ITEMS TABLE:
+| Column                 | Description                    |
+|------------------------|--------------------------------|
+| Item number            | Satır numarası                 |
+| Material number        | Malzeme numarası               |
+| Material title         | Malzeme başlığı                |
+| Storage/Location/Bin   | Lokasyon bilgisi               |
+| Stock quantity         | Sistem stoğu (readonly)        |
+| Counting result qty    | Sayım sonucu (input)           |
+| Variance               | Fark (hesaplanan)              |
+| Variance %             | Fark yüzdesi (hesaplanan)      |
+
+VARIANCE SUMMARY:
+- Total items counted (readonly) - Sayılan toplam kalem
+- Items with variance (readonly) - Farklı kalem sayısı
+- Total positive variance (readonly) - Toplam pozitif fark
+- Total negative variance (readonly) - Toplam negatif fark
+- Net variance (readonly) - Net fark
+
+ACTION BUTTONS:
+- Add Material - Malzeme ekle
+- Remove Material - Malzeme çıkar
+- Save Draft - Taslak kaydet
+- Submit for Approval - Onaya gönder
+- Process Corrections - Düzeltmeleri işle
+- Print Counting Sheet - Sayım formu yazdır
+- Görüntüle - Sayım oturumu detay sayfasına yönlendirme
+
+NAVIGATION:
+- viewCountingSession(sessionId) → counting-session-detail.html?id={sessionId}
+- Tamamlanmış sayım oturumları "Görüntüle" butonu ile detay sayfasına yönlendirilir
+
+--------------------------------------------------------------------------------
 BUSINESS RULES (İş Kuralları)
 --------------------------------------------------------------------------------
 
-SAYIM TİPLERİ:
-- Dönemsel sayım (yıllık/aylık)
-- Rastgele sayım (spot check)
-- ABC analizi bazlı sayım
+ENVANTER DÜZELTME İŞ KURALLARI:
+1. Açık sayım belgesi mevcutsa etkilenen malzemeler için yeni malzeme talebi engellenir
+   ancak onay süreci devam edebilmelidir.
+2. Sayım belgesinde mevcut stok miktarları olmamalıdır.
+3. Tek malzeme envanter düzeltmesi için onay süreci olmayacaktır.
+4. Sayım bin bazında yapılır, bu nedenle sayım belgesi kapsamı seçim listesi
+   bin numaralarına göre ayrılmış bilgiler içerecektir.
+5. Diğer ve hurda envanter düzeltmesi için onaylayıcı yönetici malzeme grubuna
+   bağlı kayıttan seçilecektir. Süreç endirekt ve GPS malzeme anahtar kullanıcısı
+   tarafından başlatılacak ve muhasebeyle ilgiliyse muhasebe endirekt ve GPS
+   sorumlu kullanıcısı tarafından sonlandırılacaktır.
+6. Ek dosya zorunludur.
+7. Yorum zorunludur.
+8. Onay sırası malzeme grubuna bağlı kayıttaki şekilde takip edilecektir
+   (onay sırası, departman kodu, malzeme grubu).
+9. Stok transferleri ile düzeltmeler yalnızca malzemenin tüm stoğu aynı sayım
+   belgesi içinde sayım için seçildiğinde hesaplanır. Öneriler, bir binin
+   eksik miktarını başka bir binin fazla miktarından karşılamak için oluşturulacaktır.
+10. Tüm geri almalar yanlışlıkla yapılan bir eylemin düzeltilmesidir.
+    Yönetici kullanıcı tarafından yapılabilir.
+11. Hurda ve diğer düzeltmeler için onaylayıcı olarak en az bir yönetici eklenmelidir.
+    Bu belge endirekt malzeme anahtar kullanıcısı tarafından oluşturulabilir
+    ve onaylayıcı eklenebilir.
+
+12. SIRALAMA ÖZELLİĞİ KURALI (Excel Screen Designs):
+    - Tüm tablo sütunları SIRALANABILIR (sortable) olmalıdır
+    - Sütun başlığına tıklanarak A-Z veya Z-A sıralaması yapılabilir
+    - Sayısal sütunlar için artan/azalan sıralama desteklenir
+    - Tarih sütunları kronolojik olarak sıralanabilir
+    - Yüzde alanı için sıralama özelliği öncelikli olmalıdır
+
+MOVEMENT TYPES:
+- 8: Inventory positive record (sayım fazlası)
+- 9: Inventory negative record (sayım eksiği)
+- 12: Scrapping
+- 13: Scrapping Rollback
+
+TYPE OF CORRECTION:
+- Counting
+- Single Material Counting
+- Scrapping
+- Other
 
 FARK İŞLEME:
 1. Fark = Counting result - Stock quantity
 2. Pozitif fark → Material Movement Type 8 (Inventory positive)
 3. Negatif fark → Material Movement Type 9 (Inventory negative)
 4. FIFO kuralı uygulanır (negatif farklar için)
-
-ONAY SÜRECİ:
-1. Sayım sonuçları girilir
-2. Farklar hesaplanır
-3. Yetkili onayı gerekebilir (yüksek farklar için)
-4. Correction finalized = true ile kapatılır
 
 ================================================================================
 -->
@@ -241,6 +323,8 @@ ONAY SÜRECİ:
                         <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
                         <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
                         <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                        <a href="unit-of-measure-list.html" class="dropdown-item">Ölçü Birimleri</a>
+                        <a href="department-cost-center-list.html" class="dropdown-item">Departman-Masraf Merkezi</a>
                     </div>
                 </li>
                 <li class="nav-item">
@@ -291,6 +375,16 @@ ONAY SÜRECİ:
                         <a href="inventory-counting.html" class="dropdown-item active">Sayım İşlemleri</a>
                         <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
                         <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanıcı Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onayları</a>
                     </div>
                 </li>
             </ul>
@@ -413,6 +507,10 @@ ONAY SÜRECİ:
                     <div class="info-item">
                         <label>Total Items</label>
                         <div id="sessionTotalItems" style="color: #667eea; font-weight: 700;">0</div>
+                    </div>
+                    <div class="info-item">
+                        <label>Document Group ID</label>
+                        <div id="sessionDocumentGroupId" style="color: #6c757d;">DOC-IC-001</div>
                     </div>
                 </div>
 
@@ -854,7 +952,7 @@ ONAY SÜRECİ:
                 storage: 'Merkez Storage',
                 location: 'A',
                 bin: 'A-01',
-                openMaterial Request: 2,
+                openMaterialRequest: 2,
                 openSRM: 0,
                 openPO: 1,
                 blocked: false
@@ -873,7 +971,7 @@ ONAY SÜRECİ:
                 storage: 'Merkez Storage',
                 location: 'A',
                 bin: 'A-01',
-                openMaterial Request: 0,
+                openMaterialRequest: 0,
                 openSRM: 1,
                 openPO: 0,
                 blocked: false
@@ -892,7 +990,7 @@ ONAY SÜRECİ:
                 storage: 'Merkez Storage',
                 location: 'A',
                 bin: 'A-02',
-                openMaterial Request: 1,
+                openMaterialRequest: 1,
                 openSRM: 0,
                 openPO: 2,
                 blocked: true
@@ -911,7 +1009,7 @@ ONAY SÜRECİ:
                 storage: 'Merkez Storage',
                 location: 'A',
                 bin: 'A-01',
-                openMaterial Request: 0,
+                openMaterialRequest: 0,
                 openSRM: 0,
                 openPO: 0,
                 blocked: false
@@ -930,7 +1028,7 @@ ONAY SÜRECİ:
                 storage: 'Merkez Storage',
                 location: 'A',
                 bin: 'A-02',
-                openMaterial Request: 3,
+                openMaterialRequest: 3,
                 openSRM: 1,
                 openPO: 0,
                 blocked: false
@@ -949,7 +1047,7 @@ ONAY SÜRECİ:
                 storage: 'Merkez Storage',
                 location: 'A',
                 bin: 'A-01',
-                openMaterial Request: 0,
+                openMaterialRequest: 0,
                 openSRM: 0,
                 openPO: 1,
                 blocked: false
@@ -1043,7 +1141,7 @@ ONAY SÜRECİ:
                     <td style="text-align: right; font-weight: 600;">${item.systemQty}</td>
                     <td style="text-align: right; font-size: 11px;">${item.totalStockValue.toFixed(2)}</td>
                     <td style="text-align: center;">${item.unit}</td>
-                    <td style="text-align: center;">${item.openMaterial Request > 0 ? '<span class="badge badge-warning" style="font-size: 10px;">' + item.openMaterial Request + '</span>' : '-'}</td>
+                    <td style="text-align: center;">${item.openMaterialRequest > 0 ? '<span class="badge badge-warning" style="font-size: 10px;">' + item.openMaterialRequest + '</span>' : '-'}</td>
                     <td style="text-align: center;">${item.openSRM > 0 ? '<span class="badge badge-info" style="font-size: 10px;">' + item.openSRM + '</span>' : '-'}</td>
                     <td style="text-align: center;">${item.openPO > 0 ? '<span class="badge badge-primary" style="font-size: 10px;">' + item.openPO + '</span>' : '-'}</td>
                     <td style="text-align: center;">${item.blocked ? '<span class="badge badge-danger" style="font-size: 10px;">🔒</span>' : '-'}</td>
@@ -1366,24 +1464,29 @@ ONAY SÜRECİ:
             <div class="dev-docs-body">
                 <div class="dev-docs-tabs">
                     <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('formFields')">Form Alanları</button>
                     <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
                 </div>
                 <div id="dataStructure" class="dev-tab-content active">
-                    <h3>Inventory Counting Header</h3>
+                    <h3>Inventory Counting Header (9 alan)</h3>
                     <table class="dev-table"><thead><tr><th>Field Name</th><th>Type</th><th>Length</th><th>Description</th></tr></thead>
                         <tbody>
                             <tr><td>Inventory Counting Header Id</td><td>int</td><td>8</td><td>Primary key</td></tr>
                             <tr><td>Correction type</td><td>char</td><td>1</td><td>Düzeltme tipi</td></tr>
                             <tr><td>Creation date time</td><td>datetime</td><td>-</td><td>Oluşturma tarihi</td></tr>
+                            <tr><td>Created by user info</td><td>int</td><td>8</td><td>Oluşturan kullanıcı</td></tr>
+                            <tr><td>Created for user info</td><td>int</td><td>8</td><td>Sayım sorumlusu</td></tr>
                             <tr><td>Counted by user info</td><td>int</td><td>8</td><td>Sayan kullanıcı</td></tr>
                             <tr><td>Entered by user info</td><td>int</td><td>8</td><td>Giren kullanıcı</td></tr>
+                            <tr><td>Document group Id</td><td>int</td><td>8</td><td>Doküman grubu</td></tr>
                             <tr><td>Correction finalized check</td><td>bool</td><td>-</td><td>Düzeltme tamamlandı mı?</td></tr>
                         </tbody>
                     </table>
-                    <h3>Inventory Counting Item</h3>
+                    <h3>Inventory Counting Item (6 alan)</h3>
                     <table class="dev-table"><thead><tr><th>Field Name</th><th>Type</th><th>Length</th><th>Description</th></tr></thead>
                         <tbody>
                             <tr><td>Inventory Counting item id</td><td>int</td><td>8</td><td>Primary key</td></tr>
+                            <tr><td>Inventory Counting item number</td><td>int</td><td>4</td><td>Satır numarası</td></tr>
                             <tr><td>Material number</td><td>text</td><td>13</td><td>Malzeme numarası</td></tr>
                             <tr><td>Stock record Id</td><td>int</td><td>8</td><td>Stok kaydı referansı</td></tr>
                             <tr><td>Stock quantity</td><td>float</td><td>15</td><td>Sistem stoğu</td></tr>
@@ -1391,13 +1494,101 @@ ONAY SÜRECİ:
                         </tbody>
                     </table>
                 </div>
+                <div id="formFields" class="dev-tab-content">
+                    <h3>Counting Session Setup</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Counting Type *</td><td>dropdown</td><td>Sayım tipi seçimi (Counting/Recount/Spot Check)</td></tr>
+                            <tr><td>Storage *</td><td>dropdown</td><td>Depo seçimi</td></tr>
+                            <tr><td>Location</td><td>dropdown</td><td>Lokasyon filtresi (opsiyonel)</td></tr>
+                            <tr><td>Bin</td><td>dropdown</td><td>Bin filtresi (opsiyonel)</td></tr>
+                            <tr><td>Counted by user info *</td><td>dropdown</td><td>Sayımı yapacak kişi</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Active Session Information (Readonly)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Counting Session Id</td><td>readonly</td><td>Oturum ID (otomatik)</td></tr>
+                            <tr><td>Counting Type</td><td>readonly</td><td>Seçilen sayım tipi</td></tr>
+                            <tr><td>Storage</td><td>readonly</td><td>Seçilen depo</td></tr>
+                            <tr><td>Location</td><td>readonly</td><td>Seçilen lokasyon</td></tr>
+                            <tr><td>Creation date time</td><td>readonly</td><td>Oluşturma tarihi</td></tr>
+                            <tr><td>Created by user info</td><td>readonly</td><td>Oluşturan kullanıcı</td></tr>
+                            <tr><td>Counted by user info</td><td>readonly</td><td>Sayımı yapan kişi</td></tr>
+                            <tr><td>Total Items</td><td>readonly</td><td>Toplam kalem sayısı</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Counting Items Table</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Kolon</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Item No</td><td>readonly</td><td>Satır numarası</td></tr>
+                            <tr><td>Material number</td><td>readonly</td><td>Malzeme numarası</td></tr>
+                            <tr><td>Material title</td><td>readonly</td><td>Malzeme başlığı</td></tr>
+                            <tr><td>Stock Rec ID</td><td>readonly</td><td>Stok kaydı ID</td></tr>
+                            <tr><td>Cost Id</td><td>readonly</td><td>Maliyet merkezi ID</td></tr>
+                            <tr><td>Storage / Location / Bin</td><td>readonly</td><td>Lokasyon bilgileri</td></tr>
+                            <tr><td>Sistem Mik.</td><td>readonly</td><td>Sistem stok miktarı</td></tr>
+                            <tr><td>Total value</td><td>readonly</td><td>Toplam değer</td></tr>
+                            <tr><td>Unit</td><td>readonly</td><td>Ölçü birimi</td></tr>
+                            <tr><td>Açık Material Request</td><td>readonly</td><td>Açık malzeme talebi sayısı</td></tr>
+                            <tr><td>Open SRM Request</td><td>readonly</td><td>Açık SRM talebi sayısı</td></tr>
+                            <tr><td>Open purchasing order</td><td>readonly</td><td>Açık satınalma siparişi</td></tr>
+                            <tr><td>Blocked for MR</td><td>readonly</td><td>Talep için blokeli mi</td></tr>
+                            <tr><td>Counting result Quantity *</td><td>number input</td><td>Sayım sonucu (kullanıcı girer)</td></tr>
+                            <tr><td>Differences by quantity</td><td>readonly</td><td>Fark miktarı (hesaplanan)</td></tr>
+                            <tr><td>%</td><td>readonly</td><td>Fark yüzdesi (hesaplanan)</td></tr>
+                            <tr><td>Differences by percentage</td><td>readonly</td><td>Fark değeri TRY (hesaplanan)</td></tr>
+                            <tr><td>Ek</td><td>button</td><td>Dosya ekleme butonu</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Variance Summary (Readonly)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Total Items</td><td>readonly</td><td>Toplam kalem sayısı</td></tr>
+                            <tr><td>Counting result Quantity</td><td>readonly</td><td>Sayılan kalem sayısı</td></tr>
+                            <tr><td>Differences</td><td>readonly</td><td>Farklı kalem sayısı</td></tr>
+                            <tr><td>Toplam Differences by quantity Değeri</td><td>readonly</td><td>Toplam fark değeri TRY</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Action Buttons</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Buton</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Sayımı Başlat</td><td>Yeni sayım oturumu başlatır</td></tr>
+                            <tr><td>Temizle</td><td>Formu temizler</td></tr>
+                            <tr><td>Sayımı Tamamla</td><td>Aktif oturumu tamamlar</td></tr>
+                            <tr><td>İptal</td><td>Aktif oturumu iptal eder</td></tr>
+                            <tr><td>Görüntüle</td><td>Geçmiş sayım detayına git</td></tr>
+                        </tbody>
+                    </table>
+                </div>
                 <div id="businessRules" class="dev-tab-content">
-                    <h3>İş Kuralları</h3>
+                    <h3>Envanter Düzeltmeleri İş Kuralları</h3>
                     <div class="rules-section">
                         <ul>
-                            <li>Sayım sonucu &gt; Sistem stoğu: Movement Type 8 (positive)</li>
-                            <li>Sayım sonucu &lt; Sistem stoğu: Movement Type 9 (negative)</li>
-                            <li>Fark varsa Cost kaydı güncellenir</li>
+                            <li><strong>Kural 1:</strong> Açık sayım belgesi varsa etkilenen malzemeler için yeni malzeme talebi engellenir ancak onay süreci devam edebilmelidir</li>
+                            <li><strong>Kural 2:</strong> Sayım belgesi mevcut stok miktarlarını içermemelidir</li>
+                            <li><strong>Kural 3:</strong> Tekli malzeme envanter düzeltmesi için onay süreci olmayacaktır</li>
+                            <li><strong>Kural 4:</strong> Sayım bin bazında yapıldığından sayım belgesi kapsamı için seçim listesi bin numaralarına göre ayrılmış bilgi içerecektir</li>
+                            <li><strong>Kural 5:</strong> Diğer ve hurda envanter düzeltmeleri için onaylayan yönetici malzeme grubuna bağlı kayıttan seçilecektir. Süreç endirek ve GPS malzeme anahtar kullanıcısı tarafından başlatılacak ve muhasebe ile ilgiliyse muhasebe endirek ve GPS sorumlu kullanıcısı tarafından tamamlanacaktır.</li>
+                            <li><strong>Kural 6:</strong> Ek belge zorunludur</li>
+                            <li><strong>Kural 7:</strong> Açıklama zorunludur</li>
+                            <li><strong>Kural 8:</strong> Onay sırası malzeme grubuna bağlı kayıttaki gibi takip edilecektir (onay sırası, departman kodu, malzeme grubu)</li>
+                            <li><strong>Kural 9:</strong> Stok transferleri ile düzeltmeler yalnızca malzemenin tüm stoğu aynı sayım belgesi içinde sayıma seçildiğinde hesaplanır. Bir bin'deki eksik miktarı başka bir bin'deki fazla miktardan karşılamak için öneriler oluşturulacaktır.</li>
+                            <li><strong>Kural 10:</strong> Tüm geri almalar yanlışlıkla yapılan bir işlemin düzeltilmesidir. Admin kullanıcı tarafından yapılabilir</li>
+                            <li><strong>Kural 11:</strong> Hurda ve diğer düzeltmeler için en az bir yönetici onaylayıcı olarak eklenmelidir. Bu belge endirek malzeme anahtar kullanıcısı tarafından oluşturulabilir ve onaylayıcı eklenebilir.</li>
+                            <li><strong>Kural 12 (Excel):</strong> Tüm tablo sütunları <strong>SIRALANABILIR</strong> olmalıdır (A-Z, Z-A, artan, azalan, kronolojik)</li>
+                        </ul>
+                        <h4>Hareket Tipleri</h4>
+                        <ul>
+                            <li>8: Envanter pozitif kayıt (sayım fazlası)</li>
+                            <li>9: Envanter negatif kayıt (sayım eksiği)</li>
+                            <li>12: Hurda</li>
+                            <li>13: Hurda Geri Alma</li>
                         </ul>
                     </div>
                 </div>

@@ -6,6 +6,18 @@
     <title>Malzeme Veri Bakimi - IMMA</title>
     <link rel="stylesheet" href="css/styles.css">
     <style>
+        /* Autocomplete wrapper styles */
+        .autocomplete-wrapper { position: relative; }
+        .autocomplete-wrapper .search-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            opacity: 0.5;
+        }
+        .autocomplete-wrapper input { padding-right: 35px; }
+
         .image-upload-area {
             border: 2px dashed var(--border-color);
             border-radius: var(--radius-lg);
@@ -234,7 +246,7 @@ LAST UPDATED: 2025-12-18
 RELATED DATABASE TABLES
 --------------------------------------------------------------------------------
 
-TABLE: Material
+TABLE: Material (Data Structure IMMA.xlsx)
 | Field Name                              | Type     | Length | Description                          |
 |-----------------------------------------|----------|--------|--------------------------------------|
 | id                                      | int      | 8      | Primary key                          |
@@ -260,15 +272,17 @@ TABLE: Material
 | Alternative material 2                  | text     | 13     | Alternatif malzeme 2 numarası        |
 | Material Group Code                     | text     | 8      | Raporlama için grup kodu             |
 | Order batch quantity                    | float    | 15     | Sipariş parti miktarı                |
-| Unit quantity in a package              | float    | 15     | Paket içi birim (etiket hesabı)      |
-| Document group Id                       | int      | 8      | Doküman grubu referansı              |
+| Unit quantity in a package              | float    | 15     | Paket içi birim sayısı               |
+| Document group Id                       | int      | 8      | Doküman grubu referansı (FK)         |
 | Accounting actions required             | bool     | -      | Muhasebe onayı gerekli mi?           |
-| Maximum stock quantity                  | float    | 15     | MRP max stok seviyesi                |
-| Blocked for material request check      | bool     | -      | Taleplerde görünmez (true ise)       |
-| Total Stock                             | float    | 15     | READONLY - Hesaplanan toplam stok    |
-| Open request quantity                   | float    | 15     | READONLY - Açık talep miktarı        |
+| Maximum stock quantity                  | float    | 15     | MRP maksimum stok seviyesi           |
+| Blocked for material request check      | bool     | -      | Talep için bloklu mu?                |
+| Total Stock                             | float    | 15     | Toplam stok (hesaplanan)             |
+| Open request quantity                   | float    | 15     | Açık talep miktarı (hesaplanan)      |
 | Producer name                           | text     | 32     | Üretici firma adı                    |
 | Producer model name                     | text     | 64     | Üretici model/part numarası          |
+
+NOT: Total Stock ve Open request quantity hesaplanan (aggregated) alanlardır.
 
 Material Status Codes (Material Status code):
 - 1: Active          → Tüm işlemler yapılabilir
@@ -277,7 +291,7 @@ Material Status Codes (Material Status code):
 - 4: Preparing to be used → SRM/PO/GR OK, Material Request YAPILAMAZ
 - 5: Preparing to discontinuation → MR/Issue/Transfer OK, yeni SRM YAPILAMAZ
 
-TABLE: Material Serial (Numara atama için)
+TABLE: Material Serial (Data Structure IMMA.xlsx - Numara atama için)
 | Field Name                    | Type     | Length | Description                    |
 |-------------------------------|----------|--------|--------------------------------|
 | Material Serial Id            | int      | 4      | Primary key                    |
@@ -286,7 +300,7 @@ TABLE: Material Serial (Numara atama için)
 | Last created material number  | int      | 8      | Son oluşturulan numara         |
 | Inactivation status           | bool     | -      | Seri aktif mi?                 |
 
-TABLE: Document (Ekli dokümanlar için)
+TABLE: Document (Data Structure IMMA.xlsx - Ekli dokümanlar için)
 | Field Name          | Type     | Length | Description                    |
 |---------------------|----------|--------|--------------------------------|
 | Document Id         | int      | 8      | Primary key                    |
@@ -297,46 +311,84 @@ TABLE: Document (Ekli dokümanlar için)
 | Upload datetime     | datetime | -      | Yükleme tarihi                 |
 
 --------------------------------------------------------------------------------
-BUSINESS RULES (İş Kuralları)
+SCREEN FIELDS (UI Elements) - Screen Designs: 1 MDM
 --------------------------------------------------------------------------------
 
-MATERIAL NUMBER ASSIGNMENT:
-1. İki yöntem: Seri ile otomatik VEYA manuel giriş
-2. Seri ile: Prefix + otomatik artan numara (örn: PN-12848)
-3. Manuel: ##.#####-#### formatı zorunlu (örn: 01.00001-0001)
-4. Edit modunda material number DEĞİŞTİRİLEMEZ
+BASIC DATA SECTION:
+- Material Serial (dropdown) - Numara serisi seçimi
+- Material Serial Title (readonly) - Seri açıklaması
+- Material number (text/auto) - Otomatik veya manuel giriş
+- Old material number (text) - Eski sistem numarası
+- Material title (text, 128) - Malzeme başlığı
+- Material description (textarea, 512) - Detaylı açıklama
+- Image (file upload) - Ana görsel yükleme
+- Unit of measure (dropdown) - Ölçü birimi seçimi
+- Material status (dropdown) - Durum seçimi (1-5)
+- Blocking Reason (text, 128) - Status=2 için zorunlu
+- Blocking Reevaluation date (date) - Yeniden değerlendirme tarihi
+- Notes (textarea, 512) - Notlar
+- Created by user info (readonly) - Oluşturan kullanıcı
 
-MATERIAL STATUS RULES:
-1. Yeni malzeme oluşturulduğunda DEFAULT status: "Preparing to be used" (4)
-2. Status=Blocked (2) seçildiğinde:
-   - Blocking Reason alanı ZORUNLU olur
-   - Blocking Reevaluation date girilebilir
-   - "Blocked for material request" checkbox aktif olur
-3. Status geçiş kuralları:
-   - Active(1) → Blocked(2), Inactive(3), Preparing to discontinuation(5)
-   - Blocked(2) → Active(1), Inactive(3)
-   - Inactive(3) → Reactivate edilebilir (özel yetki gerekir)
-   - Preparing to be used(4) → Active(1) (stok girişi yapıldığında)
-   - Preparing to discontinuation(5) → Inactive(3) (stok tükendiğinde)
+MRP AND STORAGE DATA SECTION:
+- Reordering point quantity (number) - MRP tetikleme seviyesi
+- Reordering quantity (number) - Yeniden sipariş miktarı
+- Safety stock quantity (number) - Güvenlik stoğu
+- Order batch quantity (number) - Sipariş parti miktarı
+- Default Storage (dropdown) - Varsayılan depo
+- Default Location (dropdown) - Varsayılan lokasyon
+- Default Bin (dropdown) - Varsayılan bin
 
-STORAGE HIERARCHY:
-1. Storage → Location → Bin (3 seviyeli hiyerarşi)
-2. Default Storage seçildiğinde Location listesi filtrelenir
-3. Default Location seçildiğinde Bin listesi filtrelenir
+ACCOUNTING AND OPTIONS SECTION:
+- Accounting Number (number, 8) - SAP muhasebe hesap kodu
+- Accounting actions required (checkbox) - Muhasebe onayı gerekli mi
 
-MRP PARAMETERS:
-1. Reordering point quantity: Bu seviyenin altına düşünce MRP önerisi oluşur
-2. Maximum stock quantity: MRP önerisi bu seviyeye kadar hesaplanır
-3. Order batch quantity: Siparişler bu miktarın KATLARINDAN oluşur
-4. Safety stock quantity: Emniyet stoğu (MRP hesaplamasında kullanılır)
-5. Unit quantity in a package: Etiket yazdırma hesaplamasında kullanılır
+MATERIAL GROUP AND OPTIONS SECTION:
+- Material Group Code (dropdown) - Malzeme grubu
+- Material Group Title (readonly) - Grup açıklaması
+- Purchased Packing Material (checkbox) - İade edilebilir ambalaj
+- Alternative material 1 (search) - Alternatif malzeme 1
+- Alternative material 2 (search) - Alternatif malzeme 2
+- Unit quantity in a package (number) - Paket içi birim sayısı
 
-DOCUMENT/IMAGE RULES:
-1. Desteklenen formatlar: PDF, JPG, PNG, GIF
-2. Doküman max boyut: 10MB
-3. Görsel max boyut: 5MB
-4. "main image" etiketli görsel malzeme view ekranında önce gösterilir
-5. MSDS dokümanı kimyasal malzemeler için ZORUNLU olabilir
+DOCUMENTS SECTION:
+- Document group Id (hidden)
+- Document list table
+- Upload Document button
+- Upload Image button
+- Delete document/image buttons
+
+ACTION BUTTONS:
+- Save (Kaydet) - Malzeme kaydet/güncelle
+- Cancel (İptal) - Değişiklikleri iptal et
+- Delete (Sil) - view modunda, yetki varsa
+
+--------------------------------------------------------------------------------
+BUSINESS RULES (İş Kuralları) - Master Data Maintenance Paragraphs 251-264
+--------------------------------------------------------------------------------
+
+1. Malzeme numarası seçilen seriden prefix + sonraki numara olarak verilebilir veya önceden tanımlı "##.#####-####" formatında 11 haneli malzeme kodu olarak manuel girilebilir.
+
+2. "Kullanıma hazırlanıyor" durumu satınalma ve mal kabulü için izin verir ancak malzeme talebine izin vermez.
+
+3. "Kullanımdan kaldırılmaya hazırlanıyor" durumu malzeme talebi, çıkış ve transfer için seçime izin verir ancak yeni SRM talebine izin vermez.
+
+4. Yeni malzeme oluşturulduğunda malzeme durumu varsayılan olarak "Kullanıma hazırlanıyor" seçilir.
+
+5. Malzeme grubu, malzemeleri çeşitli amaçlarla gruplamak için kullanılacaktır.
+
+6. Malzemeler inaktif depo, lokasyon ve binlerden çıkarılabilir ancak içine konulamaz.
+
+7. İlk lokasyon, ilgili depo için varsayılan lokasyon olarak otomatik atanır. Daha sonra endirekt malzeme anahtar kullanıcısı tarafından değiştirilebilir.
+
+8. İlk bin, ilgili lokasyon için varsayılan bin olarak otomatik atanır. Daha sonra endirekt malzeme anahtar kullanıcısı tarafından değiştirilebilir.
+
+9. Bin kodu düzeni 3 farklı girişten oluşur. "-" ayırıcıdır, "#" 0'dan başlayıp artacak numara alanını belirtir, Sayılar sayımın bu numarayla başlayacağını gösterir. Örneğin:
+   - "##-##" bin numaralarının "00-00"dan başlayıp artacağı anlamına gelir
+   - "1#-##" "10-00" ile başlar ve "10-01" ile devam eder
+   - "12-34-56" eğer # numara alanı yoksa sadece bu tek bin oluşturulur
+   - "-" ayırıcı zorunlu değildir, "12##" tanımlanabilir
+
+10. "Ana görsel" etiketi ile malzemeye eklenen görseller, malzeme görüntüleme ekranı yüklendiğinde görülebilir. Her malzeme başına sadece bir görsel bu ek etiketine sahip olabilir.
 
 --------------------------------------------------------------------------------
 FIELD VALIDATIONS
@@ -351,7 +403,7 @@ FIELD VALIDATIONS
 - Blocking Reason: maxlength=128, Status=2 ise ZORUNLU
 - Notes: maxlength=512
 - Accounting Number: maxlength=8, sadece rakam
-- Material Group Code: maxlength=8
+- Material Group Code: maxlength=6
 - Alternative material 1-2: maxlength=13, ##.#####-#### formatı
 - Default Storage/Location/Bin: maxlength=8
 
@@ -449,6 +501,8 @@ Supplier Info Record:
                         <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
                         <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
                         <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                        <a href="unit-of-measure-list.html" class="dropdown-item">Ölçü Birimleri</a>
+                        <a href="department-cost-center-list.html" class="dropdown-item">Departman-Masraf Merkezi</a>
                     </div>
                 </li>
                 <li class="nav-item">
@@ -499,6 +553,16 @@ Supplier Info Record:
                         <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
                         <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
                         <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanıcı Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onayları</a>
                     </div>
                 </li>
             </ul>
@@ -629,6 +693,17 @@ Supplier Info Record:
                             <textarea class="form-control" placeholder="Max 512 karakter - Detayli aciklama (sadece anahtar kullanici gorebilir)" maxlength="512"></textarea>
                         </div>
 
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Producer name</label>
+                                <input type="text" class="form-control" id="producerName" placeholder="Max 32 karakter" maxlength="32">
+                                <div class="form-hint">Üretici firma adı</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Producer model name</label>
+                                <input type="text" class="form-control" id="producerModelName" placeholder="Max 64 karakter" maxlength="64">
+                                <div class="form-hint">Üretici model kodu/adı</div>
+                            </div>
                         </div>
 
                         <div class="form-grid">
@@ -682,28 +757,6 @@ Supplier Info Record:
                     </div>
                 </div>
 
-                <!-- Manufacturer Information -->
-                <div class="card" style="margin-top: 24px;">
-                    <div class="card-header">
-                        <div class="card-title">
-                            <span class="card-title-icon">🏭</span>
-                            Manufacturer Information
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label class="form-label">Producer name</label>
-                                <input type="text" class="form-control" id="producerName" placeholder="Max 32 karakter" maxlength="32">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Producer model name</label>
-                                <input type="text" class="form-control" id="producerModelName" placeholder="Max 64 karakter" maxlength="64">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Stock Parametreleri -->
                 <div class="card" style="margin-top: 24px;">
                     <div class="card-header">
@@ -724,11 +777,6 @@ Supplier Info Record:
                                 <input type="number" class="form-control" id="reorderingQuantity" placeholder="0.000" step="0.001" max="999999999999999">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Maximum stock quantity</label>
-                                <input type="number" class="form-control" id="maximumStockQuantity" placeholder="0.000" step="0.001" max="999999999999999">
-                                <div class="form-hint">Siparis onerisi bu seviyeye kadar hesaplanir</div>
-                            </div>
-                            <div class="form-group">
                                 <label class="form-label">Safety stock quantity</label>
                                 <input type="number" class="form-control" id="safetyStockQuantity" placeholder="0.000" step="0.001" max="999999999999999">
                             </div>
@@ -741,19 +789,6 @@ Supplier Info Record:
                                 <label class="form-label">Unit quantity in a package</label>
                                 <input type="number" class="form-control" id="unitQuantityInPackage" placeholder="0.000" step="0.001" max="999999999999999">
                                 <div class="form-hint">Etiket yazdirma hesaplamasinda kullanilir</div>
-                            </div>
-                        </div>
-                        <!-- Readonly calculated fields -->
-                        <div class="form-grid" style="margin-top: 16px;">
-                            <div class="form-group">
-                                <label class="form-label">Total Stock</label>
-                                <input type="number" class="form-control" id="totalStock" placeholder="0.000" readonly style="background-color: #f5f5f5;">
-                                <div class="form-hint">Toplam stok miktari (hesaplanan)</div>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Open request quantity</label>
-                                <input type="number" class="form-control" id="openRequestQuantity" placeholder="0.000" readonly style="background-color: #f5f5f5;">
-                                <div class="form-hint">Acik talep miktari (hesaplanan)</div>
                             </div>
                         </div>
                     </div>
@@ -834,14 +869,18 @@ Supplier Info Record:
                         <div class="form-grid">
                             <div class="form-group">
                                 <label class="form-label">Material Group Code</label>
-                                <select class="form-control" id="materialGroupCode">
-                                    <option value="">Seçin...</option>
-                                    <option value="GEN">GEN - Genel Malzemeler</option>
-                                    <option value="ELK">ELK - Elektrik Malzemeleri</option>
-                                    <option value="MKN">MKN - Mekanik Parcalar</option>
-                                    <option value="KMY">KMY - Kimyasallar</option>
-                                </select>
-                                <div class="form-hint">Cesitli raporlama ve gruplama amacli (max 8 karakter)</div>
+                                <div class="autocomplete-wrapper">
+                                    <input type="text" class="form-control" id="materialGroupCode"
+                                           list="materialGroupDatalist" autocomplete="off"
+                                           placeholder="Kod veya ad ile arayin..." maxlength="6">
+                                    <datalist id="materialGroupDatalist"></datalist>
+                                    <span class="search-icon">🔍</span>
+                                </div>
+                                <div class="form-hint">Cesitli raporlama ve gruplama amacli (max 6 karakter)</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Material Group Title</label>
+                                <input type="text" class="form-control" id="materialGroupTitle" readonly>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Accounting Number</label>
@@ -1051,6 +1090,73 @@ Supplier Info Record:
     </div>
 
     <script>
+        // Material Groups data for autocomplete
+        const materialGroups = [
+            { code: 'GEN', title: 'Genel Malzemeler' },
+            { code: 'ELK', title: 'Elektrik Malzemeleri' },
+            { code: 'MKN', title: 'Mekanik Parcalar' },
+            { code: 'KMY', title: 'Kimyasallar' },
+            { code: 'YAG', title: 'Yaglar ve Sivislar' },
+            { code: 'HID', title: 'Hidrolik Malzemeler' },
+            { code: 'PNO', title: 'Pnomatik Malzemeler' },
+            { code: 'ISI', title: 'Isitma Sogutma' },
+            { code: 'GUV', title: 'Guvenlik Malzemeleri' },
+            { code: 'TEM', title: 'Temizlik Malzemeleri' }
+        ];
+
+        function findMaterialGroupByCode(code) {
+            return materialGroups.find(g => g.code === code);
+        }
+
+        // Setup Material Group autocomplete
+        function setupMaterialGroupAutocomplete() {
+            const input = document.getElementById('materialGroupCode');
+            const datalist = document.getElementById('materialGroupDatalist');
+            const titleInput = document.getElementById('materialGroupTitle');
+
+            if (!input || !datalist) return;
+
+            // Dynamic filter on input
+            input.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase().trim();
+                datalist.innerHTML = '';
+
+                if (searchTerm.length < 1) return;
+
+                const filtered = materialGroups.filter(g =>
+                    g.code.toLowerCase().includes(searchTerm) ||
+                    g.title.toLowerCase().includes(searchTerm)
+                ).slice(0, 10);
+
+                filtered.forEach(g => {
+                    const option = document.createElement('option');
+                    option.value = g.code;
+                    option.textContent = `${g.code} - ${g.title}`;
+                    datalist.appendChild(option);
+                });
+            });
+
+            // Auto-populate title on selection
+            input.addEventListener('change', function() {
+                const group = findMaterialGroupByCode(this.value);
+                if (titleInput) {
+                    titleInput.value = group ? group.title : '';
+                }
+            });
+
+            input.addEventListener('blur', function() {
+                const group = findMaterialGroupByCode(this.value);
+                if (titleInput) {
+                    titleInput.value = group ? group.title : '';
+                }
+            });
+        }
+
+        // Initialize autocomplete on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            setupMaterialGroupAutocomplete();
+        });
+
         // Toggle blocking info section based on material status
         function toggleBlockingInfo() {
             const status = document.getElementById('materialStatus').value;
@@ -1789,6 +1895,7 @@ Supplier Info Record:
             <div class="dev-docs-body">
                 <div class="dev-docs-tabs">
                     <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('formFields')">Form Alanları</button>
                     <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
                     <button class="dev-tab" onclick="showDevTab('validations')">Validasyonlar</button>
                 </div>
@@ -1848,44 +1955,106 @@ Supplier Info Record:
                     </table>
                 </div>
 
+                <div id="formFields" class="dev-tab-content">
+                    <h3>Temel Bilgiler</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Material number *</td><td>text/readonly</td><td>Malzeme numarası (##.#####-#### formatı)</td></tr>
+                            <tr><td>Old material number</td><td>text</td><td>Eski sistem (Maximo) numarası</td></tr>
+                            <tr><td>Title *</td><td>text</td><td>Malzeme başlığı (max 128 karakter)</td></tr>
+                            <tr><td>Description</td><td>textarea</td><td>Detaylı açıklama (max 512 karakter)</td></tr>
+                            <tr><td>Unit of measure code *</td><td>dropdown</td><td>Ölçü birimi (AD, M, KG, LT...)</td></tr>
+                            <tr><td>Material Status code *</td><td>dropdown</td><td>Malzeme durumu (1-5)</td></tr>
+                            <tr><td>Blocking Reason</td><td>text</td><td>Bloklama nedeni (Status=2 için zorunlu)</td></tr>
+                            <tr><td>Blocking Reevaluation date</td><td>datetime</td><td>Yeniden değerlendirme tarihi</td></tr>
+                            <tr><td>Material Group Code *</td><td>dropdown</td><td>Malzeme grubu</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Üretici Bilgileri</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Producer name</td><td>text</td><td>Üretici firma adı (max 32)</td></tr>
+                            <tr><td>Producer model name</td><td>text</td><td>Üretici model/part no (max 64)</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Stok Yönetimi (MRP)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Reordering point quantity</td><td>number</td><td>MRP tetikleme seviyesi</td></tr>
+                            <tr><td>Reordering quantity</td><td>number</td><td>Yeniden sipariş miktarı</td></tr>
+                            <tr><td>Maximum stock quantity</td><td>number</td><td>Maksimum stok miktarı</td></tr>
+                            <tr><td>Safety stock quantity</td><td>number</td><td>Güvenlik stoğu</td></tr>
+                            <tr><td>Order batch quantity</td><td>number</td><td>Sipariş parti miktarı</td></tr>
+                            <tr><td>Unit quantity in a package</td><td>number</td><td>Paket içi birim adedi</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Depolama Bilgileri</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Default Storage</td><td>dropdown</td><td>Varsayılan depo</td></tr>
+                            <tr><td>Default Location</td><td>dropdown</td><td>Varsayılan lokasyon</td></tr>
+                            <tr><td>Default Bin</td><td>dropdown</td><td>Varsayılan bin</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Ek Bilgiler</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Accounting Number</td><td>text</td><td>SAP muhasebe hesap kodu</td></tr>
+                            <tr><td>Alternative material 1</td><td>search</td><td>Alternatif malzeme 1</td></tr>
+                            <tr><td>Alternative material 2</td><td>search</td><td>Alternatif malzeme 2</td></tr>
+                            <tr><td>Purchased Packing Material</td><td>checkbox</td><td>İade edilebilir ambalaj mı?</td></tr>
+                            <tr><td>Accounting actions required</td><td>checkbox</td><td>Muhasebe onayı gerekli mi?</td></tr>
+                            <tr><td>Blocked for material request</td><td>checkbox</td><td>Taleplerde görünmez</td></tr>
+                            <tr><td>Notes</td><td>textarea</td><td>Notlar (max 512 karakter)</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Readonly Alanlar (Hesaplanan)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Total Stock</td><td>Toplam stok miktarı</td></tr>
+                            <tr><td>Open request quantity</td><td>Açık talep miktarı</td></tr>
+                            <tr><td>Created by user info</td><td>Oluşturan kullanıcı</td></tr>
+                            <tr><td>Creation date time</td><td>Oluşturma tarihi</td></tr>
+                            <tr><td>Modified by user info</td><td>Güncelleyen kullanıcı</td></tr>
+                            <tr><td>Modified date time</td><td>Güncelleme tarihi</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Malzeme Görseli</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Material image</td><td>file upload</td><td>Malzeme ana görseli (JPG, PNG, GIF)</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Dokümanlar</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Document group</td><td>file upload</td><td>Ekli dokümanlar (PDF, DOC, XLS)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
                 <div id="businessRules" class="dev-tab-content">
-                    <h3>Material Number Atama Kuralları</h3>
-                    <ul>
-                        <li><strong>Seri ile otomatik:</strong> Prefix + artan numara (örn: PN-12848)</li>
-                        <li><strong>Manuel:</strong> ##.#####-#### formatı zorunlu</li>
-                        <li>Edit modunda material number DEĞİŞTİRİLEMEZ</li>
-                    </ul>
-
-                    <h3>Material Status Kuralları</h3>
-                    <ul>
-                        <li>Yeni malzeme DEFAULT status: <strong>"Preparing to be used" (4)</strong></li>
-                        <li>Status=Blocked (2) seçildiğinde <strong>Blocking Reason ZORUNLU</strong></li>
-                        <li>Blocking Reevaluation date girilebilir (opsiyonel)</li>
-                    </ul>
-
-                    <h3>Status Geçiş Kuralları</h3>
-                    <ul>
-                        <li>Active(1) → Blocked(2), Inactive(3), Preparing to discontinuation(5)</li>
-                        <li>Blocked(2) → Active(1), Inactive(3)</li>
-                        <li>Inactive(3) → Reactivate (özel yetki gerekir)</li>
-                        <li>Preparing to be used(4) → Active(1) (stok girişi yapıldığında)</li>
-                        <li>Preparing to discontinuation(5) → Inactive(3) (stok tükendiğinde)</li>
-                    </ul>
-
-                    <h3>MRP Parametreleri</h3>
-                    <ul>
-                        <li><strong>Reordering point:</strong> Bu seviyenin altına düşünce MRP önerisi oluşur</li>
-                        <li><strong>Maximum stock:</strong> MRP önerisi bu seviyeye kadar hesaplanır</li>
-                        <li><strong>Order batch:</strong> Siparişler bu miktarın KATLARINDAN oluşur</li>
-                        <li><strong>Safety stock:</strong> Emniyet stoğu (MRP hesaplamasında buffer)</li>
-                    </ul>
-
-                    <h3>Depo Hiyerarşisi</h3>
-                    <ul>
-                        <li>Storage → Location → Bin (3 seviye)</li>
-                        <li>Default Storage seçilince Location listesi filtrelenir</li>
-                        <li>Default Location seçilince Bin listesi filtrelenir</li>
-                    </ul>
+                    <h3>İş Kuralları (Ana Veri Bakımı - Paragraf 251-264)</h3>
+                    <ol>
+                        <li>Malzeme numarası seçilen seriden prefix + sonraki numara olarak verilebilir veya "##.#####-####" formatında 11 haneli malzeme kodu ile manuel olarak girilebilir.</li>
+                        <li>"Kullanıma hazırlanıyor" durumu satınalma, mal kabul işlemlerine izin verir ancak malzeme talebine izin vermez.</li>
+                        <li>"Kullanımdan kaldırılmaya hazırlanıyor" durumu malzeme talebi, çıkış ve transfere izin verir ancak yeni SRM talebine izin vermez.</li>
+                        <li>Yeni malzeme oluşturulduğunda varsayılan olarak "Kullanıma hazırlanıyor" durumu seçilir.</li>
+                        <li>Malzeme grubu malzemeleri çeşitli amaçlarla gruplamak için kullanılacaktır.</li>
+                        <li>İnaktif depo, lokasyon ve bin'lerden malzeme çıkışı yapılabilir ancak giriş yapılamaz.</li>
+                        <li>İlk lokasyon ilgili depo için varsayılan lokasyon olarak otomatik atanır. Daha sonra endirek malzeme anahtar kullanıcısı tarafından değiştirilebilir.</li>
+                        <li>İlk bin ilgili lokasyon için varsayılan bin olarak otomatik atanır. Daha sonra endirek malzeme anahtar kullanıcısı tarafından değiştirilebilir.</li>
+                        <li>Bin kodu düzeni 3 farklı girdiden oluşur. "-" ayırıcıdır, "#" 0'dan başlayıp artacak sayı alanını belirler, Sayılar sayımın bu numaradan başlayacağını gösterir.</li>
+                        <li>"Ana görsel" etiketi ile malzemeye eklenen görseller malzeme görüntüleme ekranında sayfa yüklendiğinde görülebilecektir. Her malzeme için bu etikete sahip sadece bir görsel olacaktır.</li>
+                    </ol>
                 </div>
 
                 <div id="validations" class="dev-tab-content">

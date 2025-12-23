@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kullanici Malzeme Limit Detay - IMMA</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<!--
+================================================================================
+IMMA DEVELOPER DOCUMENTATION
+================================================================================
+
+SCREEN: 28 UML - User Material Limit (Detail)
+FILE: user-material-limit-detail.html
+LAST UPDATED: 2025-12-23
+
+--------------------------------------------------------------------------------
+RELATED DATABASE TABLES
+--------------------------------------------------------------------------------
+
+TABLE: User Material Limit (Data Structure IMMA.xlsx)
+| Field Name                 | Type     | Length | Description                    |
+|----------------------------|----------|--------|--------------------------------|
+| User Material Limit Id     | int      | 16     | Primary key                    |
+| user Id                    | int      | 8      | Kullanici ID                   |
+| Material code              | text     | 13     | Malzeme kodu                   |
+| Quantity                   | float    | 15     | Miktar limiti (12int3float)    |
+| created date time          | datetime | -      | Olusturma tarihi               |
+| created by user id         | int      | 8      | Olusturan kullanici            |
+| inactivated check          | bool     | -      | Inaktif durumu                 |
+
+================================================================================
+-->
+<body>
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">M</div>
+                <div class="brand-text">
+                    <span class="brand-name">IMMA</span>
+                    <span class="brand-subtitle">Endirek Malzeme Yonetimi</span>
+                </div>
+            </a>
+            <ul class="navbar-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="material-list.html" class="nav-link">
+                        <span class="nav-icon">📦</span>
+                        Ana Veriler
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="mrp.html" class="nav-link">
+                        <span class="nav-icon">📈</span>
+                        MRP
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="srm-list.html" class="nav-link">
+                        <span class="nav-icon">🛒</span>
+                        Satinalma
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="budget-management.html" class="nav-link">
+                        <span class="nav-icon">💰</span>
+                        Budget
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="material-request-list.html" class="nav-link">
+                        <span class="nav-icon">📋</span>
+                        Talepler
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="transfer-list.html" class="nav-link">
+                        <span class="nav-icon">🏭</span>
+                        Stock
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link active">
+                        <span class="nav-icon">⚙️</span>
+                        Admin
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item active">Kullanici Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onaylari</a>
+                    </div>
+                </li>
+            </ul>
+            <div class="navbar-user">
+                <span class="user-name">Ahmet Yilmaz</span>
+                <div class="user-avatar">AY</div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="modern-container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title" id="pageTitle">Kullanici Malzeme Limit Detay</h1>
+                <p class="page-subtitle">Ayarlar > Kullanici Limitleri > <span id="breadcrumbAction">Goruntule</span></p>
+            </div>
+            <div class="page-actions">
+                <a href="user-material-limit-list.html" class="btn btn-outline">← Listeye Don</a>
+                <button class="btn btn-primary" id="editModeBtn" style="display: none;">Duzenle</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 id="formTitle">Limit Bilgileri</h3>
+            </div>
+            <div class="card-body">
+                <form id="limitForm">
+                    <!-- Row 1: ID -->
+                    <div class="form-row">
+                        <div class="form-group col-4">
+                            <label>Limit Id</label>
+                            <input type="text" id="limitId" class="form-control" readonly>
+                            <small class="form-text">Sistem otomatik olusturur</small>
+                        </div>
+                    </div>
+
+                    <hr style="margin: 20px 0;">
+
+                    <!-- Row 2: User Selection -->
+                    <div class="form-row">
+                        <div class="form-group col-4">
+                            <label>Kullanici <span class="required">*</span></label>
+                            <select id="userId" class="form-control" required>
+                                <option value="">Seciniz...</option>
+                                <option value="1">Mehmet Demir</option>
+                                <option value="2">Ayse Kaya</option>
+                                <option value="3">Ali Yildiz</option>
+                                <option value="4">Fatma Sahin</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-8">
+                            <label>Kullanici Bilgisi</label>
+                            <input type="text" id="userInfo" class="form-control" readonly placeholder="Kullanici secildiginde doldurulur">
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Material Selection -->
+                    <div class="form-row">
+                        <div class="form-group col-6">
+                            <label>Malzeme Kodu <span class="required">*</span></label>
+                            <div class="autocomplete-wrapper">
+                                <input type="text" id="materialCode" class="form-control"
+                                       list="materialDatalist" autocomplete="off"
+                                       maxlength="13" required placeholder="Kod veya ad ile arayin...">
+                                <datalist id="materialDatalist"></datalist>
+                                <span class="search-icon">🔍</span>
+                            </div>
+                            <small class="form-text">text(13) - Aramak icin yazmaya baslayin</small>
+                        </div>
+                    </div>
+
+                    <!-- Row 4: Quantity -->
+                    <div class="form-row">
+                        <div class="form-group col-4">
+                            <label>Limit Miktari <span class="required">*</span></label>
+                            <input type="number" id="quantity" class="form-control" step="0.001" min="0" required>
+                            <small class="form-text">decimal(12.3)</small>
+                        </div>
+                    </div>
+
+                    <hr style="margin: 20px 0;">
+
+                    <!-- Row 5: Created Info -->
+                    <div class="form-row">
+                        <div class="form-group col-6">
+                            <label>Olusturan Kullanici</label>
+                            <input type="text" id="createdBy" class="form-control" readonly value="-">
+                        </div>
+                        <div class="form-group col-6">
+                            <label>Olusturma Tarihi</label>
+                            <input type="text" id="createdDate" class="form-control" readonly value="-">
+                        </div>
+                    </div>
+
+                    <hr style="margin: 20px 0;">
+
+                    <!-- Row 6: Inactivation -->
+                    <div class="form-row">
+                        <div class="form-group col-12">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="inactivationCheck">
+                                <span>Inactivation check</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="inactivationDetails" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group col-6">
+                                <label>Inaktif Eden Kullanici</label>
+                                <input type="text" id="inactivatedBy" class="form-control" readonly>
+                            </div>
+                            <div class="form-group col-6">
+                                <label>Inaktif Edilme Tarihi</label>
+                                <input type="text" id="inactivationDate" class="form-control" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions" style="margin-top: 30px;" id="formActions">
+                        <a href="user-material-limit-list.html" class="btn btn-outline">Iptal</a>
+                        <button type="submit" class="btn btn-primary">Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <style>
+        .required { color: #dc3545; font-weight: bold; }
+        .checkbox-label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .form-control[readonly] { background-color: #f5f5f5; }
+        .form-control:disabled { background-color: #f5f5f5; cursor: not-allowed; }
+        .autocomplete-wrapper { position: relative; }
+        .autocomplete-wrapper .search-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            opacity: 0.5;
+        }
+        .autocomplete-wrapper input { padding-right: 35px; }
+    </style>
+
+    <script>
+        const users = {
+            '1': { name: 'Mehmet Demir', dept: 'Bakim Departmani', role: 'Teknisyen' },
+            '2': { name: 'Ayse Kaya', dept: 'Uretim Departmani', role: 'Operator' },
+            '3': { name: 'Ali Yildiz', dept: 'Kalite Departmani', role: 'Muhendis' },
+            '4': { name: 'Fatma Sahin', dept: 'Lojistik Departmani', role: 'Sorumlu' }
+        };
+
+        // Material data as array for better search/filter
+        const materials = [
+            { code: '20.12345-0001', title: 'Rulman 6205' },
+            { code: '20.12345-0002', title: 'Kayis V-Belt A52' },
+            { code: '20.12345-0003', title: 'Hidrolik Yag 20L' },
+            { code: '20.12345-0004', title: 'Elektrik Motoru 5.5kW' },
+            { code: '20.12345-0005', title: 'Conta Seti (Eski)' },
+            { code: '20.54321-0001', title: 'Pompa Mekanik Salmastra' },
+            { code: '20.54321-0002', title: 'Filtre Elementi Hidrolik' },
+            { code: '20.54321-0003', title: 'Sensor Sicaklik PT100' },
+            { code: '20.67890-0001', title: 'Valf Selenoid 24V' },
+            { code: '20.67890-0002', title: 'Silindir Pnomatik 32x100' }
+        ];
+
+        // Helper function to find material by code
+        function findMaterialByCode(code) {
+            return materials.find(m => m.code === code);
+        }
+
+        const limits = {
+            'LMT-001': { id: 'LMT-001', userId: '1', materialCode: '20.12345-0001', quantity: 10, createdBy: 'Manager User', createdDate: '05.01.2025 10:00', isInactive: false },
+            'LMT-002': { id: 'LMT-002', userId: '1', materialCode: '20.12345-0002', quantity: 5, createdBy: 'Manager User', createdDate: '05.01.2025 10:05', isInactive: false },
+            'LMT-003': { id: 'LMT-003', userId: '2', materialCode: '20.12345-0003', quantity: 2, createdBy: 'Manager User', createdDate: '06.01.2025 11:00', isInactive: false },
+            'LMT-004': { id: 'LMT-004', userId: '3', materialCode: '20.12345-0004', quantity: 1, createdBy: 'Manager User', createdDate: '07.01.2025 14:00', isInactive: false },
+            'LMT-005': { id: 'LMT-005', userId: '1', materialCode: '20.12345-0005', quantity: 20, createdBy: 'Manager User', createdDate: '03.01.2025 09:00', isInactive: true, inactivatedBy: 'Manager User', inactivationDate: '10.01.2025 16:00' }
+        };
+
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return { mode: params.get('mode') || 'view', id: params.get('id') || null };
+        }
+
+        // Setup material autocomplete with dynamic filtering
+        function setupMaterialAutocomplete() {
+            const materialInput = document.getElementById('materialCode');
+            const datalist = document.getElementById('materialDatalist');
+
+            // Dynamic filter on input
+            materialInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase().trim();
+                datalist.innerHTML = '';
+
+                if (searchTerm.length < 1) return;
+
+                // Filter materials by code or title
+                const filtered = materials.filter(m =>
+                    m.code.toLowerCase().includes(searchTerm) ||
+                    m.title.toLowerCase().includes(searchTerm)
+                ).slice(0, 10);
+
+                // Populate datalist
+                filtered.forEach(m => {
+                    const option = document.createElement('option');
+                    option.value = m.code;
+                    option.textContent = `${m.code} - ${m.title}`;
+                    datalist.appendChild(option);
+                });
+            });
+        }
+
+        function initializePage() {
+            const { mode, id } = getUrlParams();
+
+            // User dropdown change handler
+            document.getElementById('userId').addEventListener('change', function() {
+                const user = users[this.value];
+                document.getElementById('userInfo').value = user ? `${user.name} - ${user.dept} - ${user.role}` : '';
+            });
+
+            // Setup material autocomplete (dynamic search + auto-populate)
+            setupMaterialAutocomplete();
+
+            switch(mode) {
+                case 'view':
+                    document.getElementById('pageTitle').textContent = 'Limit Goruntule';
+                    document.getElementById('breadcrumbAction').textContent = 'Goruntule';
+                    document.getElementById('editModeBtn').style.display = 'inline-block';
+                    document.getElementById('formActions').style.display = 'none';
+                    document.querySelectorAll('#limitForm input, #limitForm select').forEach(el => el.disabled = true);
+                    document.getElementById('editModeBtn').addEventListener('click', function() {
+                        window.location.href = `user-material-limit-detail.html?mode=edit&id=${id}`;
+                    });
+                    if (id && limits[id]) loadData(limits[id]);
+                    break;
+                case 'edit':
+                    document.getElementById('pageTitle').textContent = 'Limit Duzenle';
+                    document.getElementById('breadcrumbAction').textContent = 'Duzenle';
+                    document.getElementById('editModeBtn').style.display = 'none';
+                    document.getElementById('formActions').style.display = 'flex';
+                    // In edit mode, user and material cannot be changed
+                    document.getElementById('userId').disabled = true;
+                    document.getElementById('materialCode').disabled = true;
+                    document.getElementById('quantity').disabled = false;
+                    document.getElementById('inactivationCheck').disabled = false;
+                    if (id && limits[id]) loadData(limits[id]);
+                    break;
+                case 'create':
+                    document.getElementById('pageTitle').textContent = 'Yeni Limit';
+                    document.getElementById('breadcrumbAction').textContent = 'Yeni';
+                    document.getElementById('editModeBtn').style.display = 'none';
+                    document.getElementById('formActions').style.display = 'flex';
+                    document.getElementById('limitId').value = 'LMT-' + String(Math.floor(Math.random() * 900) + 100);
+                    document.getElementById('createdBy').value = 'Ahmet Yilmaz - Manager';
+                    document.getElementById('createdDate').value = new Date().toLocaleString('tr-TR');
+                    document.getElementById('userId').disabled = false;
+                    document.getElementById('materialCode').disabled = false;
+                    document.getElementById('quantity').disabled = false;
+                    document.getElementById('inactivationCheck').disabled = false;
+                    break;
+            }
+        }
+
+        function loadData(limit) {
+            document.getElementById('limitId').value = limit.id;
+            document.getElementById('userId').value = limit.userId;
+            const user = users[limit.userId];
+            document.getElementById('userInfo').value = user ? `${user.name} - ${user.dept} - ${user.role}` : '';
+            document.getElementById('materialCode').value = limit.materialCode;
+            document.getElementById('quantity').value = limit.quantity;
+            document.getElementById('createdBy').value = limit.createdBy || '-';
+            document.getElementById('createdDate').value = limit.createdDate || '-';
+            document.getElementById('inactivationCheck').checked = limit.isInactive;
+
+            if (limit.isInactive && limit.inactivatedBy) {
+                document.getElementById('inactivationDetails').style.display = 'block';
+                document.getElementById('inactivatedBy').value = limit.inactivatedBy;
+                document.getElementById('inactivationDate').value = limit.inactivationDate;
+            }
+        }
+
+        document.getElementById('inactivationCheck').addEventListener('change', function() {
+            if (this.checked) {
+                document.getElementById('inactivationDetails').style.display = 'block';
+                document.getElementById('inactivatedBy').value = 'Ahmet Yilmaz - Manager';
+                document.getElementById('inactivationDate').value = new Date().toLocaleString('tr-TR');
+            } else {
+                document.getElementById('inactivationDetails').style.display = 'none';
+            }
+        });
+
+        document.getElementById('limitForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const { mode } = getUrlParams();
+            const userId = document.getElementById('userId').value;
+            const materialCode = document.getElementById('materialCode').value;
+            const quantity = document.getElementById('quantity').value;
+
+            if (!userId || !materialCode || !quantity) {
+                alert('Kullanici, Malzeme ve Miktar zorunlu alanlardir.');
+                return;
+            }
+
+            const action = mode === 'create' ? 'olusturuldu' : 'guncellendi';
+            alert(`Limit ${action}!\n\nMiktar: ${quantity}\n\n(Backend entegrasyonu ile calisacak)`);
+            window.location.href = 'user-material-limit-list.html';
+        });
+
+        document.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+
+    <!-- DEVELOPER DOCUMENTATION PANEL -->
+    <div id="devDocsPanel" class="dev-docs-panel">
+        <button class="dev-docs-toggle" onclick="toggleDevDocs()">📋 Gelistirici Dokumantasyonu</button>
+        <div class="dev-docs-content" id="devDocsContent">
+            <div class="dev-docs-header">
+                <h2>📋 28 UML - User Material Limit (Detail)</h2>
+                <button class="dev-docs-close" onclick="toggleDevDocs()">✕</button>
+            </div>
+            <div class="dev-docs-body">
+                <div class="dev-docs-tabs">
+                    <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapilari</button>
+                    <button class="dev-tab" onclick="showDevTab('businessRules')">Is Kurallari</button>
+                </div>
+                <div id="dataStructure" class="dev-tab-content active">
+                    <h3>User Material Limit Tablosu (Excel: 7 Alan)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Field Name</th><th>Type</th><th>Length</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td>User Material Limit Id</td><td>int</td><td>16</td><td>Primary key</td></tr>
+                            <tr><td>user Id</td><td>int</td><td>8</td><td>Kullanici ID</td></tr>
+                            <tr><td>Material code</td><td>text</td><td>13</td><td>Malzeme kodu</td></tr>
+                            <tr><td>Quantity</td><td>float</td><td>15</td><td>Limit miktari (12int3float)</td></tr>
+                            <tr><td>created date time</td><td>datetime</td><td>-</td><td>Olusturma tarihi</td></tr>
+                            <tr><td>created by user id</td><td>int</td><td>8</td><td>Olusturan kullanici</td></tr>
+                            <tr><td>inactivated check</td><td>bool</td><td>-</td><td>Inaktif durumu</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="businessRules" class="dev-tab-content">
+                    <div class="rules-section">
+                        <h4>Kurallar</h4>
+                        <ul>
+                            <li>Kullanici ve malzeme olusturulduktan sonra degistirilemez</li>
+                            <li>Sadece miktar ve inaktif durumu guncellenebilir</li>
+                            <li>Manager sadece kendi personeli icin limit tanimlayabilir</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>.dev-docs-panel{position:fixed;bottom:0;left:0;right:0;z-index:9999;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}.dev-docs-toggle{width:100%;padding:12px 20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;cursor:pointer;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px}.dev-docs-content{display:none;background:#1a1a2e;color:#eee;max-height:70vh;overflow-y:auto}.dev-docs-content.active{display:block}.dev-docs-header{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;background:#16213e;border-bottom:2px solid #667eea}.dev-docs-header h2{margin:0;font-size:16px;color:#fff}.dev-docs-close{background:#e74c3c;color:#fff;border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px}.dev-docs-body{padding:20px}.dev-docs-tabs{display:flex;gap:10px;margin-bottom:20px;border-bottom:2px solid #333;padding-bottom:10px}.dev-tab{padding:8px 16px;background:#2d2d44;color:#aaa;border:none;border-radius:6px 6px 0 0;cursor:pointer;font-size:13px}.dev-tab.active,.dev-tab:hover{background:#667eea;color:#fff}.dev-tab-content{display:none}.dev-tab-content.active{display:block}.dev-table{width:100%;border-collapse:collapse;margin:15px 0;font-size:13px}.dev-table th,.dev-table td{padding:10px;text-align:left;border:1px solid #333}.dev-table th{background:#2d2d44;color:#667eea;font-weight:600}.dev-table tr:nth-child(even){background:#1f1f35}.rules-section{margin-bottom:20px}.rules-section h4{color:#667eea;margin-bottom:10px;font-size:14px}.rules-section ul{margin:0;padding-left:20px}.rules-section li{margin-bottom:6px;line-height:1.5;font-size:13px}</style>
+    <script>function toggleDevDocs(){document.getElementById('devDocsContent').classList.toggle('active')}function showDevTab(tabId){document.querySelectorAll('.dev-tab-content').forEach(c=>c.classList.remove('active'));document.querySelectorAll('.dev-tab').forEach(t=>t.classList.remove('active'));document.getElementById(tabId).classList.add('active');event.target.classList.add('active')}</script>
+</body>
+</html>

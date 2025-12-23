@@ -19,7 +19,7 @@ LAST UPDATED: 2025-12-18
 RELATED DATABASE TABLES
 --------------------------------------------------------------------------------
 
-TABLE: Stock Correction Header
+TABLE: Stock Correction Header (Data Structure IMMA.xlsx)
 | Field Name                         | Type     | Length | Description                  |
 |------------------------------------|----------|--------|------------------------------|
 | Stock Correction document Id       | int      | 8      | Primary key                  |
@@ -40,7 +40,7 @@ TABLE: Stock Correction Header
 | Comment Group Id                   | int      | 8      | Yorumlar grubu               |
 | Document Group Id                  | int      | 8      | Ek dokümanlar grubu          |
 
-TABLE: Stock Correction Item
+TABLE: Stock Correction Item (Data Structure IMMA.xlsx)
 | Field Name                         | Type  | Length | Description                  |
 |------------------------------------|-------|--------|------------------------------|
 | Stock Correction document Id       | int   | 8      | Header referansı             |
@@ -81,14 +81,63 @@ MOVEMENT TYPE FOR SCRAPPING
 | 15   | Other material issue rollback | Diğer çıkış iptali       |
 
 --------------------------------------------------------------------------------
-BUSINESS RULES
+SCREEN FIELDS (UI Elements) - Screen Designs: 24 IC-SO Detail
 --------------------------------------------------------------------------------
 
-1. Her hurda belgesi için onay süreci zorunlu
-2. Onay seviyesi toplam TRY değerine göre belirlenir
-3. Reddedilirse belge kapatılır, stok değişmez
-4. Onaylanırsa stoktan düşüm ve Material Movement kaydı oluşur
-5. Ek dosya ve yorum eklenebilir (Document/Comment Group)
+DOCUMENT HEADER SECTION:
+- Correction document Id (text, readonly) - SC-YYYY-XXXXXX format
+- Creation date time (datetime) - Oluşturma tarihi
+- Status (text, readonly) - Taslak/Onay Bekliyor/Onaylandı/Reddedildi/Tamamlandı
+- Correction document title (text, 64, zorunlu) - Belge başlığı
+- Correction document description (textarea, 64, zorunlu) - Detaylı açıklama
+- Correction type (select, zorunlu) - H/D/Q/E/O seçenekleri
+- Created for user info (select) - Sorumlu kullanıcı
+- Created by user info (text, readonly) - Oluşturan kullanıcı
+- Cost Center (select) - COST-001/002/003/004
+- EUR Toplam Deger (text, readonly) - Hesaplanan
+- TRY Toplam Deger (text, readonly) - Hesaplanan
+- Comment Group ID (text, readonly) - Otomatik
+- Document Group ID (text, readonly) - Otomatik
+
+APPROVAL TABLE COLUMNS:
+- Seviye (text) - Onay 1/2/3
+- Onaylayıcı ID (text) - approver_X_user_id
+- Approved by user info (text) - X_approved_by_user_id
+- Approval date time (datetime) - X_approved_datetime
+- Status (badge) - X_approval
+- Gerekli mi? (badge) - X_requirement_check
+
+ITEMS TABLE COLUMNS:
+- # No (int) - Satır numarası
+- Stock Kayıt ID (text) - Stock record referansı
+- Material number (text) - Malzeme numarası
+- Material title (text) - Malzeme açıklaması
+- Material Group Code (badge)
+- Cost Id (text)
+- Storage/Location/Bin (text)
+- Stock Mik. (float) - Stok miktarı
+- Seçilen Mik. (float, bold) - Selected quantity
+- Unit of measure/PB (text)
+- Unit value (currency)
+- Stock Degeri/Euro value/TRY Deger (currency)
+- MR/SRM/PO (badge) - Açık işlem sayıları
+
+--------------------------------------------------------------------------------
+İŞ KURALLARI
+--------------------------------------------------------------------------------
+
+ENVANTER DÜZELTMELERİ İŞ KURALLARI:
+Kural 1: Açık sayım belgesi varsa etkilenen malzemeler için yeni malzeme talebi engellenecektir ancak onay süreci devam edebilmelidir.
+Kural 2: Sayım belgesi mevcut stok miktarlarını içermemelidir.
+Kural 3: Tekli malzeme envanter düzeltmesi için onay süreci olmayacaktır.
+Kural 4: Sayım raf bazında yapılır, bu nedenle sayım belgesi kapsamı seçim listesi raf numaralarına göre ayrılmış bilgileri içerecektir.
+Kural 5: Diğer ve hurda envanter düzeltmesi için onaylayıcı yönetici malzeme grubuna ilişkin kayda göre seçilecektir. Süreç endirek ve GPS malzeme anahtar kullanıcısı tarafından başlatılacak ve muhasebe ile ilgiliyse muhasebe endirek ve GPS sorumlu kullanıcısı tarafından sonlandırılacaktır.
+Kural 6: Ek belge gereklidir.
+Kural 7: Yorum gereklidir.
+Kural 8: Onay sırası malzeme grubuna ilişkin kayıtta olduğu gibi takip edilecektir (onay sırası, departman kodu, malzeme grubu).
+Kural 9: Stok transferleri ile düzeltmeler yalnızca malzemenin tüm stoğu aynı sayım belgesi içinde sayım için seçildiğinde hesaplanır. Bir raftaki eksik miktarı başka bir raftaki fazla miktardan karşılamak için öneriler oluşturulacaktır.
+Kural 10: Tüm geri almalar yanlışlıkla yapılan bir işlemin düzeltilmesidir. Yönetici kullanıcı tarafından yapılabilir.
+Kural 11: Hurda ve diğer düzeltmeler için en az bir yönetici onaylayıcı olarak eklenmelidir. Bu belge endirek malzeme anahtar kullanıcısı tarafından oluşturulabilir ve onaylayıcı eklenebilir.
 
 --------------------------------------------------------------------------------
 FORM MODES
@@ -128,6 +177,8 @@ FORM MODES
                         <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
                         <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
                         <a href="material-group.html" class="dropdown-item">Malzeme Gruplari</a>
+                        <a href="unit-of-measure-list.html" class="dropdown-item">Olcu Birimleri</a>
+                        <a href="department-cost-center-list.html" class="dropdown-item">Dept-Masraf Merkezi</a>
                     </div>
                 </li>
                 <li class="nav-item">
@@ -178,6 +229,16 @@ FORM MODES
                         <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
                         <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
                         <a href="scrapping.html" class="dropdown-item active">Hurda İşlemleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanıcı Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onayları</a>
                     </div>
                 </li>
             </ul>
@@ -828,6 +889,7 @@ FORM MODES
             <div class="dev-docs-body">
                 <div class="dev-docs-tabs">
                     <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('formFields')">Form Alanları</button>
                     <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
                     <button class="dev-tab" onclick="showDevTab('approvalFlow')">Onay Akışı</button>
                 </div>
@@ -864,24 +926,78 @@ FORM MODES
                         </tbody>
                     </table>
                 </div>
+                <div id="formFields" class="dev-tab-content">
+                    <h3>Correction Document Header</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Stock Correction document Id</td><td>readonly</td><td>Belge numarası (otomatik)</td></tr>
+                            <tr><td>Stock Correction document title</td><td>readonly</td><td>Belge başlığı</td></tr>
+                            <tr><td>Stock Correction document Description</td><td>readonly</td><td>Belge açıklaması</td></tr>
+                            <tr><td>Correction type</td><td>readonly</td><td>D:Hasar, Q:Kalite, E:SKT, O:Diğer</td></tr>
+                            <tr><td>Status</td><td>badge</td><td>Beklemede/Onaylandı/Reddedildi</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Creation Information (Readonly)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Creation date time</td><td>Oluşturma tarihi</td></tr>
+                            <tr><td>Created by user info</td><td>Oluşturan kullanıcı</td></tr>
+                            <tr><td>Created for user info</td><td>Sorumlu kullanıcı</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Approval Section (3 Seviyeli)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Approver 1 user</td><td>1. Seviye onaylayıcı</td></tr>
+                            <tr><td>Approver 2 user</td><td>2. Seviye onaylayıcı</td></tr>
+                            <tr><td>Approver 3 user</td><td>3. Seviye onaylayıcı</td></tr>
+                            <tr><td>Approved by user</td><td>Onaylayan kullanıcı</td></tr>
+                            <tr><td>Approved datetime</td><td>Onay tarihi</td></tr>
+                            <tr><td>Approval status</td><td>Onay durumu</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Value Summary (Readonly)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Euro Total Value</td><td>Toplam Euro değer</td></tr>
+                            <tr><td>TRY Total Value</td><td>Toplam TRY değer</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Scrapping Items Table (Readonly)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Kolon</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Item No</td><td>Kalem numarası</td></tr>
+                            <tr><td>Material Number</td><td>Malzeme numarası</td></tr>
+                            <tr><td>Material Title</td><td>Malzeme başlığı</td></tr>
+                            <tr><td>Stock Record Id</td><td>Stok kaydı referansı</td></tr>
+                            <tr><td>Storage/Location/Bin</td><td>Lokasyon bilgileri</td></tr>
+                            <tr><td>Selected quantity</td><td>Seçilen miktar</td></tr>
+                            <tr><td>Unit</td><td>Ölçü birimi</td></tr>
+                            <tr><td>Unit Value</td><td>Birim değer</td></tr>
+                            <tr><td>Total Value</td><td>Toplam değer</td></tr>
+                        </tbody>
+                    </table>
+                </div>
                 <div id="businessRules" class="dev-tab-content">
                     <div class="rules-section">
-                        <h4>Hurdalama/Düzeltme Kuralları</h4>
+                        <h4>Envanter Düzeltmeleri İş Kuralları</h4>
                         <ul>
-                            <li>Açık MR, SRM veya PO olan stok hurdalanamaz</li>
-                            <li>Seçilen miktar stok miktarını aşamaz</li>
-                            <li>Onay tamamlanmadan stok değişmez</li>
-                            <li>Değer eşikleri onay seviyesini belirler</li>
-                            <li>Hareket tipi 12 (Scrapping) kullanılır</li>
-                        </ul>
-                    </div>
-                    <div class="rules-section">
-                        <h4>Düzeltme Tipleri</h4>
-                        <ul>
-                            <li><strong>D:</strong> Damage (Hasar)</li>
-                            <li><strong>Q:</strong> Quality (Kalite reddi)</li>
-                            <li><strong>E:</strong> Expiry (Son kullanma tarihi)</li>
-                            <li><strong>O:</strong> Other (Diğer nedenler)</li>
+                            <li><strong>Kural 1:</strong> Açık sayım belgesi varsa etkilenen malzemeler için yeni malzeme talebi engellenir ancak onay süreci devam edebilmelidir</li>
+                            <li><strong>Kural 2:</strong> Sayım belgesi mevcut stok miktarlarını içermemelidir</li>
+                            <li><strong>Kural 3:</strong> Tekli malzeme envanter düzeltmesi için onay süreci olmayacaktır</li>
+                            <li><strong>Kural 4:</strong> Sayım bin bazında yapıldığından sayım belgesi kapsamı için seçim listesi bin numaralarına göre ayrılmış bilgi içerecektir</li>
+                            <li><strong>Kural 5:</strong> Diğer ve hurda envanter düzeltmeleri için onaylayan yönetici malzeme grubuna bağlı kayıttan seçilecektir. Süreç endirek ve GPS malzeme anahtar kullanıcısı tarafından başlatılacak ve muhasebe ile ilgiliyse muhasebe endirek ve GPS sorumlu kullanıcısı tarafından tamamlanacaktır.</li>
+                            <li><strong>Kural 6:</strong> Ek belge zorunludur</li>
+                            <li><strong>Kural 7:</strong> Açıklama zorunludur</li>
+                            <li><strong>Kural 8:</strong> Onay sırası malzeme grubuna bağlı kayıttaki gibi takip edilecektir (onay sırası, departman kodu, malzeme grubu)</li>
+                            <li><strong>Kural 9:</strong> Stok transferleri ile düzeltmeler yalnızca malzemenin tüm stoğu aynı sayım belgesi içinde sayıma seçildiğinde hesaplanır. Bir bin'deki eksik miktarı başka bir bin'deki fazla miktardan karşılamak için öneriler oluşturulacaktır.</li>
+                            <li><strong>Kural 10:</strong> Tüm geri almalar yanlışlıkla yapılan bir işlemin düzeltilmesidir. Admin kullanıcı tarafından yapılabilir</li>
+                            <li><strong>Kural 11:</strong> Hurda ve diğer düzeltmeler için en az bir yönetici onaylayıcı olarak eklenmelidir. Bu belge endirek malzeme anahtar kullanıcısı tarafından oluşturulabilir ve onaylayıcı eklenebilir.</li>
                         </ul>
                     </div>
                 </div>

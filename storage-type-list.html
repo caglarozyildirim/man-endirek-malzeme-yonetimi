@@ -13,16 +13,55 @@ IMMA DEVELOPER DOCUMENTATION
 
 SCREEN: 4 STL - Storage Type List
 FILE: storage-type-list.html
-LAST UPDATED: 2025-12-18
+LAST UPDATED: 2025-12-23
 
-Aynı tablo yapısı storage-type.html ile aynıdır.
-Detaylar için storage-type.html dosyasına bakınız.
+TABLE: Storage Type (Data Structure IMMA.xlsx)
+| Field Name                      | Type     | Length | Description                    |
+|---------------------------------|----------|--------|--------------------------------|
+| Storage type Id                 | int      | -      | Primary key                    |
+| Storage type                    | char     | 1      | 1:Storage, 2:Location, 3:Bin   |
+| Storage Code                    | text     | 12     | Depo/Lokasyon/Bin kodu         |
+| Storage Title                   | text     | 16     | Başlık/açıklama                |
+| Created By user info            | int      | 8      | Oluşturan kullanıcı ID         |
+| Creation date time              | datetime | -      | Oluşturma tarihi               |
+| Inactivation check box          | bool     | -      | İnaktif mi?                    |
+| Inactivation date time          | datetime | -      | İnaktivasyon tarihi            |
+| Inactivated by user info        | int      | 8      | İnaktif eden kullanıcı ID      |
+| Related Location Code           | text     | 12     | Bağlı lokasyon kodu            |
+| Default sub storage type code   | text     | 12     | Varsayılan alt depo kodu       |
+
+NOT: Toplam 11 alan. Detaylı form için storage-type.html dosyasına bakınız.
 
 LIST FEATURES:
 - Filtreleme: Storage type (Storage/Location/Bin), Status
 - Sıralama: Code, Title
 - Detay linki: storage-type.html?id=
 - Hiyerarşik görünüm desteklenir
+
+--------------------------------------------------------------------------------
+SCREEN FIELDS (UI Elements) - Screen Designs: 4 STL
+--------------------------------------------------------------------------------
+
+FILTER SECTION:
+- Storage type filter (dropdown) - Storage/Location/Bin
+- Status filter (dropdown) - Active/Inactive
+- Search box (text) - Code veya Title ara
+
+STORAGE LIST TABLE (Hiyerarşik):
+| Column              | Description                        |
+|---------------------|-----------------------------------|
+| Storage Type        | Tip (Storage/Location/Bin)         |
+| Code                | Storage/Location/Bin kodu          |
+| Title               | Başlık                             |
+| Parent              | Üst seviye (Location için Storage) |
+| Location Count      | Alt lokasyon sayısı (hesaplanan)   |
+| Bin Count           | Alt bin sayısı (hesaplanan)        |
+| Status              | Durum (Active/Inactive)            |
+
+ACTION BUTTONS:
+- New Storage Type - Yeni depo tipi oluştur
+- Export to Excel - Excel'e aktar
+- Expand All / Collapse All - Hiyerarşi aç/kapat
 
 ================================================================================
 -->
@@ -57,6 +96,8 @@ LIST FEATURES:
                         <a href="storage-type-list.html" class="dropdown-item active">Storage Type Listesi</a>
                         <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
                         <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                        <a href="unit-of-measure-list.html" class="dropdown-item">Ölçü Birimleri</a>
+                        <a href="department-cost-center-list.html" class="dropdown-item">Departman-Masraf Merkezi</a>
                     </div>
                 </li>
                 <li class="nav-item">
@@ -107,6 +148,16 @@ LIST FEATURES:
                         <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
                         <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
                         <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanıcı Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onayları</a>
                     </div>
                 </li>
             </ul>
@@ -558,31 +609,17 @@ LIST FEATURES:
                     </div>
                 </div>
                 <div id="businessRules" class="dev-tab-content">
-                    <h3>Liste Özellikleri</h3>
+                    <h3>Depo İş Kuralları (Paragraf 256-263)</h3>
                     <div class="rules-section">
                         <ul>
-                            <li>Filtreleme: Storage Code, Storage Name, Storage Type, Status</li>
-                            <li>Ek filtreler: Location Count (Min/Max), Bin count (Min/Max)</li>
-                            <li>Sıralama: Storage Code, Title, Location Count, Bin count</li>
-                            <li>Detay linki: storage-type.html?id=&mode=view</li>
-                            <li>Düzenleme linki: storage-type.html?id=&mode=edit</li>
-                        </ul>
-                    </div>
-                    <h3>Hiyerarşi</h3>
-                    <div class="rules-section">
-                        <ul>
-                            <li><strong>Storage → Location → Bin</strong> (3 seviyeli)</li>
-                            <li>İnaktif depodan malzeme <strong>ÇIKARILABİLİR</strong></li>
-                            <li>İnaktif depoya malzeme <strong>KONULAMAZ</strong></li>
-                            <li>İlk oluşturulan Location otomatik default olur</li>
-                            <li>İlk oluşturulan Bin otomatik default olur</li>
-                        </ul>
-                    </div>
-                    <h3>Varsayılan Filtre</h3>
-                    <div class="rules-section">
-                        <ul>
-                            <li>Sayfa açıldığında Status = Active seçili gelir</li>
-                            <li>Diğer filtreler boş/Tümü</li>
+                            <li>İnaktif depo, lokasyon ve bin'lerden malzeme çıkışı yapılabilir ancak giriş yapılamaz.</li>
+                            <li>İlk lokasyon ilgili depo için varsayılan lokasyon olarak otomatik atanır. Daha sonra endirek malzeme anahtar kullanıcısı tarafından değiştirilebilir.</li>
+                            <li>İlk bin ilgili lokasyon için varsayılan bin olarak otomatik atanır. Daha sonra endirek malzeme anahtar kullanıcısı tarafından değiştirilebilir.</li>
+                            <li>Bin kodu düzeni 3 farklı girdiden oluşur. "-" ayırıcıdır, "#" 0'dan başlayıp artacak sayı alanını belirler, Sayılar sayımın bu numaradan başlayacağını gösterir.</li>
+                            <li>"##-##" bin numaralarının "00-00"dan başlayıp artacağı anlamına gelir</li>
+                            <li>"1#-##" "10-00" ile başlar ve "10-01" ile devam eder</li>
+                            <li>"12-34-56" eğer # sayı alanı yoksa sadece bu bir bin oluşturulur</li>
+                            <li>"-" ayırıcı zorunlu değildir, "12##" tanımlanabilir</li>
                         </ul>
                     </div>
                 </div>

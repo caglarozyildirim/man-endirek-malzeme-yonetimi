@@ -13,13 +13,13 @@ IMMA DEVELOPER DOCUMENTATION
 
 SCREEN: 10 SRM RC - SRM Request Creation
 FILE: srm-request.html
-LAST UPDATED: 2025-12-18
+LAST UPDATED: 2025-12-23
 
 --------------------------------------------------------------------------------
 RELATED DATABASE TABLES
 --------------------------------------------------------------------------------
 
-TABLE: SRM Request Header
+TABLE: SRM Request Header (Data Structure IMMA.xlsx)
 | Field Name              | Type     | Length | Description                       |
 |-------------------------|----------|--------|-----------------------------------|
 | SRM Request number      | int      | 12     | Primary key - Otomatik oluşturulur|
@@ -32,7 +32,7 @@ TABLE: SRM Request Header
 | Contract number         | int      | 10     | Sözleşme numarası (varsa)         |
 | SRM Number              | int      | 10     | SAP SRM numarası                  |
 
-TABLE: SRM Request Item
+TABLE: SRM Request Item (Data Structure IMMA.xlsx)
 | Field Name                        | Type     | Length | Description                    |
 |-----------------------------------|----------|--------|--------------------------------|
 | SRM Request item id               | int      | 16     | Primary key                    |
@@ -48,53 +48,171 @@ TABLE: SRM Request Item
 | Ordered quantity                  | float    | 14     | Siparişe dönüşen miktar        |
 | Request closed check box          | bool     | -      | Talep kapatıldı mı?            |
 
-TABLE: Supplier Material Info Record (Tedarikçi-Malzeme ilişkisi)
-| Field Name                | Type     | Length | Description                       |
-|---------------------------|----------|--------|-----------------------------------|
-| Info record Id            | int      | 8      | Primary key                       |
-| Supplier Id               | int      | 8      | Tedarikçi ID                      |
-| Material Number           | text     | 13     | Malzeme numarası                  |
-| Unit price                | float    | 14     | Birim fiyat                       |
-| Currency code             | text     | 3      | Para birimi                       |
-| Contract number           | int      | 10     | Sözleşme numarası                 |
-| Contract start date       | date     | -      | Sözleşme başlangıç               |
-| Contract end date         | date     | -      | Sözleşme bitiş                    |
-| Preferred order           | int      | 2      | Öncelik sırası (1=birincil)       |
-| Inactivation check        | bool     | -      | İnaktif mi?                       |
-| Lead time (business days) | int      | 4      | Tedarik süresi (iş günü)          |
+TABLE: Material Supplier Info (Data Structure IMMA.xlsx - Tam Liste)
+| Field Name                         | Type  | Length | Description                       |
+|------------------------------------|-------|--------|-----------------------------------|
+| Material Supplier Inforecord Id    | int   | 8      | Primary key                       |
+| Material number                    | text  | 13     | Malzeme numarası                  |
+| Supplier Id                        | int   | 8      | Tedarikçi ID                      |
+| Contract number                    | int   | 10     | Sözleşme numarası                 |
+| Contract Quantity limit            | float | 15     | Sözleşme miktar limiti            |
+| Contract start date                | date  | -      | Sözleşme başlangıç                |
+| Contract end date                  | date  | -      | Sözleşme bitiş                    |
+| Used limit                         | float | 15     | Kullanılan limit                  |
+| Currency code                      | text  | 3      | Para birimi                       |
+| Supplier material number           | text  | 32     | Tedarikçi malzeme numarası        |
+| Supplier material Title            | text  | 32     | Tedarikçi malzeme adı             |
+| Producer name                      | text  | 32     | Üretici adı                       |
+| Producer model name                | text  | 64     | Üretici model adı                 |
+| Supplier Notes                     | text  | 128    | Tedarikçi notları                 |
+| Preferred order of the supplier    | char  | 1      | Öncelik sırası (1=birincil)       |
+| Minimum ordering quantity          | float | 15     | Minimum sipariş miktarı           |
+| Order batch quantity               | float | 15     | Sipariş parti miktarı             |
+| Contract item number               | int   | 4      | Sözleşme satır numarası           |
+| Inactivation check                 | bool  | -      | İnaktif mi?                       |
+| Average delivery time as business days | int | -   | Ortalama teslimat süresi (gün)    |
+| Unit quantity in a package         | float | 15     | Paket içi birim                   |
+
+NOT: "Unit price" alanı Data Structure'da bu tabloda BULUNMUYOR.
+Fiyat bilgisi SRM Request Item tablosunda "Item Prize" olarak tutulur.
+
+--------------------------------------------------------------------------------
+SCREEN FIELDS (UI Elements) - Screen Designs: 10 SRM RC
+--------------------------------------------------------------------------------
+
+HEADER SECTION:
+- SRM Request number (readonly) - Otomatik oluşturulur
+- Supplier number (search/dropdown) - Tedarikçi seçimi
+- Supplier title 1 (readonly) - Seçilen tedarikçi adı
+- Supplier title 2 (readonly) - Seçilen tedarikçi adı 2
+- Currency code (dropdown) - Para birimi (EUR, USD, TRY)
+- Contract number (readonly) - Sözleşme numarası (varsa)
+- Sub total (readonly) - Toplam tutar (hesaplanan)
+- Created by user info (readonly) - Oluşturan kullanıcı
+- Creation date time (readonly) - Oluşturma tarihi
+
+ORDER INFORMATION:
+- Order date (date) - Sipariş tarihi
+- Expected delivery date (date) - Beklenen teslimat tarihi
+- SRM Number (text) - SAP SRM numarası (transfer sonrası)
+
+ITEM TABLE:
+| Column                          | Description                          |
+|--------------------------------|--------------------------------------|
+| Item no (Action: Chng)         | Satır numarası ve değiştir butonu    |
+| Material number                 | Malzeme numarası (arama)             |
+| Material title                  | Malzeme başlığı (readonly)           |
+| Unit of measure                 | Ölçü birimi                          |
+| Order quantity                  | Sipariş miktarı                      |
+| Unit Price                      | Birim fiyatı                         |
+| Item prize                      | Satır toplamı (hesaplanan)           |
+| Euro Unit Price                 | Euro birim fiyatı                    |
+
+HISTORY COLUMNS (Info için):
+- Last month's total issued quantity
+- Last second month's total issued quantity
+- Last third month's total issued quantity
+- Last year total issued quantity
+- Last second year total issues quantity
+- Last third year total issued quantity
+
+CONTRACT INFORMATION (Sözleşmeli malzemeler için):
+- Contract number
+- Open limit
+- End of contract date
+
+SRM SUGGESTION SECTION:
+- SRM Suggestions with info record assigned and grouped (table)
+- Convert all suggestion to SRM Request (button)
+
+ACTION BUTTONS:
+- Add Item (+) - Yeni satır ekle
+- Remove Item - Satır sil
+- Save - SRM taslak kaydet
+- Submit - SRM gönder
+- Transfer to SAP - SAP'a aktar
 
 --------------------------------------------------------------------------------
 BUSINESS RULES (İş Kuralları)
 --------------------------------------------------------------------------------
 
-TEDARİKÇİ SEÇİMİ:
-1. Birincil tedarikçi: Preferred order en DÜŞÜK değerli info record
-2. Aynı malzeme için birden fazla tedarikçi tanımlanabilir
-3. Sözleşmeli tedarikçi önceliklidir
-4. İnaktif info record kullanılamaz
+1. BİRİNCİL TEDARİKÇİ SEÇİMİ:
+   - Birincil tedarikçi, aktif info kayıtlarındaki "Tedarikçi tercih sırası" alanında en düşük değere sahip tedarikçi olarak otomatik seçilir
+   - Kullanıcı tarafından manuel olarak değiştirilebilir
 
-SRM OLUŞTURMA KURALLARI:
-1. SRM'ler TEDARİKÇİ ve SÖZLEŞME bazında gruplanır
-2. Aynı tedarikçi + aynı sözleşme = TEK SRM
-3. Sözleşmeli ve sözleşmesiz malzemeler AYRI SRM'de olmalı
-4. Farklı tedarikçiler = AYRI SRM'ler
+2. ALTERNATİF TEDARİKÇİ GÖRÜNTÜLEME:
+   - Kullanıcı tedarikçi numarası veya adına tıkladığında alternatif tedarikçi ve tüm fiyat alternatifleri görülebilir olmalıdır
+   - Kullanıcı alternatif tedarikçileri karşılaştırabilir ve seçebilir
 
-FİYAT DEĞİŞİKLİĞİ:
-1. Info record fiyatı değiştirilirse:
-   - Mevcut info record İNAKTİF yapılır
-   - YENİ info record oluşturulur
-2. Fiyat geçmişi böylece korunur
-3. Sözleşme bitiş tarihi geçmişse info record otomatik İNAKTİF
+3. GÖRÜNÜRLÜK YETKİLERİ:
+   - SL (Shift Leader) ve üstü kullanıcılar açık SRM taleplerini ve satınalma siparişlerini görebilir
+   - Erişim kontrolü kullanıcı rol hiyerarşisine göre yapılır
 
-SÖZLEŞME KURALLARI:
-1. Sözleşme numarası = SAP sözleşme referansı
-2. Contract end date < bugün ise info record kullanılamaz
-3. Sözleşmeli malzeme fiyatı sözleşmeden gelir
+4. SRM GÖRÜNTÜLEME MODU:
+   - SRM talep ekranı, başlık ve kalem bilgilerini birlikte içeren bir görüntüleme moduna sahiptir
+   - Tüm SRM detaylarının tek görünümde kapsamlı gösterimi
 
-MRP ENTEGRASYONU:
-1. MRP SRM Suggestion oluşturur
-2. Suggestion'lar SRM'ye dönüştürülür
-3. Transferred = true olunca suggestion kapatılır
+5. TEDARİKÇİ TERCİH SIRASI:
+   - Bu alan tedarikçinin tercih sırasını belirler
+   - Boşsa, tedarikçi en az tercih edilen olarak kabul edilir
+   - Sırası "1" olan tedarikçi varsayılan/birincil tedarikçidir
+
+6. INFO KAYDI AKTİVASYON DURUMU:
+   - Tedarikçi malzeme info kaydı inaktif yapılırsa, geçerli olmaz
+   - Sözleşme tarihi geçmişse, info kaydı otomatik olarak inaktif yapılır
+
+7. TEDARİKÇİ VE SÖZLEŞMEYE GÖRE SRM GRUPLAMA:
+   - SRM'ler tedarikçi ve sözleşme bazında oluşturulur
+   - Sözleşmeli ve sözleşmesiz malzemeler aynı SRM içinde karıştırılamaz
+   - Her benzersiz tedarikçi-sözleşme kombinasyonu ayrı SRM gerektirir
+
+8. SRM'NİN SAP'A TRANSFERİ:
+   - SRM numaraları SRM taleplerine girildiğinde, talep "SRM'ye Transfer Edildi" olarak onaylanır
+   - SAP'a transfer sonrası başka değişiklik yapılamaz
+   - Durum salt okunur olur
+
+9. MALZEME GRUBUNA GÖRE PO OLUŞTURMA:
+   - SRM'de farklı malzeme gruplarına ait malzemeler varsa, SAP MP2 sistemi her malzeme grubu için otomatik olarak farklı PO oluşturur
+   - Malzeme grubuna göre otomatik PO bölünmesi
+
+10. FİYAT DEĞİŞİKLİĞİ VE INFO KAYDI YÖNETİMİ:
+    - Tedarikçi malzeme info kaydı mevcutsa ve kullanıcı fiyatı manuel değiştirirse, mevcut info kaydı inaktif yapılır ve yeni bir info kaydı otomatik oluşturulur
+    - Bu kural sözleşmeler için GEÇERLİ DEĞİLDİR
+    - Fiyat geçmişi info kayıt versiyonlaması ile korunur
+
+11. SÖZLEŞME FİYATI DOĞRULAMA:
+    - Satınalma siparişi fiyatı, sözleşme fiyatına sahip aktif tedarikçi malzeme info kaydından farklıysa uyarı gösterilir
+    - Sözleşmeli kalemler için fiyat uyumsuzluğu uyarıları
+
+12. SÖZLEŞME AÇIK LİMİT HESAPLAMA:
+    - Sözleşme açık limiti = "Sözleşme limiti" - "Kullanılan limit" - "Açık SRM talepleri" - "Transfer edilmiş SRM Talebi"
+    - Gerçek zamanlı sözleşme limit takibi
+
+13. SİPARİŞ MİKTARI TAKİBİ VE KAPATMA:
+    - Açık satınalma siparişi kayıtları girildiğinde, kalemler ilgili SRM Talebindeki "Sipariş edilen miktar"a eklenir
+    - Sipariş edilen miktar sipariş miktarına ulaşırsa, SRM talep kalemlerinin "Talep kapatıldı" onay kutusu işaretlenir
+    - Tamamen sipariş edildiğinde otomatik talep kapatma
+
+14. DİSKALİFİYE TEDARİKÇİ KURALI:
+    - Tedarikçi disqualified (diskualifiye/pasif) olsa bile açık PO için mal kabul yapılabilir
+    - Ancak diskualifiye tedarikçi için yeni SRM talebi oluşturulamaz
+    - Bu kural mevcut siparişlerin tamamlanmasını sağlarken yeni siparişleri engeller
+
+15. KALEM VURGULAMA KURALI (Excel Screen Designs):
+    - Kullanıcı "Birim Fiyat" (Item Prize) ve "Tedarikçi SAP No" (Supplier Id) girdiğinde:
+      * İlgili kalem satırı arka plan rengi değiştirilir (vurgulanır)
+      * Yeni SRM Talebi şablonu otomatik olarak o tedarikçi için açılır
+    - Bu görsel geri bildirim kullanıcının hangi kalemlerde değişiklik yaptığını anlamasını sağlar
+
+16. SRM'YE TRANSFER ÖNCESİ DEĞİŞİKLİK KURALI (Excel Screen Designs):
+    - SRM SAP'a transfer edilmeden ÖNCE:
+      * Sipariş miktarı (Order Quantity) değiştirilebilir
+      * Kalem satırı silinebilir
+      * Birim fiyat düzenlenebilir
+    - SRM SAP'a transfer edildikten SONRA:
+      * Tüm alanlar READONLY olur
+      * Hiçbir değişiklik yapılamaz
+      * Sadece görüntüleme modu aktif kalır
 
 --------------------------------------------------------------------------------
 FIELD VALIDATIONS
@@ -160,6 +278,8 @@ SAP ENTEGRASYONU:
                         <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
                         <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
                         <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                        <a href="unit-of-measure-list.html" class="dropdown-item">Ölçü Birimleri</a>
+                        <a href="department-cost-center-list.html" class="dropdown-item">Departman-Masraf Merkezi</a>
                     </div>
                 </li>
                 <li class="nav-item">
@@ -212,6 +332,16 @@ SAP ENTEGRASYONU:
                         <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
                     </div>
                 </li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanıcı Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onayları</a>
+                    </div>
+                </li>
             </ul>
             <div class="navbar-user">
                 <span class="user-name">Ahmet Yılmaz</span>
@@ -258,39 +388,6 @@ SAP ENTEGRASYONU:
                     <div class="form-group col-3">
                         <label>Created by user info</label>
                         <input type="text" id="requestor" class="form-control" value="Mehmet Demir" readonly>
-                    </div>
-                    <div class="form-group col-3">
-                        <label>Status</label>
-                        <input type="text" id="status" class="form-control" value="Taslak" readonly>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group col-3">
-                        <label>Department</label>
-                        <input type="text" id="department" class="form-control" value="Üretim - Boyahane" readonly>
-                    </div>
-                    <div class="form-group col-3">
-                        <label>Priority <span class="required">*</span></label>
-                        <select class="form-control" id="prioritySelect">
-                            <option value="1">1 - Düşük</option>
-                            <option value="2" selected>2 - Normal</option>
-                            <option value="3">3 - Yüksek</option>
-                            <option value="4">4 - Acil</option>
-                        </select>
-                    </div>
-                    <div class="form-group col-3">
-                        <label>Cost Center <span class="required">*</span></label>
-                        <select class="form-control" id="costCenterSelect">
-                            <option value="">Seçiniz...</option>
-                            <option value="CC001" selected>CC001 - Üretim</option>
-                            <option value="CC002">CC002 - Bakım</option>
-                            <option value="CC003">CC003 - Kalite</option>
-                            <option value="CC004">CC004 - Lojistik</option>
-                        </select>
-                    </div>
-                    <div class="form-group col-3">
-                        <label>Expected delivery date <span class="required">*</span></label>
-                        <input type="date" id="deliveryDate" class="form-control" min="2025-12-22">
                     </div>
                 </div>
                 <!-- Row 3: Currency and SRM Number - Data Structure 10 SRM RC -->
@@ -437,11 +534,14 @@ SAP ENTEGRASYONU:
                                 <td class="item-price">16.583,00</td>
                                 <td class="item-total"><strong>165.830,00</strong></td>
                                 <td>
-                                    <select class="form-control form-control-sm item-supplier">
-                                        <option value="">Seçiniz...</option>
-                                        <option value="SUP001" selected>ABC Endustriyel</option>
-                                        <option value="SUP002">XYZ Teknik</option>
-                                    </select>
+                                    <div class="input-group">
+                                        <select class="form-control form-control-sm item-supplier">
+                                            <option value="">Seçiniz...</option>
+                                            <option value="SUP001" selected>ABC Endustriyel</option>
+                                            <option value="SUP002">XYZ Teknik</option>
+                                        </select>
+                                        <button class="btn btn-sm btn-outline alt-supplier-btn" title="Alternatif Tedarikçiler" data-material="01.00001-0001">📋</button>
+                                    </div>
                                 </td>
                                 <td><input type="date" class="form-control form-control-sm item-delivery" value="2025-12-30"></td>
                                 <td><input type="text" class="form-control form-control-sm item-notes" placeholder="Not..."></td>
@@ -461,11 +561,14 @@ SAP ENTEGRASYONU:
                                 <td class="item-price">460,63</td>
                                 <td class="item-total"><strong>92.126,00</strong></td>
                                 <td>
-                                    <select class="form-control form-control-sm item-supplier">
-                                        <option value="">Seçiniz...</option>
-                                        <option value="SUP001" selected>ABC Endustriyel</option>
-                                        <option value="SUP002">XYZ Teknik</option>
-                                    </select>
+                                    <div class="input-group">
+                                        <select class="form-control form-control-sm item-supplier">
+                                            <option value="">Seçiniz...</option>
+                                            <option value="SUP001" selected>ABC Endustriyel</option>
+                                            <option value="SUP002">XYZ Teknik</option>
+                                        </select>
+                                        <button class="btn btn-sm btn-outline alt-supplier-btn" title="Alternatif Tedarikçiler" data-material="01.00002-0001">📋</button>
+                                    </div>
                                 </td>
                                 <td><input type="date" class="form-control form-control-sm item-delivery" value="2025-12-28"></td>
                                 <td><input type="text" class="form-control form-control-sm item-notes" placeholder="Not..." value="Acil"></td>
@@ -485,11 +588,14 @@ SAP ENTEGRASYONU:
                                 <td class="item-price">850,00</td>
                                 <td class="item-total"><strong>85.000,00</strong></td>
                                 <td>
-                                    <select class="form-control form-control-sm item-supplier">
-                                        <option value="">Seçiniz...</option>
-                                        <option value="SUP003" selected>Shell Türkiye</option>
-                                        <option value="SUP004">Castrol</option>
-                                    </select>
+                                    <div class="input-group">
+                                        <select class="form-control form-control-sm item-supplier">
+                                            <option value="">Seçiniz...</option>
+                                            <option value="SUP003" selected>Shell Türkiye</option>
+                                            <option value="SUP004">Castrol</option>
+                                        </select>
+                                        <button class="btn btn-sm btn-outline alt-supplier-btn" title="Alternatif Tedarikçiler" data-material="01.00015-0003">📋</button>
+                                    </div>
                                 </td>
                                 <td><input type="date" class="form-control form-control-sm item-delivery" value="2026-01-05"></td>
                                 <td><input type="text" class="form-control form-control-sm item-notes" placeholder="Not..."></td>
@@ -763,6 +869,39 @@ SAP ENTEGRASYONU:
         </div>
     </div>
 
+    <!-- Alternative Suppliers Modal - Business Rule 2: Tedarikçi numarasına tıklandığında alternatifler görüntülenir -->
+    <div class="modal" id="alternativeSuppliersModal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3>Alternative Suppliers - <span id="altSupplierMaterialNo"></span></h3>
+                <button class="modal-close" onclick="closeAltSuppliersModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info" style="margin-bottom: 15px;">
+                    <strong>Preferred order of the supplier:</strong> 1 = Birincil (varsayılan) tedarikçi. Düşük numara = yüksek öncelik.
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover" id="altSuppliersTable">
+                        <thead style="background: #f8f9fa;">
+                            <tr>
+                                <th style="width: 60px;">Preference Order</th>
+                                <th>Supplier Title</th>
+                                <th style="width: 120px;">Unit Price (TRY)</th>
+                                <th style="width: 120px;">Unit Price (EUR)</th>
+                                <th style="width: 100px;">Contract Status</th>
+                                <th style="width: 100px;">Lead Time</th>
+                                <th style="width: 80px;">Seç</th>
+                            </tr>
+                        </thead>
+                        <tbody id="altSuppliersTableBody">
+                            <!-- Dynamic content -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // ============================================
         // URL PARAMETER PARSING AND MODE SETUP
@@ -800,6 +939,86 @@ SAP ENTEGRASYONU:
             '03.00001-0001': { title: 'Kayis V-Belt A52', unit: 'AD', price: 320.00, suggestedQty: 30, last3Months: [8, 10, 7], last3Years: [95, 110, 105], openPo: 0, openSrm: 0 },
             '01.00015-0003': { title: 'Hidrolik Yağ ISO 46 - 20LT', unit: 'LT', price: 850.00, suggestedQty: 100, last3Months: [20, 25, 18], last3Years: [250, 280, 265], openPo: 0, openSrm: 20 }
         };
+
+        // ============================================
+        // ALTERNATIVE SUPPLIERS DATA - Material Supplier Info Record
+        // Screen Designs 10 SRM RC - Business Rule 2
+        // Preferred order of the supplier: 1 = birincil tedarikçi
+        // ============================================
+        const alternativeSuppliersData = {
+            '01.00001-0001': [
+                { preferenceOrder: 1, supplierTitle: 'ABC Endüstriyel San. Tic. Ltd. Şti.', priceTRY: 16583.00, priceEUR: 462.50, contractStatus: 'Active', leadTime: 7 },
+                { preferenceOrder: 2, supplierTitle: 'Siemens Sanayi ve Ticaret A.Ş.', priceTRY: 17250.00, priceEUR: 481.10, contractStatus: 'Active', leadTime: 14 },
+                { preferenceOrder: 3, supplierTitle: 'XYZ Teknik Makine A.Ş.', priceTRY: 15900.00, priceEUR: 443.60, contractStatus: 'No Contract', leadTime: 10 }
+            ],
+            '01.00002-0001': [
+                { preferenceOrder: 1, supplierTitle: 'SKF Türkiye San. ve Tic. Ltd. Şti.', priceTRY: 460.63, priceEUR: 12.85, contractStatus: 'Active', leadTime: 5 },
+                { preferenceOrder: 2, supplierTitle: 'ABC Endüstriyel San. Tic. Ltd. Şti.', priceTRY: 475.00, priceEUR: 13.25, contractStatus: 'Active', leadTime: 7 },
+                { preferenceOrder: null, supplierTitle: 'German Bearings GmbH', priceTRY: 520.00, priceEUR: 14.50, contractStatus: 'Active', leadTime: 21 }
+            ],
+            '02.00003-0001': [
+                { preferenceOrder: 1, supplierTitle: 'Bosch Rexroth Otomasyon San.', priceTRY: 8750.00, priceEUR: 244.05, contractStatus: 'Active', leadTime: 10 },
+                { preferenceOrder: 2, supplierTitle: 'XYZ Teknik Makine A.Ş.', priceTRY: 8450.00, priceEUR: 235.70, contractStatus: 'Active', leadTime: 7 }
+            ],
+            '02.00004-0001': [
+                { preferenceOrder: 1, supplierTitle: 'Siemens Sanayi ve Ticaret A.Ş.', priceTRY: 1250.00, priceEUR: 34.87, contractStatus: 'Active', leadTime: 14 },
+                { preferenceOrder: 2, supplierTitle: 'Bosch Rexroth Otomasyon San.', priceTRY: 1280.00, priceEUR: 35.71, contractStatus: 'Active', leadTime: 10 },
+                { preferenceOrder: null, supplierTitle: 'ABC Endüstriyel San. Tic. Ltd. Şti.', priceTRY: 1320.00, priceEUR: 36.82, contractStatus: 'No Contract', leadTime: 7 }
+            ],
+            '03.00001-0001': [
+                { preferenceOrder: 1, supplierTitle: 'XYZ Teknik Makine A.Ş.', priceTRY: 320.00, priceEUR: 8.93, contractStatus: 'Active', leadTime: 5 },
+                { preferenceOrder: null, supplierTitle: 'ABC Endüstriyel San. Tic. Ltd. Şti.', priceTRY: 340.00, priceEUR: 9.49, contractStatus: 'No Contract', leadTime: 7 }
+            ],
+            '01.00015-0003': [
+                { preferenceOrder: 1, supplierTitle: 'Shell Türkiye Petrol A.Ş.', priceTRY: 850.00, priceEUR: 23.71, contractStatus: 'Active', leadTime: 3 },
+                { preferenceOrder: 2, supplierTitle: 'Castrol Madeni Yağlar A.Ş.', priceTRY: 870.00, priceEUR: 24.27, contractStatus: 'Active', leadTime: 5 }
+            ]
+        };
+
+        // Alternative Suppliers Modal Functions
+        function openAltSuppliersModal(materialNo) {
+            const modal = document.getElementById('alternativeSuppliersModal');
+            const materialSpan = document.getElementById('altSupplierMaterialNo');
+            const tableBody = document.getElementById('altSuppliersTableBody');
+
+            materialSpan.textContent = materialNo;
+            tableBody.innerHTML = '';
+
+            const suppliers = alternativeSuppliersData[materialNo] || [];
+
+            if (suppliers.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #999; padding: 20px;">Bu malzeme için alternatif tedarikçi bulunamadı.</td></tr>';
+            } else {
+                suppliers.forEach(supplier => {
+                    const row = document.createElement('tr');
+                    const preferenceDisplay = supplier.preferenceOrder ? supplier.preferenceOrder : '-';
+                    const contractClass = supplier.contractStatus === 'Active' ? 'text-success' : 'text-warning';
+                    row.innerHTML = `
+                        <td style="text-align: center; font-weight: bold;">${preferenceDisplay}</td>
+                        <td>${supplier.supplierTitle}</td>
+                        <td style="text-align: right;">${new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2 }).format(supplier.priceTRY)}</td>
+                        <td style="text-align: right;">${new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2 }).format(supplier.priceEUR)}</td>
+                        <td class="${contractClass}">${supplier.contractStatus}</td>
+                        <td style="text-align: center;">${supplier.leadTime} gün</td>
+                        <td><button class="btn btn-sm btn-primary select-alt-supplier-btn" data-supplier="${supplier.supplierTitle}" data-price="${supplier.priceTRY}">Seç</button></td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+
+            modal.classList.add('show');
+        }
+
+        function closeAltSuppliersModal() {
+            document.getElementById('alternativeSuppliersModal').classList.remove('show');
+        }
+
+        // Close modal on backdrop click
+        document.getElementById('alternativeSuppliersModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeAltSuppliersModal();
+            }
+        });
 
         // ============================================
         // SRM REQUEST MOCK DATA (srm-list.html'deki kayıtlarla eşleşen)
@@ -1217,9 +1436,6 @@ SAP ENTEGRASYONU:
 
             // Header fields - Row 1 & 2
             document.getElementById('requestDate').disabled = isViewMode;
-            document.getElementById('prioritySelect').disabled = isViewMode;
-            document.getElementById('costCenterSelect').disabled = isViewMode;
-            document.getElementById('deliveryDate').disabled = isViewMode;
 
             // Header fields - Row 3 (Currency, SRM, Dates)
             document.getElementById('currencyCode').disabled = isViewMode;
@@ -1283,11 +1499,6 @@ SAP ENTEGRASYONU:
             document.getElementById('requestNo').value = data.requestNo;
             document.getElementById('requestDate').value = data.requestDate;
             document.getElementById('requestor').value = data.requestor;
-            document.getElementById('status').value = data.status;
-            document.getElementById('department').value = data.department;
-            document.getElementById('prioritySelect').value = data.priority;
-            document.getElementById('costCenterSelect').value = data.costCenter;
-            document.getElementById('deliveryDate').value = data.deliveryDate;
             document.getElementById('currencyCode').value = data.currencyCode;
             document.getElementById('srmNumber').value = data.srmNumber || '';
             document.getElementById('orderDate').value = data.orderDate || '';
@@ -1375,14 +1586,6 @@ SAP ENTEGRASYONU:
             // ============================================
             updateHistoricalData();
 
-            // ============================================
-            // UPDATE BUDGET DISPLAY
-            // ============================================
-            const costCenterSelect = document.getElementById('costCenterSelect');
-            const selectedOption = costCenterSelect.options[costCenterSelect.selectedIndex];
-            if (selectedOption) {
-                document.getElementById('budgetCostCenter').textContent = selectedOption.text;
-            }
         }
 
         async function initializePage() {
@@ -1669,6 +1872,13 @@ SAP ENTEGRASYONU:
             if (e.target.classList.contains('material-search-btn')) {
                 openModal();
             }
+            // Alternative Suppliers button - Business Rule 2
+            if (e.target.classList.contains('alt-supplier-btn')) {
+                const materialNo = e.target.getAttribute('data-material');
+                if (materialNo) {
+                    openAltSuppliersModal(materialNo);
+                }
+            }
         });
 
         // Modal close button
@@ -1702,12 +1912,15 @@ SAP ENTEGRASYONU:
                 <td class="item-price">${formattedPrice}</td>
                 <td class="item-total"><strong>${formattedPrice}</strong></td>
                 <td>
-                    <select class="form-control form-control-sm item-supplier">
-                        <option value="">Seçiniz...</option>
-                        <option value="SUP001">ABC Endustriyel</option>
-                        <option value="SUP002">XYZ Teknik</option>
-                        <option value="SUP003">Shell Türkiye</option>
-                    </select>
+                    <div class="input-group">
+                        <select class="form-control form-control-sm item-supplier">
+                            <option value="">Seçiniz...</option>
+                            <option value="SUP001">ABC Endustriyel</option>
+                            <option value="SUP002">XYZ Teknik</option>
+                            <option value="SUP003">Shell Türkiye</option>
+                        </select>
+                        <button class="btn btn-sm btn-outline alt-supplier-btn" title="Alternatif Tedarikçiler" data-material="${materialNo}">📋</button>
+                    </div>
                 </td>
                 <td><input type="date" class="form-control form-control-sm item-delivery"></td>
                 <td><input type="text" class="form-control form-control-sm item-notes" placeholder="Not..."></td>
@@ -1813,13 +2026,7 @@ SAP ENTEGRASYONU:
         document.getElementById('submitBtn').addEventListener('click', function() {
             const { mode } = getUrlParams();
             const requestNo = document.getElementById('requestNo').value;
-            const costCenter = document.getElementById('costCenterSelect').value;
             const total = document.getElementById('grandTotal').textContent;
-
-            if (!costCenter) {
-                alert('Lütfen maliyet merkezini seçiniz.');
-                return;
-            }
 
             if (confirm(`SRM Talep ${mode === 'edit' ? 'güncellenecek' : 'gönderilecek'}!\n\nSRM Request number: ${requestNo}\nTotal value: ${total}\n\nOnay akışı başlatılacak. Devam etmek istiyor musunuz?`)) {
                 alert(`Talep başarıyla ${mode === 'edit' ? 'güncellendi' : 'gönderildi'}!\n\nSRM Request number: ${requestNo}\nStatus: Onay Bekliyor\n\nSL onayı bekleniyor.`);
@@ -1991,6 +2198,7 @@ SAP ENTEGRASYONU:
             <div class="dev-docs-body">
                 <div class="dev-docs-tabs">
                     <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('formFields')">Form Alanları</button>
                     <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
                     <button class="dev-tab" onclick="showDevTab('validations')">Validasyonlar</button>
                 </div>
@@ -2019,6 +2227,8 @@ SAP ENTEGRASYONU:
                             <tr><td>Order Quantity</td><td>float</td><td>15</td><td>Sipariş miktarı</td></tr>
                             <tr><td>Item Prize</td><td>float</td><td>14</td><td>Birim fiyatı</td></tr>
                             <tr><td>Supplier Material info record Id</td><td>int</td><td>8</td><td>Info record referansı</td></tr>
+                            <tr><td>Created by user info</td><td>int</td><td>8</td><td>Oluşturan kullanıcı</td></tr>
+                            <tr><td>Creation date time</td><td>datetime</td><td>-</td><td>Oluşturma tarihi</td></tr>
                             <tr><td>SRM ItemNumber</td><td>int</td><td>4</td><td>Satır numarası</td></tr>
                             <tr><td>Ordered quantity</td><td>float</td><td>14</td><td>Siparişe dönüşen miktar</td></tr>
                             <tr><td>Request closed check box</td><td>bool</td><td>-</td><td>Talep kapatıldı mı?</td></tr>
@@ -2039,12 +2249,88 @@ SAP ENTEGRASYONU:
                         </tbody>
                     </table>
                 </div>
+                <div id="formFields" class="dev-tab-content">
+                    <h3>Header Section</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>SRM Request number</td><td>readonly</td><td>Otomatik oluşturulan talep numarası</td></tr>
+                            <tr><td>Supplier number *</td><td>search/dropdown</td><td>Tedarikçi arama ve seçimi</td></tr>
+                            <tr><td>Supplier title 1</td><td>readonly</td><td>Seçilen tedarikçi adı</td></tr>
+                            <tr><td>Supplier title 2</td><td>readonly</td><td>Seçilen tedarikçi adı 2</td></tr>
+                            <tr><td>Currency code *</td><td>dropdown</td><td>Para birimi (EUR, USD, TRY)</td></tr>
+                            <tr><td>Contract number</td><td>readonly</td><td>Sözleşme numarası (varsa)</td></tr>
+                            <tr><td>Sub total</td><td>readonly</td><td>Toplam tutar (hesaplanan)</td></tr>
+                            <tr><td>Created by user info</td><td>readonly</td><td>Oluşturan kullanıcı</td></tr>
+                            <tr><td>Creation date time</td><td>readonly</td><td>Oluşturma tarihi</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Order Information</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Order date *</td><td>date</td><td>Sipariş tarihi</td></tr>
+                            <tr><td>Expected delivery date *</td><td>date</td><td>Beklenen teslimat tarihi</td></tr>
+                            <tr><td>SRM Number</td><td>text</td><td>SAP SRM numarası (transfer sonrası)</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Contract Information (Sözleşmeli malzemeler için)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Contract number</td><td>readonly</td><td>Sözleşme numarası</td></tr>
+                            <tr><td>Contract limit</td><td>readonly</td><td>Sözleşme limiti</td></tr>
+                            <tr><td>Open limit</td><td>readonly</td><td>Açık limit</td></tr>
+                            <tr><td>End of contract date</td><td>readonly</td><td>Sözleşme bitiş tarihi</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Item Table</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Kolon</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Item no</td><td>readonly</td><td>Satır numarası</td></tr>
+                            <tr><td>Material number *</td><td>search</td><td>Malzeme numarası arama</td></tr>
+                            <tr><td>Material title</td><td>readonly</td><td>Malzeme başlığı</td></tr>
+                            <tr><td>Unit of measure</td><td>readonly</td><td>Ölçü birimi</td></tr>
+                            <tr><td>Order quantity *</td><td>number</td><td>Sipariş miktarı</td></tr>
+                            <tr><td>Unit Price *</td><td>number</td><td>Birim fiyatı</td></tr>
+                            <tr><td>Item prize</td><td>readonly</td><td>Satır toplamı (hesaplanan)</td></tr>
+                            <tr><td>Euro Unit Price</td><td>readonly</td><td>Euro birim fiyatı</td></tr>
+                            <tr><td>Supplier</td><td>dropdown</td><td>Kalem bazlı tedarikçi seçimi</td></tr>
+                            <tr><td>Delivery date</td><td>date</td><td>Kalem bazlı teslimat tarihi</td></tr>
+                            <tr><td>Notes</td><td>text</td><td>Kalem notu</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Historical Data (Readonly)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Kolon</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Last month's total issued quantity</td><td>Son ay toplam çıkış</td></tr>
+                            <tr><td>Last second month's total issued</td><td>İki ay önceki çıkış</td></tr>
+                            <tr><td>Last third month's total issued</td><td>Üç ay önceki çıkış</td></tr>
+                            <tr><td>Last year total issued quantity</td><td>Geçen yıl toplam çıkış</td></tr>
+                            <tr><td>Last second year total issued</td><td>İki yıl önceki çıkış</td></tr>
+                            <tr><td>Last third year total issued</td><td>Üç yıl önceki çıkış</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Action Buttons</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Buton</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Add Item (+)</td><td>Yeni satır ekle</td></tr>
+                            <tr><td>Remove Item</td><td>Satır sil</td></tr>
+                            <tr><td>Save</td><td>SRM taslak kaydet</td></tr>
+                            <tr><td>Submit</td><td>SRM gönder</td></tr>
+                            <tr><td>Transfer to SAP</td><td>SAP'a aktar</td></tr>
+                        </tbody>
+                    </table>
+                </div>
                 <div id="businessRules" class="dev-tab-content">
                     <h3>İş Kuralları</h3>
                     <div class="rules-section">
                         <h4>🏢 Tedarikçi Seçimi</h4>
                         <ul>
-                            <li><strong>Birincil tedarikçi:</strong> Preferred order en DÜŞÜK değerli info record</li>
+                            <li><strong>Birincil tedarikçi:</strong> Tercih sırası en DÜŞÜK değerli info kayıt</li>
                             <li>Aynı malzeme için birden fazla tedarikçi tanımlanabilir</li>
                             <li>Sözleşmeli tedarikçi önceliklidir</li>
                             <li>İnaktif info record kullanılamaz</li>
@@ -2064,9 +2350,26 @@ SAP ENTEGRASYONU:
                         </ul>
                         <h4>🔄 MRP Entegrasyonu</h4>
                         <ul>
-                            <li>MRP SRM Suggestion oluşturur</li>
-                            <li>Suggestion'lar SRM'ye dönüştürülür</li>
-                            <li>Transferred = true olunca suggestion kapatılır</li>
+                            <li>MRP, SRM Önerisi oluşturur</li>
+                            <li>Öneriler SRM'ye dönüştürülür</li>
+                            <li>Transfer edildi = true olunca öneri kapatılır</li>
+                        </ul>
+                        <h4>⚠️ Diskualifiye Tedarikçi Kuralı</h4>
+                        <ul>
+                            <li><strong>Diskualifiye tedarikçi için YENİ SRM oluşturulamaz</strong></li>
+                            <li>Ancak mevcut açık PO için mal kabul YAPILABİLİR</li>
+                            <li>Bu kural mevcut siparişlerin tamamlanmasını sağlar</li>
+                        </ul>
+                        <h4>🎨 Kalem Vurgulama Kuralı</h4>
+                        <ul>
+                            <li>Birim fiyat + Tedarikçi SAP No girilince kalem <strong>VURGULANIR</strong></li>
+                            <li>Yeni SRM şablonu otomatik açılır</li>
+                            <li>Görsel geri bildirim sağlanır</li>
+                        </ul>
+                        <h4>✏️ Transfer Öncesi Değişiklik</h4>
+                        <ul>
+                            <li><strong>SAP'a transfer ÖNCESİ:</strong> Miktar değiştirilebilir, satır silinebilir</li>
+                            <li><strong>SAP'a transfer SONRASI:</strong> Tüm alanlar READONLY</li>
                         </ul>
                     </div>
                 </div>

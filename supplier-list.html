@@ -13,13 +13,24 @@ IMMA DEVELOPER DOCUMENTATION
 
 SCREEN: 8 SL - Supplier List
 FILE: supplier-list.html
-LAST UPDATED: 2025-12-18
+LAST UPDATED: 2025-12-23
 
-Aynı tablo yapısı supplier-data.html ile aynıdır.
-Detaylar için supplier-data.html dosyasına bakınız.
+TABLE: Supplier (Data Structure IMMA.xlsx)
+| Field Name                            | Type     | Length | Description                    |
+|---------------------------------------|----------|--------|--------------------------------|
+| Supplier Id                           | int      | 8      | Primary key                    |
+| Supplier SAP no                       | int      | 10     | SAP tedarikçi numarası         |
+| Supplier title 1                      | text     | 50     | Tedarikçi adı 1                |
+| Supplier title 2                      | text     | 50     | Tedarikçi adı 2                |
+| Created by user info                  | int      | 8      | Kaydı oluşturan kullanıcı ID   |
+| Creation date time                    | datetime | -      | Kayıt oluşturma tarihi/saati   |
+| Supplier status id                    | char     | 1      | 1:Active, 2:Disqualified, 3:Inactive |
+| Average delivery time as business days| int      | 4      | Ortalama teslimat süresi (iş günü) |
+
+NOT: Toplam 8 alan. Detaylı bilgi için supplier-data.html dosyasına bakınız.
 
 LIST FEATURES:
-- Filtreleme: Status (Active/Disqualified/Inactive)
+- Filtreleme: Status (Active/Disqualified/Inactive), Type (Yerli/İthalat/Konsinye)
 - Arama: Supplier title, SAP no
 - Sıralama: SAP no, Title
 - Detay linki: supplier-data.html?id=
@@ -55,6 +66,8 @@ LIST FEATURES:
                         <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
                         <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
                         <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                        <a href="unit-of-measure-list.html" class="dropdown-item">Ölçü Birimleri</a>
+                        <a href="department-cost-center-list.html" class="dropdown-item">Departman-Masraf Merkezi</a>
                     </div>
                 </li>
                 <li class="nav-item">
@@ -105,6 +118,16 @@ LIST FEATURES:
                         <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
                         <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
                         <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanıcı Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onayları</a>
                     </div>
                 </li>
             </ul>
@@ -412,8 +435,10 @@ LIST FEATURES:
                             <tr><td>Supplier SAP no</td><td>int</td><td>10</td><td>SAP tedarikçi numarası</td></tr>
                             <tr><td>Supplier title 1</td><td>text</td><td>50</td><td>Tedarikçi adı 1</td></tr>
                             <tr><td>Supplier title 2</td><td>text</td><td>50</td><td>Tedarikçi adı 2</td></tr>
+                            <tr><td>Created by user info</td><td>int</td><td>8</td><td>Kaydı oluşturan kullanıcı ID</td></tr>
+                            <tr><td>Creation date time</td><td>datetime</td><td>-</td><td>Kayıt oluşturma tarihi/saati</td></tr>
                             <tr><td>Supplier status id</td><td>char</td><td>1</td><td>1:Active, 2:Disqualified, 3:Inactive</td></tr>
-                            <tr><td>Average delivery time</td><td>int</td><td>4</td><td>Ortalama teslimat süresi (gün)</td></tr>
+                            <tr><td>Average delivery time as business days</td><td>int</td><td>4</td><td>Ortalama teslimat süresi (iş günü)</td></tr>
                         </tbody>
                     </table>
                     <h3>Supplier Status Kodları</h3>
@@ -426,14 +451,13 @@ LIST FEATURES:
                     </table>
                 </div>
                 <div id="businessRules" class="dev-tab-content">
-                    <h3>Liste Özellikleri</h3>
+                    <h3>İş Kuralları</h3>
                     <div class="rules-section">
-                        <ul>
-                            <li>Filtreleme: Status (Active/Disqualified/Inactive)</li>
-                            <li>Arama: Supplier title, SAP no</li>
-                            <li>Sıralama: SAP no, Title</li>
-                            <li>Detay linki: supplier-data.html?id=</li>
-                        </ul>
+                        <ol>
+                            <li>Birincil tedarikçi, aktif bilgi kayıtlarındaki "Tedarikçi tercih sırası" alanının en düşük değerine göre otomatik olarak seçilir ve değiştirilebilir.</li>
+                            <li>Tedarikçi tercih sırası alanı tedarikçinin tercih sırasını belirler. Boşsa en az tercih edilendir. Birincisi varsayılan tedarikçidir.</li>
+                            <li>Tedarikçi malzeme bilgi kaydı inaktif edilirse etkili olmayacaktır ve sözleşme tarihi geçmişse otomatik olarak inaktif edilecektir. Kontroller her gün başlangıçta yapılır. Bitiş tarihi değiştiğinde sistem kontrol eder ve yeni tarih geçmişteyse bilgi kaydını inaktif eder.</li>
+                        </ol>
                     </div>
                 </div>
             </div>

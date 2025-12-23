@@ -13,9 +13,9 @@ IMMA DEVELOPER DOCUMENTATION
 
 SCREEN: 17 MR L - Material Request List
 FILE: material-request-list.html
-LAST UPDATED: 2025-12-18
+LAST UPDATED: 2025-12-23
 
-Aynı tablo yapısı material-request.html ile aynıdır.
+Tablo yapısı için: material-request.html (Data Structure IMMA.xlsx - Material Request Header/Item tabloları)
 Detaylar için material-request.html dosyasına bakınız.
 
 LIST FEATURES:
@@ -24,6 +24,42 @@ LIST FEATURES:
 - Sıralama: Creation datetime, Week number
 - Status filtreleri: Beklemede, Onaylandı, Teslim, Reddedildi, İptal
 - Detay linki: material-request.html?mode=view&id=
+
+--------------------------------------------------------------------------------
+SCREEN FIELDS (UI Elements) - Screen Designs: 17 MR L
+--------------------------------------------------------------------------------
+
+FILTER SECTION:
+- Week number filter (dropdown) - Hafta seçimi
+- Department filter (dropdown) - Departman filtresi
+- Created by filter (dropdown) - Oluşturan kullanıcı
+- Status filter (dropdown) - Durum filtresi
+- Search box (text) - Request no veya malzeme ara
+
+REQUEST LIST TABLE:
+| Column              | Description                        |
+|---------------------|-----------------------------------|
+| Request number      | Talep numarası (link → detail)     |
+| Created by          | Oluşturan kullanıcı                |
+| Created for         | Talep sahibi                       |
+| Week                | Hafta numarası                     |
+| Department          | Departman                          |
+| Total Value (EUR)   | Toplam değer                       |
+| Item Count          | Kalem sayısı                       |
+| Status              | Durum (badge)                      |
+| SL Approval         | SL onay durumu                     |
+
+ACTION BUTTONS:
+- New Request - Yeni talep oluştur
+- Export to Excel - Excel'e aktar
+- Refresh - Yenile
+
+STATUS BADGES:
+- Beklemede (sarı)
+- Onaylandı (mavi)
+- Teslim Edildi (yeşil)
+- Reddedildi (kırmızı)
+- İptal (gri)
 
 ================================================================================
 -->
@@ -56,6 +92,8 @@ LIST FEATURES:
                         <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
                         <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
                         <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                        <a href="unit-of-measure-list.html" class="dropdown-item">Ölçü Birimleri</a>
+                        <a href="department-cost-center-list.html" class="dropdown-item">Departman-Masraf Merkezi</a>
                     </div>
                 </li>
                 <li class="nav-item">
@@ -106,6 +144,16 @@ LIST FEATURES:
                         <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
                         <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
                         <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanıcı Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onayları</a>
                     </div>
                 </li>
             </ul>
@@ -1542,10 +1590,12 @@ LIST FEATURES:
             <div class="dev-docs-body">
                 <div class="dev-docs-tabs">
                     <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('formFields')">Form Alanları</button>
                     <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
                 </div>
                 <div id="dataStructure" class="dev-tab-content active">
-                    <h3>Material Request Header Tablosu</h3>
+                    <h3>Material Request Header - Liste Alanları (19 alandan 8'i)</h3>
+                    <p style="color:#aaa;font-size:12px;">Tam alan listesi için: <a href="material-request.html" style="color:#667eea;">material-request.html</a></p>
                     <table class="dev-table"><thead><tr><th>Field Name</th><th>Type</th><th>Length</th><th>Description</th></tr></thead>
                         <tbody>
                             <tr><td>Material request header Id</td><td>int</td><td>12</td><td>Primary key</td></tr>
@@ -1554,12 +1604,119 @@ LIST FEATURES:
                             <tr><td>Creation date time</td><td>datetime</td><td>-</td><td>Oluşturma tarihi</td></tr>
                             <tr><td>Selected week number</td><td>int</td><td>2</td><td>Seçilen hafta</td></tr>
                             <tr><td>Requesting department</td><td>text</td><td>8</td><td>Talep eden departman</td></tr>
-                            <tr><td>Total Euro Value</td><td>float</td><td>15</td><td>Toplam Euro değer</td></tr>
+                            <tr><td>Total Euro Value of request</td><td>float</td><td>15</td><td>Toplam Euro değer</td></tr>
                             <tr><td>SL approval check</td><td>bool</td><td>-</td><td>SL onay durumu</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Material Request Item - Liste Detayları (13 alandan 6'sı)</h3>
+                    <table class="dev-table"><thead><tr><th>Field Name</th><th>Type</th><th>Length</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td>Material request item id</td><td>int</td><td>12</td><td>Primary key</td></tr>
+                            <tr><td>Material request item no</td><td>int</td><td>4</td><td>Satır numarası</td></tr>
+                            <tr><td>Material number</td><td>text</td><td>13</td><td>Malzeme numarası</td></tr>
+                            <tr><td>Requested quantity</td><td>float</td><td>15</td><td>Talep edilen miktar</td></tr>
+                            <tr><td>Delivered quantity</td><td>float</td><td>15</td><td>Teslim edilen miktar</td></tr>
+                            <tr><td>Item total Euro value</td><td>float</td><td>15</td><td>Satır Euro değeri</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="formFields" class="dev-tab-content">
+                    <h3>Filtre Alanları</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Material Request header Id</td><td>text (maxlength=12)</td><td>Talep numarasına göre arama</td></tr>
+                            <tr><td>Status</td><td>select</td><td>Taslak/Onay Bekliyor/Onaylandı/Transfer Bekleniyor/Tamamlandı/Reddedildi</td></tr>
+                            <tr><td>Created by user info</td><td>select</td><td>Oluşturan kullanıcı filtresi</td></tr>
+                            <tr><td>Department</td><td>select</td><td>Departman filtresi</td></tr>
+                            <tr><td>Start Date</td><td>date</td><td>Başlangıç tarihi</td></tr>
+                            <tr><td>End Date</td><td>date</td><td>Bitiş tarihi</td></tr>
+                            <tr><td>Week</td><td>number</td><td>Hafta numarası (1-53)</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Liste Tablosu Kolonları</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Kolon</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Material Request header Id</td><td>Talep numarası (link → detay)</td></tr>
+                            <tr><td>Creation date time</td><td>Oluşturma tarihi</td></tr>
+                            <tr><td>Selected week number</td><td>Hafta numarası</td></tr>
+                            <tr><td>Created by user info</td><td>Oluşturan kullanıcı</td></tr>
+                            <tr><td>Requesting department</td><td>Departman</td></tr>
+                            <tr><td>Item Count</td><td>Kalem sayısı (hesaplanan)</td></tr>
+                            <tr><td>Status</td><td>Durum badge</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>View Modal Alanları (19 alan)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Özellik</th></tr></thead>
+                        <tbody>
+                            <tr><td>Material Request header Id</td><td>text</td><td>readonly</td></tr>
+                            <tr><td>Creation date time</td><td>text</td><td>readonly</td></tr>
+                            <tr><td>Selected week number</td><td>text</td><td>readonly</td></tr>
+                            <tr><td>Selected weeks first day</td><td>text</td><td>readonly</td></tr>
+                            <tr><td>Requesting department</td><td>text</td><td>readonly</td></tr>
+                            <tr><td>Cost Center Code</td><td>text</td><td>readonly</td></tr>
+                            <tr><td>SL user info</td><td>text</td><td>readonly</td></tr>
+                            <tr><td>Created by user info</td><td>text</td><td>readonly</td></tr>
+                            <tr><td>Created for user info</td><td>text</td><td>readonly</td></tr>
+                            <tr><td>Requesting user info</td><td>text</td><td>readonly</td></tr>
+                            <tr><td>Description for the request</td><td>textarea</td><td>readonly</td></tr>
+                            <tr><td>Total Euro Value of request</td><td>text</td><td>readonly</td></tr>
+                            <tr><td>Over budget value</td><td>text</td><td>readonly</td></tr>
+                            <tr><td>Budget Id</td><td>text</td><td>readonly</td></tr>
+                            <tr><td>Over budget check</td><td>text</td><td>readonly</td></tr>
+                            <tr><td>SL approval check</td><td>text</td><td>readonly</td></tr>
+                            <tr><td>SL approved by user info</td><td>text</td><td>readonly</td></tr>
+                            <tr><td>SL approval date time</td><td>text</td><td>readonly</td></tr>
+                            <tr><td>Delivery Locations</td><td>text</td><td>readonly (5 teslimat noktası)</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Edit Modal Alanları (Taslak için)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Özellik</th></tr></thead>
+                        <tbody>
+                            <tr><td>Selected week number</td><td>number (1-53)</td><td>zorunlu</td></tr>
+                            <tr><td>Selected weeks first day</td><td>date</td><td>otomatik hesaplanan</td></tr>
+                            <tr><td>Requesting department</td><td>select</td><td>zorunlu</td></tr>
+                            <tr><td>Cost Center Code</td><td>text (maxlength=10)</td><td>departmana göre</td></tr>
+                            <tr><td>Created For User</td><td>select</td><td>opsiyonel</td></tr>
+                            <tr><td>Delivery Location</td><td>select</td><td>5 teslimat noktası</td></tr>
+                            <tr><td>Description for the Request</td><td>textarea (maxlength=256)</td><td>opsiyonel</td></tr>
                         </tbody>
                     </table>
                 </div>
                 <div id="businessRules" class="dev-tab-content">
+                    <h3>Malzeme Talebi İş Kuralları</h3>
+                    <div class="rules-section">
+                        <h4>Temel Kurallar</h4>
+                        <ul>
+                            <li><strong>Maliyet Görünürlüğü:</strong> Malzeme maliyeti talep edene GÖSTERİLMELİDİR</li>
+                            <li><strong>FIFO Kuralı:</strong> Stok otomatik tahsis edilir, manuel olarak yeniden tahsis EDİLEMEZ. İlk çıkarılan malzeme en eski fiyata sahiptir</li>
+                            <li><strong>Depolama Tipleri:</strong> Depo, Lokasyon ve Raflar ÜÇ farklı depolama tipidir</li>
+                            <li><strong>Blokeli Malzemeler:</strong> Görülebilir ancak SEÇİLEMEZ. Kullanıcılar bloklama nedenini ve yeniden değerlendirme tarihini görür</li>
+                            <li><strong>Çoklu Maliyetler:</strong> Seçerken malzeme için birden fazla maliyet gösterilir. Stok FIFO kurallarına göre seçilir</li>
+                            <li><strong>Rezervasyon:</strong> Malzeme talebe eklendiği anda çıkışa kadar rezerve edilir</li>
+                            <li><strong>Stok Limitleri:</strong> Kullanıcı mevcut stoktan fazlasını talep EDEMEZ. Stok yoksa görüntüleyebilir ancak talep edemez</li>
+                            <li><strong>Otomatik Öneri:</strong> Malzeme kodu veya açıklamasında 3 karakterden sonra</li>
+                            <li><strong>Onay Hatırlatmaları:</strong> 3. ve 6. gün onaylayıcıya, 7. gün onaylayıcı VE yöneticiye</li>
+                            <li><strong>Yöneticiler/SL'ler:</strong> BT sistemlerinden otomatik alınır</li>
+                            <li><strong>Malzeme Limitleri:</strong> Kişi başına haftalık limit ayarlanabilir. Sıfır talep edilemez demektir</li>
+                            <li><strong>Hafta Numarası:</strong> ZORUNLU, varsayılan oluşturma haftasıdır</li>
+                            <li><strong>Aşan Miktar:</strong> Bir kayıt yetmediğinde diğer stok kayıtlarına atanır</li>
+                            <li><strong>Stok Mevcudiyeti:</strong> Malzeme girildiğinde bilgi görüntülenir</li>
+                            <li><strong>Teslimat Lokasyonu:</strong> SEÇİLMELİDİR, iş istasyonları ile 4 seviyeli</li>
+                            <li><strong>Onay Bitişi:</strong> Son onay tamamlandığında tarih/saat doldurulur</li>
+                            <li><strong>Maliyet Merkezleri:</strong> Departmanlara atanır. Birden fazla atanabilir. ZORUNLU</li>
+                            <li><strong>Talep Eden Kullanıcı Bilgisi:</strong> Alanlar talep oluşturucu tarafından varsayılan doldurulur</li>
+                            <li><strong>Alternatif Onaylayıcı:</strong> Departman yöneticileri kendi adlarına atayabilir</li>
+                            <li><strong>Para Birimi:</strong> Tüm bütçe ve maliyetler Euro cinsindendir</li>
+                            <li><strong>FIFO Katı:</strong> İlk çıkarılan malzeme en eski fiyata sahiptir</li>
+                            <li><strong>Rezerve Gösterimi:</strong> Rezerve malzemeler ve fiyatlar yeni satırlarla gösterilir</li>
+                            <li><strong>SRM Teslimat Tarihi:</strong> Kalemlerdeki en eski beklenen teslimat tarihi</li>
+                            <li><strong>Maliyet Merkezi Şartı:</strong> Departmanın maliyet merkezi yoksa kullanıcı talep yapamaz</li>
+                        </ul>
+                    </div>
                     <h3>Status Akışı</h3>
                     <div class="rules-section">
                         <ul>

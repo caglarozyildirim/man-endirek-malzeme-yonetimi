@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Departman-Masraf Merkezi Iliskisi - IMMA</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .filter-section { background: #f8f9fa; padding: 16px; border-radius: 6px; margin-bottom: 20px; }
+        .filter-row { display: flex; gap: 12px; align-items: flex-end; }
+        .filter-group { flex: 1; }
+        .filter-group label { display: block; margin-bottom: 4px; font-size: 0.875rem; font-weight: 500; color: #555; }
+        .filter-actions { display: flex; gap: 8px; }
+        .card-header-actions { display: flex; justify-content: space-between; align-items: center; }
+        .card-header-actions h3 { margin: 0; }
+        .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .action-buttons { display: flex; gap: 5px; white-space: nowrap; }
+        .action-buttons .btn { padding: 4px 10px; font-size: 12px; }
+        .table th:last-child, .table td:last-child { min-width: 180px; }
+        .status-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+        .status-active { background: #d4edda; color: #155724; }
+        .status-pending { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<!--
+================================================================================
+IMMA DEVELOPER DOCUMENTATION
+================================================================================
+
+SCREEN: 30 DCC - Department and Cost Center Relation (List)
+FILE: department-cost-center-list.html
+LAST UPDATED: 2025-12-23
+
+--------------------------------------------------------------------------------
+RELATED DATABASE TABLES
+--------------------------------------------------------------------------------
+
+TABLE: Cost Center Department Assignment (Data Structure IMMA.xlsx)
+| Field Name                 | Type     | Length | Description                    |
+|----------------------------|----------|--------|--------------------------------|
+| Assignment Id              | int      | 8      | Primary key                    |
+| Cost center code           | text     | 8      | Masraf merkezi kodu            |
+| Department code            | text     | 8      | Departman kodu                 |
+| Created by user id         | int      | 8      | Olusturan kullanici ID         |
+| Creation date time         | datetime | -      | Olusturma tarihi               |
+| inactivation check         | bool     | -      | Inaktif durumu                 |
+
+--------------------------------------------------------------------------------
+IS KURALLARI
+--------------------------------------------------------------------------------
+
+1. Bir departman birden fazla masraf merkezine atanabilir
+2. Atama inaktif edilebilir ancak silinemez (audit trail)
+3. Sadece Indirect Material Key User, Accounting Key User ve Admin rolu atama yapabilir
+4. Aktif olmayan atamalar butce hesaplamalarinda kullanilmaz
+
+EXCEL SCREEN DESIGNS KURALLARI:
+5. BENZER KAYIT KONTROLÜ:
+   - Yeni atama oluşturulurken aynı Department-Cost Center kombinasyonu kontrol edilir
+   - AKTİF benzer kayıt varsa yeni kayıt oluşturulamaz
+   - İnaktif benzer kayıt varsa yeni kayda izin verilir
+
+6. OTOMATİK KAYDETME:
+   - Kullanıcı yeni satır oluşturup departman kodu ve masraf merkezi girerek kayıt oluşturabilir
+   - Tüm değişiklikler ve yeni kayıtlar otomatik kaydedilir
+   - Aktif benzer bir kayıt yoksa yeni kayıt oluşur
+
+================================================================================
+-->
+<body>
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">M</div>
+                <div class="brand-text">
+                    <span class="brand-name">IMMA</span>
+                    <span class="brand-subtitle">Endirek Malzeme Yonetimi</span>
+                </div>
+            </a>
+            <ul class="navbar-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="material-list.html" class="nav-link active">
+                        <span class="nav-icon">📦</span>
+                        Ana Veriler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-list.html" class="dropdown-item">Malzeme Listesi</a>
+                        <a href="supplier-list.html" class="dropdown-item">Tedarikci Listesi</a>
+                        <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
+                        <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
+                        <a href="material-group.html" class="dropdown-item">Malzeme Gruplari</a>
+                        <a href="unit-of-measure-list.html" class="dropdown-item">Olcu Birimleri</a>
+                        <a href="department-cost-center-list.html" class="dropdown-item active">Dept-Masraf Merkezi</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="mrp.html" class="nav-link">
+                        <span class="nav-icon">📈</span>
+                        MRP
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="srm-list.html" class="nav-link">
+                        <span class="nav-icon">🛒</span>
+                        Satinalma
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="srm-list.html" class="dropdown-item">Talep Listesi</a>
+                        <a href="goods-receipt.html" class="dropdown-item">Mal Kabul</a>
+                        <a href="po-list.html" class="dropdown-item">Satinalma Siparisleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="budget-management.html" class="nav-link">
+                        <span class="nav-icon">💰</span>
+                        Budget
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="budget-management.html" class="dropdown-item">Butce Yonetimi</a>
+                        <a href="budget-preference.html" class="dropdown-item">Butce Tercihleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="material-request-list.html" class="nav-link">
+                        <span class="nav-icon">📋</span>
+                        Talepler
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="transfer-list.html" class="nav-link">
+                        <span class="nav-icon">🏭</span>
+                        Stock
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="direct-issue.html" class="dropdown-item">Dogrudan Cikis</a>
+                        <a href="warehouse-transfer.html" class="dropdown-item">Depo Transferi</a>
+                        <a href="transfer-list.html" class="dropdown-item">Transfer Listesi</a>
+                        <a href="inventory-counting.html" class="dropdown-item">Sayim Islemleri</a>
+                        <a href="scrapping.html" class="dropdown-item">Hurda Islemleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanici Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onaylari</a>
+                    </div>
+                </li>
+            </ul>
+            <div class="navbar-user">
+                <span class="user-name">Ahmet Yilmaz</span>
+                <div class="user-avatar">AY</div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="modern-container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Departman - Masraf Merkezi Iliskisi</h1>
+                <p class="page-subtitle">Ana Veriler > Departman-Masraf Merkezi</p>
+            </div>
+        </div>
+
+        <!-- FILTER SECTION -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Filtre ve Arama</h3>
+            </div>
+            <div class="card-body">
+                <div class="filter-section">
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label>Departman Kodu</label>
+                            <input type="text" id="filterDept" class="form-control" maxlength="8" placeholder="Dept kodu...">
+                        </div>
+                        <div class="filter-group">
+                            <label>Masraf Merkezi Kodu</label>
+                            <input type="text" id="filterCC" class="form-control" maxlength="8" placeholder="CC kodu...">
+                        </div>
+                        <div class="filter-group">
+                            <label>Durum</label>
+                            <select id="filterStatus" class="form-control">
+                                <option value="">Tumu</option>
+                                <option value="active" selected>Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                        <div class="filter-actions">
+                            <button class="btn btn-primary" id="applyFilterBtn">Ara</button>
+                            <button class="btn btn-outline" id="clearFilterBtn">Temizle</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LIST SECTION -->
+        <div class="card" style="margin-top: 20px;">
+            <div class="card-header card-header-actions">
+                <h3>Atama Listesi</h3>
+                <a href="department-cost-center-detail.html?mode=create" class="btn btn-primary">+ Yeni Atama</a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                <table class="table table-hover" id="dccTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Atama Id</th>
+                            <th>Departman Kodu</th>
+                            <th>Masraf Merkezi Kodu</th>
+                            <th>Durum</th>
+                            <th>Islemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>DCC-001</td>
+                            <td>BAKIM001</td>
+                            <td>CC10001001</td>
+                            <td><span class="status-badge status-active">Active</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="department-cost-center-detail.html?mode=view&id=DCC-001" class="btn btn-sm btn-info">Goruntule</a>
+                                    <a href="department-cost-center-detail.html?mode=edit&id=DCC-001" class="btn btn-sm btn-primary">Duzenle</a>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>DCC-002</td>
+                            <td>URETIM01</td>
+                            <td>CC10002001</td>
+                            <td><span class="status-badge status-active">Active</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="department-cost-center-detail.html?mode=view&id=DCC-002" class="btn btn-sm btn-info">Goruntule</a>
+                                    <a href="department-cost-center-detail.html?mode=edit&id=DCC-002" class="btn btn-sm btn-primary">Duzenle</a>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>DCC-003</td>
+                            <td>KALITE01</td>
+                            <td>CC10003001</td>
+                            <td><span class="status-badge status-active">Active</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="department-cost-center-detail.html?mode=view&id=DCC-003" class="btn btn-sm btn-info">Goruntule</a>
+                                    <a href="department-cost-center-detail.html?mode=edit&id=DCC-003" class="btn btn-sm btn-primary">Duzenle</a>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>DCC-004</td>
+                            <td>LOJISTK1</td>
+                            <td>CC10004001</td>
+                            <td><span class="status-badge status-active">Active</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="department-cost-center-detail.html?mode=view&id=DCC-004" class="btn btn-sm btn-info">Goruntule</a>
+                                    <a href="department-cost-center-detail.html?mode=edit&id=DCC-004" class="btn btn-sm btn-primary">Duzenle</a>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td>DCC-005</td>
+                            <td>SATIN001</td>
+                            <td>CC10005001</td>
+                            <td><span class="status-badge status-active">Active</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="department-cost-center-detail.html?mode=view&id=DCC-005" class="btn btn-sm btn-info">Goruntule</a>
+                                    <a href="department-cost-center-detail.html?mode=edit&id=DCC-005" class="btn btn-sm btn-primary">Duzenle</a>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td>DCC-006</td>
+                            <td>ESKIDEP</td>
+                            <td>CC99999999</td>
+                            <td><span class="status-badge status-pending">Inactive</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="department-cost-center-detail.html?mode=view&id=DCC-006" class="btn btn-sm btn-info">Goruntule</a>
+                                    <a href="department-cost-center-detail.html?mode=edit&id=DCC-006" class="btn btn-sm btn-primary">Duzenle</a>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterDeptInput = document.getElementById('filterDept');
+            const filterCCInput = document.getElementById('filterCC');
+            const filterStatusSelect = document.getElementById('filterStatus');
+            const applyBtn = document.getElementById('applyFilterBtn');
+            const clearBtn = document.getElementById('clearFilterBtn');
+            const table = document.getElementById('dccTable');
+
+            function applyFilters() {
+                const filterDept = filterDeptInput.value.toLowerCase().trim();
+                const filterCC = filterCCInput.value.toLowerCase().trim();
+                const filterStatus = filterStatusSelect.value;
+                const rows = table.querySelectorAll('tbody tr');
+
+                rows.forEach(row => {
+                    const dept = row.cells[2].textContent.toLowerCase().trim();
+                    const cc = row.cells[3].textContent.toLowerCase().trim();
+                    const statusBadge = row.cells[4].querySelector('.status-badge');
+                    const status = statusBadge ? statusBadge.textContent.toLowerCase().trim() : '';
+                    let showRow = true;
+
+                    if (filterDept && !dept.includes(filterDept)) showRow = false;
+                    if (filterCC && !cc.includes(filterCC)) showRow = false;
+                    if (filterStatus === 'active' && status !== 'active') showRow = false;
+                    if (filterStatus === 'inactive' && status !== 'inactive') showRow = false;
+
+                    row.style.display = showRow ? '' : 'none';
+                });
+            }
+
+            function clearFilters() {
+                filterDeptInput.value = '';
+                filterCCInput.value = '';
+                filterStatusSelect.value = '';
+                table.querySelectorAll('tbody tr').forEach(row => row.style.display = '');
+            }
+
+            applyBtn.addEventListener('click', applyFilters);
+            clearBtn.addEventListener('click', clearFilters);
+            filterDeptInput.addEventListener('keypress', e => { if (e.key === 'Enter') applyFilters(); });
+            filterCCInput.addEventListener('keypress', e => { if (e.key === 'Enter') applyFilters(); });
+            applyFilters();
+        });
+    </script>
+
+    <!-- DEVELOPER DOCUMENTATION PANEL -->
+    <div id="devDocsPanel" class="dev-docs-panel">
+        <button class="dev-docs-toggle" onclick="toggleDevDocs()">📋 Gelistirici Dokumantasyonu</button>
+        <div class="dev-docs-content" id="devDocsContent">
+            <div class="dev-docs-header">
+                <h2>📋 30 DCC - Department Cost Center Relation</h2>
+                <button class="dev-docs-close" onclick="toggleDevDocs()">✕</button>
+            </div>
+            <div class="dev-docs-body">
+                <div class="dev-docs-tabs">
+                    <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapilari</button>
+                    <button class="dev-tab" onclick="showDevTab('businessRules')">Is Kurallari</button>
+                </div>
+                <div id="dataStructure" class="dev-tab-content active">
+                    <h3>Cost Center Department Assignment Tablosu</h3>
+                    <table class="dev-table"><thead><tr><th>Field</th><th>Type</th><th>Length</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td>Assignment Id</td><td>int</td><td>8</td><td>Primary key</td></tr>
+                            <tr><td>Cost center code</td><td>text</td><td>8</td><td>Masraf merkezi kodu</td></tr>
+                            <tr><td>Department code</td><td>text</td><td>8</td><td>Departman kodu</td></tr>
+                            <tr><td>Created by user id</td><td>int</td><td>8</td><td>Olusturan kullanici</td></tr>
+                            <tr><td>Creation date time</td><td>datetime</td><td>-</td><td>Olusturma tarihi</td></tr>
+                            <tr><td>inactivation check</td><td>bool</td><td>-</td><td>Inaktif mi?</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="businessRules" class="dev-tab-content">
+                    <h3>Is Kurallari</h3>
+                    <div class="rules-section">
+                        <ul>
+                            <li>Bir departman birden fazla CC'ye atanabilir</li>
+                            <li>Atama silinemez, sadece inaktif edilir</li>
+                            <li>Sadece Indirect Material Key User, Accounting Key User ve Admin atama yapabilir</li>
+                            <li>Inaktif atamalar butce hesabinda kullanilmaz</li>
+                        </ul>
+                        <h4>Excel Screen Designs Kuralları</h4>
+                        <ul>
+                            <li><strong>Benzer Kayıt Kontrolü:</strong> Aynı Dept-CC kombinasyonu varsa yeni kayıt oluşturulamaz</li>
+                            <li><strong>Otomatik Kaydetme:</strong> Değişiklikler ve yeni kayıtlar anında kaydedilir</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>.dev-docs-panel{position:fixed;bottom:0;left:0;right:0;z-index:9999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}.dev-docs-toggle{position:absolute;bottom:100%;right:20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;padding:10px 20px;border-radius:8px 8px 0 0;cursor:pointer;font-weight:600;font-size:14px;box-shadow:0 -2px 10px rgba(0,0,0,0.2)}.dev-docs-content{display:none;background:#1a1a2e;color:#eee;max-height:60vh;overflow-y:auto;box-shadow:0 -5px 20px rgba(0,0,0,0.3)}.dev-docs-content.active{display:block}.dev-docs-header{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);position:sticky;top:0}.dev-docs-header h2{margin:0;font-size:18px}.dev-docs-close{background:rgba(255,255,255,0.2);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px}.dev-docs-body{padding:20px}.dev-docs-tabs{display:flex;gap:10px;margin-bottom:20px;border-bottom:1px solid #333;padding-bottom:10px}.dev-tab{background:#2d2d44;color:#aaa;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;transition:all 0.3s}.dev-tab:hover,.dev-tab.active{background:#667eea;color:#fff}.dev-tab-content{display:none}.dev-tab-content.active{display:block}.dev-table{width:100%;border-collapse:collapse;margin:15px 0;font-size:13px}.dev-table th,.dev-table td{padding:10px;text-align:left;border:1px solid #333}.dev-table th{background:#2d2d44;color:#667eea;font-weight:600}.dev-table tr:nth-child(even){background:#252538}.dev-docs-body h3{color:#667eea;margin:20px 0 10px;font-size:16px;border-bottom:1px solid #333;padding-bottom:5px}.dev-docs-body ul{margin:0 0 15px 20px;line-height:1.8}.rules-section{background:#252538;padding:15px;border-radius:8px;margin-bottom:15px}</style>
+    <script>function toggleDevDocs(){document.getElementById('devDocsContent').classList.toggle('active')}function showDevTab(tabId){document.querySelectorAll('.dev-tab-content').forEach(c=>c.classList.remove('active'));document.querySelectorAll('.dev-tab').forEach(t=>t.classList.remove('active'));document.getElementById(tabId).classList.add('active');event.target.classList.add('active')}</script>
+</body>
+</html>

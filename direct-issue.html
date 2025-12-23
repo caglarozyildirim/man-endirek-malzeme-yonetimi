@@ -13,13 +13,13 @@ IMMA DEVELOPER DOCUMENTATION
 
 SCREEN: 20 DGI - Direct Goods Issue
 FILE: direct-issue.html
-LAST UPDATED: 2025-12-18
+LAST UPDATED: 2025-12-23
 
 --------------------------------------------------------------------------------
 RELATED DATABASE TABLES
 --------------------------------------------------------------------------------
 
-TABLE: Direct Goods Issue Header
+TABLE: Direct Goods Issue Header (Data Structure IMMA.xlsx)
 | Field Name                  | Type     | Length | Description                    |
 |-----------------------------|----------|--------|--------------------------------|
 | Material Movement Header Id | int      | 8      | Primary key                    |
@@ -31,22 +31,87 @@ TABLE: Direct Goods Issue Header
 | Priority                    | bool     | -      | Öncelikli mi?                  |
 
 --------------------------------------------------------------------------------
+SCREEN FIELDS (UI Elements) - Screen Designs: 20 DGI
+--------------------------------------------------------------------------------
+
+HEADER SECTION:
+- Created by user info (readonly) - Oluşturan kullanıcı
+- Created for user info (dropdown) - Kimin için çıkış yapılıyor
+- Selected week number (dropdown) - Hafta seçimi
+- Description (textarea) - İşlem açıklaması
+- Requesting department (dropdown) - Talep eden departman
+- Priority (checkbox) - Öncelikli mi?
+
+MATERIAL SELECTION:
+- Material number (search) - Malzeme numarası arama
+- Material title (readonly) - Malzeme başlığı
+- Unit of measure (readonly) - Ölçü birimi
+- Available stock (readonly) - Mevcut stok
+
+STOCK ASSIGNMENT:
+- Storage (dropdown) - Depo seçimi
+- Location (dropdown) - Lokasyon seçimi
+- Bin (dropdown) - Bin seçimi
+- Stock Record Id (readonly) - Stok kaydı ID
+- Cost Id (readonly) - Maliyet kaydı ID
+
+QUANTITY:
+- Issue quantity (number) - Çıkış miktarı
+- Unit value (readonly) - Birim değeri (EUR)
+- Total value (readonly) - Toplam değer (EUR)
+
+COST CENTER:
+- Cost center (dropdown) - Maliyet merkezi
+- Department (dropdown) - Departman
+
+ISSUE ITEMS TABLE:
+| Column           | Description                    |
+|------------------|--------------------------------|
+| Material number  | Malzeme numarası               |
+| Material title   | Malzeme başlığı                |
+| Quantity         | Çıkış miktarı                  |
+| Unit value       | Birim değeri                   |
+| Total value      | Satır toplamı                  |
+| Storage/Loc/Bin  | Kaynak lokasyon                |
+
+ACTION BUTTONS:
+- Add Item - Malzeme ekle
+- Remove Item - Malzeme sil
+- Process Issue - Çıkış işle
+- Cancel - İptal
+
+--------------------------------------------------------------------------------
 BUSINESS RULES (İş Kuralları)
 --------------------------------------------------------------------------------
 
-DOĞRUDAN ÇIKIŞ:
-1. Talep sürecinden geçmeden direkt stok çıkışı
-2. Masraf merkezi ve kişi seçilmeli
-3. Budget kontrolünden geçer
+1. Kullanıcı onay ekranında mevcut stok ve diğer stok bilgilerini görebilmelidir.
+   - Çıkış işleminde mevcut stok ve diğer stok bilgileri görüntülenebilmeli
 
-ONAY SÜRECİ:
-1. 3 seviyeli onay eklenebilir (opsiyonel)
-2. Değere göre onay seviyesi
+3. Stoklar malzeme talebine tahsis edilirken ilk giren ilk çıkar (FIFO) prensibi uygulanır.
+   - FIFO kuralı uygulanır, en eski Cost kaydından düşüm yapılır
 
-STOK ÇIKIŞI:
-- Material Movement Type 6 (Goods issue) oluşur
-- FIFO kuralı uygulanır
-- Cost kaydından düşüm yapılır
+10. Doğrudan mal çıkışında maliyet merkezi ve kişi seçilmelidir.
+    - Doğrudan mal çıkışında maliyet merkezi ve kişi seçilmeli (zorunlu)
+
+11. Muhasebeyle ilgili raporlar için Excel dışa aktarımı gereklidir.
+    - Muhasebe raporları için Excel dışa aktarımı gereklidir
+
+13. Bazı malzeme talepleri imzalı form ile yapılır. Doğrudan talep fonksiyonu aracılığıyla malzeme çıkışı bu işlemleri temsil eder.
+    - Bazı malzeme talepleri imzalı form ile yapılır
+    - Doğrudan çıkış fonksiyonu bu işlemleri temsil eder
+    - Talep sürecinden geçmeden direkt stok çıkışı yapılır
+
+14. Kullanıcı seçerken arama alanında kullanıcı windows domain kodu kullanılabilir. Ayrıca ad, soyad ve departman kodu da kullanılabilir.
+    - Kullanıcı seçerken windows domain kodu, ad, soyad ve departman kodu kullanılabilir
+
+15. "Binler ve lokasyonlar arası malzeme transferleri" tüm mal hareketleri hareket tipi numarası ile işlem kaydı oluşturur.
+    - Material Movement Type 6 (Goods issue) oluşur
+    - Tüm mal hareketleri hareket tipi numarası ile işlem kaydı oluşturur
+
+ADDITIONAL RULES:
+- Budget kontrolünden geçer
+- 3 seviyeli onay eklenebilir (opsiyonel)
+- Değere göre onay seviyesi belirlenebilir
 
 ================================================================================
 -->
@@ -79,6 +144,8 @@ STOK ÇIKIŞI:
                         <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
                         <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
                         <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                        <a href="unit-of-measure-list.html" class="dropdown-item">Ölçü Birimleri</a>
+                        <a href="department-cost-center-list.html" class="dropdown-item">Departman-Masraf Merkezi</a>
                     </div>
                 </li>
                 <li class="nav-item">
@@ -129,6 +196,16 @@ STOK ÇIKIŞI:
                         <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
                         <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
                         <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanıcı Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onayları</a>
                     </div>
                 </li>
             </ul>
@@ -614,6 +691,7 @@ STOK ÇIKIŞI:
             <div class="dev-docs-body">
                 <div class="dev-docs-tabs">
                     <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('formFields')">Form Alanları</button>
                     <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
                 </div>
                 <div id="dataStructure" class="dev-tab-content active">
@@ -631,16 +709,84 @@ STOK ÇIKIŞI:
                     </table>
                     <h3>Movement Type: 6 (Goods Issue)</h3>
                 </div>
+                <div id="formFields" class="dev-tab-content">
+                    <h3>Header Section</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Created by user info</td><td>readonly</td><td>Oluşturan kullanıcı</td></tr>
+                            <tr><td>Created for user info *</td><td>dropdown</td><td>Kimin için çıkış yapılıyor</td></tr>
+                            <tr><td>Selected week number</td><td>dropdown</td><td>Hafta seçimi</td></tr>
+                            <tr><td>Description</td><td>textarea</td><td>İşlem açıklaması</td></tr>
+                            <tr><td>Requesting department *</td><td>dropdown</td><td>Talep eden departman</td></tr>
+                            <tr><td>Priority</td><td>checkbox</td><td>Öncelikli mi?</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Material Selection</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Material number *</td><td>search</td><td>Malzeme numarası arama</td></tr>
+                            <tr><td>Material title</td><td>readonly</td><td>Malzeme başlığı</td></tr>
+                            <tr><td>Unit of measure</td><td>readonly</td><td>Ölçü birimi</td></tr>
+                            <tr><td>Available stock</td><td>readonly</td><td>Mevcut stok</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Stock Assignment</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Storage *</td><td>dropdown</td><td>Depo seçimi</td></tr>
+                            <tr><td>Location *</td><td>dropdown</td><td>Lokasyon seçimi</td></tr>
+                            <tr><td>Bin *</td><td>dropdown</td><td>Bin seçimi</td></tr>
+                            <tr><td>Stock Record Id</td><td>readonly</td><td>Stok kaydı ID</td></tr>
+                            <tr><td>Cost Id</td><td>readonly</td><td>Maliyet kaydı ID</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Quantity</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Issue quantity *</td><td>number</td><td>Çıkış miktarı</td></tr>
+                            <tr><td>Unit value</td><td>readonly</td><td>Birim değeri (EUR)</td></tr>
+                            <tr><td>Total value</td><td>readonly</td><td>Toplam değer (EUR)</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Cost Center</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Cost center *</td><td>dropdown</td><td>Maliyet merkezi (zorunlu)</td></tr>
+                            <tr><td>Department</td><td>dropdown</td><td>Departman</td></tr>
+                        </tbody>
+                    </table>
+                </div>
                 <div id="businessRules" class="dev-tab-content">
                     <h3>İş Kuralları</h3>
                     <div class="rules-section">
                         <ul>
-                            <li>Talep sürecinden geçmeden <strong>direkt stok çıkışı</strong></li>
-                            <li>Masraf merkezi ve kişi seçilmeli</li>
+                            <li><strong>Kural 1:</strong> Çıkış işleminde mevcut stok ve diğer stok bilgileri görüntülenebilmeli</li>
+                            <li><strong>Kural 3:</strong> FIFO kuralı uygulanır - en eski Cost kaydından düşüm</li>
+                            <li><strong>Kural 10:</strong> Doğrudan mal çıkışında maliyet merkezi ve kişi seçilmeli (zorunlu)</li>
+                            <li><strong>Kural 11:</strong> Muhasebe raporları için Excel dışa aktarımı gereklidir</li>
+                            <li><strong>Kural 13:</strong> Bazı malzeme talepleri imzalı form ile yapılır
+                                <ul>
+                                    <li>Doğrudan çıkış fonksiyonu bu işlemleri temsil eder</li>
+                                    <li>Talep sürecinden geçmeden direkt stok çıkışı yapılır</li>
+                                </ul>
+                            </li>
+                            <li><strong>Kural 14:</strong> Kullanıcı seçerken windows domain kodu, ad, soyad ve departman kodu kullanılabilir</li>
+                            <li><strong>Kural 15:</strong> Material Movement Type 6 (Goods issue) oluşur
+                                <ul>
+                                    <li>Tüm mal hareketleri hareket tipi numarası ile işlem kaydı oluşturur</li>
+                                </ul>
+                            </li>
+                        </ul>
+                        <h4>Additional Rules:</h4>
+                        <ul>
                             <li>Budget kontrolünden geçer</li>
                             <li>3 seviyeli onay eklenebilir (opsiyonel)</li>
-                            <li><strong>FIFO kuralı</strong> uygulanır</li>
-                            <li>Movement Type 6 oluşur</li>
+                            <li>Değere göre onay seviyesi belirlenebilir</li>
                         </ul>
                     </div>
                 </div>

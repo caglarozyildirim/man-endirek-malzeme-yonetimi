@@ -31,39 +31,82 @@ TABLE: SRM Suggestion (MRP Önerileri)
 | transferred datetime                    | datetime | -      | Aktarım tarihi                 |
 | Assigned Supplier Material inforecord Id| int      | 8      | Atanan info record             |
 
-TABLE: Material (MRP parametreleri)
+TABLE: Material (MRP parametreleri - Data Structure IMMA.xlsx)
 | Field Name                | Type     | Length | Description                    |
 |---------------------------|----------|--------|--------------------------------|
+| Material number           | text     | 13     | Malzeme numarası               |
+| Title                     | text     | 128    | Malzeme başlığı                |
+| Unit of measure code      | text     | 4      | Ölçü birimi                    |
 | Reordering point quantity | float    | 15     | MRP tetikleme seviyesi         |
-| Maximum stock quantity    | float    | 15     | Hedef stok seviyesi            |
+| Reordering quantity       | float    | 15     | Yeniden sipariş miktarı        |
 | Safety stock quantity     | float    | 15     | Emniyet stoğu                  |
-| Order batch quantity      | float    | 15     | Sipariş parti miktarı          |
-| Total Stock               | float    | 15     | Mevcut toplam stok             |
-| Open request quantity     | float    | 15     | Açık talep miktarı             |
+
+TABLE: Material Supplier Info (Tedarikçi bazlı MRP parametreleri)
+| Field Name                | Type     | Length | Description                    |
+|---------------------------|----------|--------|--------------------------------|
+| Material Supplier Inforecord Id | int | 8     | Primary key                    |
+| Material number           | text     | 13     | Malzeme numarası               |
+| Supplier Id               | int      | 8      | Tedarikçi ID                   |
+| Order batch quantity      | float    | 15     | Tedarikçi sipariş parti miktarı|
+| Minimum ordering quantity | float    | 15     | Minimum sipariş miktarı        |
+| Preferred order of the supplier | char | 1    | Tedarikçi öncelik sırası       |
+
+NOT: "Maximum stock quantity" ve "Order batch quantity" alanları Screen Designs'da
+tanımlı ancak Data Structure'da Material tablosunda bulunmuyor. Bu alanlar
+ekran seviyesinde hesaplanıyor veya ayrı bir konfigürasyon tablosunda tutuluyor olabilir.
+Total Stock ve Open request quantity hesaplanan (aggregated) alanlardır.
+
+--------------------------------------------------------------------------------
+SCREEN FIELDS (UI Elements) - Screen Designs: 9 MMRP
+--------------------------------------------------------------------------------
+
+FILTER SECTION:
+- Material number filter (text) - Malzeme numarası ara
+- Material Title filter (text) - Malzeme başlığı ara
+- Material Group filter (dropdown) - Malzeme grubu
+
+MRP CONTROL BUTTONS:
+- Run MRP Calculation - MRP hesaplama çalıştır
+- Export Results to Excel - Sonuçları Excel'e aktar
+- MRP Last Run By (readonly) - Son çalıştıran kullanıcı
+
+MRP RESULTS TABLE:
+| Column                    | Description                          |
+|---------------------------|--------------------------------------|
+| Material number           | Malzeme numarası (link)              |
+| Material title            | Malzeme başlığı                      |
+| UoM                       | Ölçü birimi                          |
+| Current Stock             | Mevcut stok                          |
+| Reordering Point          | Yeniden sipariş noktası              |
+| Maximum Stock             | Maksimum stok                        |
+| Safety Stock              | Güvenlik stoğu                       |
+| Open PO Quantity          | Açık PO miktarı                      |
+| Open SRM Quantity         | Açık SRM miktarı                     |
+| Suggested Quantity        | Önerilen sipariş miktarı             |
+
+VISUAL INDICATORS:
+- Kırmızı satır: Stok < Safety stock seviyesi
+- Sarı satır: Safety stock < Stok < Reordering point
+- Yeşil satır: Stok >= Reordering point
+
+PAGINATION:
+- << < 1 2 3 ... > >> - Sayfa navigasyonu
 
 --------------------------------------------------------------------------------
 BUSINESS RULES (İş Kuralları)
 --------------------------------------------------------------------------------
 
-MRP HESAPLAMA:
-1. Stok < Reordering point quantity olduğunda öneri oluşur
-2. Önerilen miktar = Maximum stock quantity - Mevcut Stok
-3. Açık PO ve SRM miktarları düşülür
-4. Order batch quantity varsa KATLARI olarak hesaplanır
-
-ÖRNEK:
-- Reordering point: 100
-- Maximum stock: 500
-- Mevcut stok: 80
-- Açık PO: 50
-- Order batch: 100
-- Hesaplama: 500 - 80 - 50 = 370 → 400 (batch katı)
-
-SRM'YE AKTARIM:
-1. Öneri seçilir
-2. Tedarikçi otomatik atanır (Preferred order=1)
-3. SRM oluşturulur
-4. Transferred = true
+MRP İŞ KURALLARI (MRP - Paragraf 338-341):
+1. Stok, yeniden sipariş miktarının altına düştüğünde, stoğu maksimum stok
+   miktarına tamamlamak için yeni bir SRM önerisi oluşturulur.
+2. Halihazırda açık satınalma siparişi kalemleri ve açık SRM Talebi kalemleri
+   varsa, bu açık miktarlar toplam öneriden düşülür.
+3. Sipariş parti miktarı tanımlıysa, öneri miktarı bu sipariş parti miktarının
+   katı olarak hesaplanır; ancak stok, açık Satınalma siparişi ve açık SRM
+   talebi ile toplandığında maksimum stok seviyesini geçmemeli, yeniden
+   sipariş seviyesinin üzerinde olmalıdır.
+4. Tedarikçi info kaydında sipariş parti miktarı varsa, hesaplamalarda
+   malzeme sipariş parti miktarını geçersiz kılar (override eder).
 
 ================================================================================
 -->
@@ -96,6 +139,8 @@ SRM'YE AKTARIM:
                         <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
                         <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
                         <a href="material-group.html" class="dropdown-item">Malzeme Gruplari</a>
+                        <a href="unit-of-measure-list.html" class="dropdown-item">Olcu Birimleri</a>
+                        <a href="department-cost-center-list.html" class="dropdown-item">Dept-Masraf Merkezi</a>
                     </div>
                 </li>
                 <li class="nav-item">
@@ -146,6 +191,16 @@ SRM'YE AKTARIM:
                         <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
                         <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
                         <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanıcı Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onayları</a>
                     </div>
                 </li>
             </ul>
@@ -807,21 +862,13 @@ SRM'YE AKTARIM:
                     </table>
                 </div>
                 <div id="businessRules" class="dev-tab-content">
-                    <h3>MRP Hesaplama Mantığı</h3>
+                    <h3>MRP İş Kuralları (MRP - Paragraf 338-341)</h3>
                     <div class="rules-section">
                         <ul>
-                            <li><strong>needed</strong> = Maximum stock - Current stock - Open PO - Open SRM + Safety stock</li>
-                            <li><strong>suggested_qty</strong> = ceil(needed / Order batch) * Order batch</li>
-                        </ul>
-                    </div>
-                    <h3>İş Kuralları</h3>
-                    <div class="rules-section">
-                        <ul>
-                            <li>Stok, reorder point altına düşünce SRM önerisi oluşturulur</li>
-                            <li>Öneri miktarı max stock'a kadar hesaplanır</li>
-                            <li>Açık PO ve SRM miktarları hesaplamadan düşülür</li>
-                            <li>Order batch varsa önerilen miktar <strong>katları</strong> olarak hesaplanır</li>
-                            <li>Safety stock her zaman hesaplamaya eklenir (buffer)</li>
+                            <li><strong>Kural 1:</strong> Stok, yeniden sipariş miktarının altına düştüğünde, stoğu maksimum stok miktarına tamamlamak için yeni bir SRM önerisi oluşturulur.</li>
+                            <li><strong>Kural 2:</strong> Halihazırda açık satınalma siparişi kalemleri ve açık SRM Talebi kalemleri varsa, bu açık miktarlar toplam öneriden düşülür.</li>
+                            <li><strong>Kural 3:</strong> Sipariş parti miktarı tanımlıysa, öneri miktarı bu sipariş parti miktarının katı olarak hesaplanır; ancak stok, açık Satınalma siparişi ve açık SRM talebi ile toplandığında maksimum stok seviyesini geçmemeli, yeniden sipariş seviyesinin üzerinde olmalıdır.</li>
+                            <li><strong>Kural 4:</strong> Tedarikçi info kaydında sipariş parti miktarı varsa, hesaplamalarda malzeme sipariş parti miktarını geçersiz kılar (override eder).</li>
                         </ul>
                     </div>
                 </div>

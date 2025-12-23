@@ -13,13 +13,13 @@ IMMA DEVELOPER DOCUMENTATION
 
 SCREEN: 14 MB - Maintain Budget (Detail)
 FILE: budget-detail.html
-LAST UPDATED: 2025-12-18
+LAST UPDATED: 2025-12-23
 
 --------------------------------------------------------------------------------
 RELATED DATABASE TABLES
 --------------------------------------------------------------------------------
 
-TABLE: Budget
+TABLE: Budget (Data Structure IMMA.xlsx)
 | Field Name               | Type     | Length | Description                            |
 |--------------------------|----------|--------|----------------------------------------|
 | Budget Id                | int      | 8      | Primary key                            |
@@ -70,37 +70,101 @@ LEVEL 4: Haftalık SL Bütçesi
 - Örnek: Mehmet Yılmaz Hafta 3 = 3.500 EUR
 
 --------------------------------------------------------------------------------
+SCREEN FIELDS (UI Elements) - Screen Designs: 14 MB Detail
+--------------------------------------------------------------------------------
+
+DEPARTMENT BUDGET SECTION:
+- Year (dropdown) - Bütçe yılı seçimi
+- Budget Id (readonly) - Bütçe ID
+- Currency (readonly) - Para birimi (EUR)
+- Value (number) - Bütçe değeri
+- Department (dropdown) - Departman seçimi
+- Created By (readonly) - Oluşturan kullanıcı ve tarih
+- Last Change By (readonly) - Son değiştiren kullanıcı ve tarih
+- Spared Budget (readonly) - Ayrılan bütçe
+- Budget haven't distributed (readonly) - Dağıtılmamış bütçe
+
+MONTHLY BUDGET DISTRIBUTION TABLE:
+| Column        | Description                    |
+|---------------|--------------------------------|
+| Budget Id     | Aylık bütçe ID                 |
+| Month         | Ay (1-12)                      |
+| Budget Value  | Aylık bütçe değeri (EUR)       |
+| Actions       | Düzenle/Görüntüle              |
+
+SL BUDGET SECTION:
+- Month (dropdown) - Ay seçimi
+- SL User (dropdown) - Shift Leader seçimi
+- Monthly SL Budget Value (number) - Aylık SL bütçesi
+
+WEEKLY SL BUDGET TABLE:
+| Column         | Description                    |
+|----------------|--------------------------------|
+| Week           | Hafta numarası (1-52)          |
+| First Day      | Haftanın ilk günü              |
+| Budget Value   | Haftalık bütçe değeri          |
+| Consumed       | Tüketilen                      |
+| Open           | Kalan                          |
+
+ACTION BUTTONS:
+- Save Monthly Budget Changes - Aylık bütçe kaydet
+- Show SL Budgets - SL bütçelerini göster
+- Distribute Budget - Bütçe dağıt
+- Close Budget - Bütçeyi kapat
+
+--------------------------------------------------------------------------------
 BUSINESS RULES (İş Kuralları)
 --------------------------------------------------------------------------------
 
-HAFTA-AY DAĞILIMI (KRİTİK):
-1. Hafta iki aya denk geliyorsa GÜNLERE GÖRE dağıtılır
-2. Dağılım hesaplamasında PAZAR HARİÇ (6 iş günü)
-3. Days on the month = Bu aydaki gün sayısı (1-6)
-4. Days on the second month = Diğer aydaki gün sayısı (1-6)
-5. Half Week = true ise yarım hafta bütçesi
+PARA BİRİMİ VE FİYATLANDIRMA:
+1. Tüm bütçe aktiviteleri için para birimi Euro'dur
+2. Malzeme fiyatı onaylardan önce ve sonra değiştirilebilir
+3. Fiyat onaylandıysa yeni fiyatlar için ek onay gerekmez
+4. Tüm malzeme talepleri bütçe kontrolü için EUR'ya çevrilir
+
+BÜTÇE DAĞITIMI:
+5. Tüm bütçeler SL'lere veya aylara dağıtılmaz, bir kısmı yedekte tutulabilir
+6. Bütçe Hiyerarşisi: Yıl → Ay → SL Aylık → SL Haftalık
+
+BÜTÇE YÖNETİMİ:
+7. Yöneticiler istedikleri zaman bütçeyi değiştirebilir veya bütçe aşımı taleplerini onaylayabilir
+8. SL'ler kendi bütçelerini görüntüleyebilir ancak DEĞİŞTİREMEZLER
+9. Değişiklik geçmişi kaydedilir (Son değiştiren kullanıcı bilgisi)
+10. Kapatılmış bütçeler (Bütçe Kapatıldı = true) DEĞİŞTİRİLEMEZ
+
+HAFTA-AY DAĞITIMI (KRİTİK):
+11. Hafta bütçesi iki ay arasındaysa, bütçe ve tüketim 6 gün faktörüyle iki aya dağıtılır (Pazar hesaba katılmaz)
+12. Aydaki günler = Bu aydaki gün sayısı (1-6)
+13. İkinci aydaki günler = İkinci aydaki gün sayısı (1-6)
+14. Yarım Hafta = hafta iki aya yayılıyorsa true
+15. SL'nin kendisinde tanımlı haftalık bütçesi varsa bu bütçenin de tüketilmesi gerekir
 
 ÖRNEK HESAPLAMA:
 - Hafta 5: 27 Ocak - 2 Şubat (Pazar hariç 6 gün)
-- Ocak'ta: 4 gün (Pzt-Per)
-- Şubat'ta: 2 gün (Cum-Cmt)
-- Days on the month = 4, Days on the second month = 2
-- Half Week = true, Starting on previous month = false
+- Ocak: 4 gün (Pzt-Per)
+- Şubat: 2 gün (Cum-Cmt)
+- Aydaki günler = 4, İkinci aydaki günler = 2
+- Yarım Hafta = true, Önceki ayda başlıyor = false
 
-BÜTÇE DEĞİŞİKLİĞİ:
-1. Yöneticiler (Manager) istedikleri zaman değiştirebilir
-2. SL'ler kendi bütçelerini görebilir, DEĞİŞTİREMEZ
-3. Değişiklik geçmişi kaydedilir (Last change user info)
-4. Kapatılmış bütçe (Budget Closed check = true) DEĞİŞTİRİLEMEZ
+BÜTÇE TÜKETİM KURALLARI:
+16. Talep eden kullanıcı bir SL'ye bağlıysa, SL bütçesi tanımlı değilse ancak SL onayı gerekiyorsa "SL bütçesi gerekli" uyarısı gösterilmelidir
+17. Talep eden kullanıcı bir SL'ye bağlıysa, SL bütçesi tanımlıysa ve SL onayı gerekiyorsa: SL aylık bütçesi, Departman aylık bütçesi ve departman yıllık bütçesi tüketilir
+18. Talep eden kullanıcı bir SL'ye bağlı değilse talep Departman Aylık bütçesini ve departman yıllık bütçesini tüketir
+19. Talep eden kullanıcı bir SL'ye bağlıysa, SL bütçesi tanımlı değilse ve SL onayı gerekmiyorsa; departman Aylık bütçesi ve departman yıllık bütçesi tüketilir
+20. Kullanıcı bir SL'ye bağlı değilse ve Departman Aylık bütçesi tanımlıysa ancak yönetici onayı gerekiyorsa: Departman yıllık ve aylık bütçesi tüketilir
 
 BÜTÇE AŞIMI:
-1. Talep toplam değeri > Open Value ise "Bütçe Aşımı"
-2. Budget Preference'a göre onay süreci tetiklenir
-3. Over budget value = Talep değeri - Open Value
+21. Bütçe aşımı oluşur: Toplam talep değeri > Açık Değer
+22. Onay süreci Bütçe Tercihine göre tetiklenir
+23. Bütçe aşımı değeri = Talep değeri - Açık Değer
 
-PARA BİRİMİ:
-- TÜM bütçeler EURO cinsindendir
-- Malzeme talepleri EUR'ya çevrilip kontrol edilir
+BÜTÇE ONAY TALEP TİPLERİ:
+- SL Onayı
+- SL bütçe aşımı onayı
+- Yönetici onayı
+- Yönetici bütçe aşımı Onayı
+- Sadece TL ve üstü malzeme talebi
+- Bütçe onayı gerekli değil
 
 --------------------------------------------------------------------------------
 FIELD VALIDATIONS
@@ -215,6 +279,8 @@ SAP Integration (Opsiyonel):
                         <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
                         <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
                         <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                        <a href="unit-of-measure-list.html" class="dropdown-item">Ölçü Birimleri</a>
+                        <a href="department-cost-center-list.html" class="dropdown-item">Departman-Masraf Merkezi</a>
                     </div>
                 </li>
                 <li class="nav-item">
@@ -265,6 +331,16 @@ SAP Integration (Opsiyonel):
                         <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
                         <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
                         <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanıcı Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onayları</a>
                     </div>
                 </li>
             </ul>
@@ -337,20 +413,19 @@ SAP Integration (Opsiyonel):
                                 </script>
                             </select>
                         </div>
+                    </div>
+
+                    <div class="form-row">
                         <div class="form-group col-3">
                             <label>Department <span class="required">*</span></label>
                             <select class="form-control" id="budgetDepartment" required>
                                 <option value="">Seçiniz...</option>
-                                <option value="BAKIM">Bakım</option>
-                                <option value="URETIM">Üretim</option>
-                                <option value="KALITE">Kalite</option>
-                                <option value="LOJISTIK">Lojistik</option>
-                                <option value="ARASTIRMA">Araştırma</option>
+                                <option value="URETIM">URETIM</option>
+                                <option value="BAKIM">BAKIM</option>
+                                <option value="KALITE">KALITE</option>
+                                <option value="LOJISTIK">LOJISTIK</option>
                             </select>
                         </div>
-                    </div>
-
-                    <div class="form-row">
                         <div class="form-group col-3">
                             <label>Value <span class="required">*</span></label>
                             <input type="number" class="form-control" id="budgetValue" required>
@@ -363,25 +438,58 @@ SAP Integration (Opsiyonel):
                             <label>Open Value</label>
                             <input type="number" class="form-control" id="openValue" readonly>
                         </div>
-                        <div class="form-group col-3">
-                            <label>Responsible SL</label>
-                            <input type="text" class="form-control" id="responsibleSL">
-                        </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group col-3">
+                            <label>SL User info</label>
+                            <input type="text" class="form-control" id="responsibleSL">
+                        </div>
+                        <div class="form-group col-3">
                             <label>Budget Closed</label>
                             <div style="padding-top: 8px;">
-                                <input type="checkbox" id="budgetClosed" style="width: auto; margin-right: 8px;">
-                                <label for="budgetClosed" style="display: inline; font-weight: normal;">Closed</label>
+                                <input type="checkbox" id="budgetClosed"> <label for="budgetClosed" style="font-weight: normal;">Kapatıldı</label>
                             </div>
                         </div>
                         <div class="form-group col-3">
+                            <label>Days on the month</label>
+                            <input type="number" class="form-control" id="daysOnMonth" min="0" max="6">
+                        </div>
+                        <div class="form-group col-3">
+                            <label>Days on the second month</label>
+                            <input type="number" class="form-control" id="daysOnSecondMonth" min="0" max="6">
+                        </div>
+                    </div>
+
+                    <!-- Half Week Section - Haftalık bütçelerde görünür -->
+                    <div id="halfWeekSection" style="display: none; background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <h4 style="margin-top: 0; margin-bottom: 15px;">Hafta-Ay Geçiş Bilgileri</h4>
+                        <div class="form-row">
+                            <div class="form-group col-3">
+                                <label>First day of the week</label>
+                                <input type="date" class="form-control" id="firstDayOfWeek">
+                            </div>
+                            <div class="form-group col-3">
+                                <label>Half Week</label>
+                                <div style="padding-top: 8px;">
+                                    <input type="checkbox" id="halfWeek"> <label for="halfWeek" style="font-weight: normal;">Yarım Hafta</label>
+                                </div>
+                            </div>
+                            <div class="form-group col-3">
+                                <label>Starting on previous month</label>
+                                <div style="padding-top: 8px;">
+                                    <input type="checkbox" id="startingOnPreviousMonth"> <label for="startingOnPreviousMonth" style="font-weight: normal;">Önceki ayda başlıyor</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-4">
                             <label>Last change user info</label>
                             <input type="text" class="form-control" id="lastChangeBy" readonly>
                         </div>
-                        <div class="form-group col-3">
+                        <div class="form-group col-4">
                             <label>Last change date time</label>
                             <input type="text" class="form-control" id="lastChangeDateTime" readonly>
                         </div>
@@ -655,6 +763,45 @@ SAP Integration (Opsiyonel):
             });
 
             calculateMonthlyTotal();
+
+            // Half Week bölümünü göster/gizle (haftalık bütçelerde göster)
+            const halfWeekSection = document.getElementById('halfWeekSection');
+            if (budget.week && budget.week !== '') {
+                halfWeekSection.style.display = 'block';
+                // Half week verilerini yükle (simülasyon - backend'den gelecek)
+                const halfWeekData = calculateHalfWeekData(budget.year, budget.month, budget.week);
+                document.getElementById('halfWeek').checked = halfWeekData.halfWeek;
+                document.getElementById('startingOnPreviousMonth').checked = halfWeekData.startingOnPreviousMonth;
+                document.getElementById('daysOnMonth').value = halfWeekData.daysOnMonth;
+                document.getElementById('daysOnSecondMonth').value = halfWeekData.daysOnSecondMonth;
+                document.getElementById('firstDayOfWeek').value = halfWeekData.firstDayOfWeek;
+            } else {
+                halfWeekSection.style.display = 'none';
+            }
+        }
+
+        // Half Week verilerini hesapla (simülasyon - gerçekte backend'den gelir)
+        function calculateHalfWeekData(year, month, week) {
+            // Örnek hesaplama: Hafta 5 = 27 Ocak - 2 Şubat (ay geçişi var)
+            const weekNum = parseInt(week);
+            const monthNum = parseInt(month);
+
+            // Basit simülasyon: bazı haftalar için örnek veriler
+            const halfWeekExamples = {
+                '1-5': { halfWeek: true, startingOnPreviousMonth: false, daysOnMonth: 4, daysOnSecondMonth: 2, firstDayOfWeek: '2025-01-27' },
+                '2-9': { halfWeek: true, startingOnPreviousMonth: true, daysOnMonth: 3, daysOnSecondMonth: 3, firstDayOfWeek: '2025-02-24' },
+                '3-10': { halfWeek: false, startingOnPreviousMonth: false, daysOnMonth: 6, daysOnSecondMonth: 0, firstDayOfWeek: '2025-03-03' },
+                '11-48': { halfWeek: true, startingOnPreviousMonth: false, daysOnMonth: 5, daysOnSecondMonth: 1, firstDayOfWeek: '2025-11-24' }
+            };
+
+            const key = `${monthNum}-${weekNum}`;
+            return halfWeekExamples[key] || {
+                halfWeek: false,
+                startingOnPreviousMonth: false,
+                daysOnMonth: 6,
+                daysOnSecondMonth: 0,
+                firstDayOfWeek: ''
+            };
         }
 
         // Aylık toplamı hesapla
@@ -731,39 +878,147 @@ SAP Integration (Opsiyonel):
             <div class="dev-docs-body">
                 <div class="dev-docs-tabs">
                     <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('formFields')">Form Alanları</button>
                     <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
                 </div>
                 <div id="dataStructure" class="dev-tab-content active">
-                    <h3>Budget Tablosu</h3>
+                    <h3>Budget Tablosu (19 Alan)</h3>
                     <table class="dev-table"><thead><tr><th>Field Name</th><th>Type</th><th>Length</th><th>Description</th></tr></thead>
                         <tbody>
                             <tr><td>Budget Id</td><td>int</td><td>8</td><td>Primary key</td></tr>
                             <tr><td>Year</td><td>int</td><td>4</td><td>Bütçe yılı</td></tr>
                             <tr><td>Month</td><td>int</td><td>2</td><td>Ay (1-12, null=yıllık)</td></tr>
                             <tr><td>Week</td><td>int</td><td>2</td><td>Hafta (1-52, null=aylık)</td></tr>
+                            <tr><td>First day of the week</td><td>date</td><td>-</td><td>Haftanın ilk günü</td></tr>
                             <tr><td>Value</td><td>float</td><td>15</td><td>Bütçe değeri (EUR)</td></tr>
                             <tr><td>Consumed value</td><td>float</td><td>15</td><td>Tüketilen değer</td></tr>
                             <tr><td>Open Value</td><td>float</td><td>15</td><td>READONLY: Value - Consumed</td></tr>
+                            <tr><td>Creation datetime</td><td>datetime</td><td>-</td><td>Oluşturma tarihi</td></tr>
+                            <tr><td>Created by user info</td><td>int</td><td>8</td><td>Oluşturan kullanıcı</td></tr>
+                            <tr><td>Last change date time</td><td>datetime</td><td>-</td><td>Son değişiklik tarihi</td></tr>
+                            <tr><td>Last change user info</td><td>int</td><td>-</td><td>Son değiştiren kullanıcı</td></tr>
                             <tr><td>responsible SL</td><td>int</td><td>8</td><td>Sorumlu SL ID</td></tr>
                             <tr><td>Department</td><td>text</td><td>8</td><td>Departman kodu</td></tr>
+                            <tr><td>Days on the month</td><td>int</td><td>1</td><td>Aydaki gün sayısı</td></tr>
+                            <tr><td>Days on the second month</td><td>int</td><td>1</td><td>İkinci aydaki günler</td></tr>
                             <tr><td>Budget Closed check</td><td>bool</td><td>-</td><td>Kapatıldı mı?</td></tr>
-                            <tr><td>Half Week</td><td>bool</td><td>-</td><td>Yarım hafta</td></tr>
+                            <tr><td>Starting on previous month</td><td>bool</td><td>-</td><td>Önceki ayda başlıyor mu</td></tr>
+                            <tr><td>Half Week</td><td>bool</td><td>-</td><td>Yarım hafta mı?</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="formFields" class="dev-tab-content">
+                    <h3>Department Budget Section</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Year *</td><td>dropdown</td><td>Bütçe yılı seçimi</td></tr>
+                            <tr><td>Budget Id</td><td>readonly</td><td>Bütçe ID (otomatik)</td></tr>
+                            <tr><td>Currency</td><td>readonly</td><td>Para birimi (EUR)</td></tr>
+                            <tr><td>Value *</td><td>number</td><td>Bütçe değeri</td></tr>
+                            <tr><td>Department *</td><td>dropdown</td><td>Departman seçimi</td></tr>
+                            <tr><td>Created By</td><td>readonly</td><td>Oluşturan kullanıcı ve tarih</td></tr>
+                            <tr><td>Last Change By</td><td>readonly</td><td>Son değiştiren kullanıcı ve tarih</td></tr>
+                            <tr><td>Spared Budget</td><td>readonly</td><td>Ayrılan bütçe</td></tr>
+                            <tr><td>Budget haven't distributed</td><td>readonly</td><td>Dağıtılmamış bütçe</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Monthly Budget Distribution Table</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Kolon</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Budget Id</td><td>readonly</td><td>Aylık bütçe ID</td></tr>
+                            <tr><td>Month</td><td>readonly</td><td>Ay (1-12)</td></tr>
+                            <tr><td>Budget Value</td><td>number</td><td>Aylık bütçe değeri</td></tr>
+                            <tr><td>Consumed</td><td>readonly</td><td>Tüketilen</td></tr>
+                            <tr><td>Open</td><td>readonly</td><td>Kalan</td></tr>
+                            <tr><td>Actions</td><td>button</td><td>Düzenle/Görüntüle</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>SL Budget Section</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Month *</td><td>dropdown</td><td>Ay seçimi</td></tr>
+                            <tr><td>SL User *</td><td>dropdown</td><td>Shift Leader seçimi</td></tr>
+                            <tr><td>Monthly SL Budget Value</td><td>number</td><td>Aylık SL bütçesi</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Weekly SL Budget Table</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Kolon</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Week</td><td>readonly</td><td>Hafta numarası (1-52)</td></tr>
+                            <tr><td>First Day</td><td>readonly</td><td>Haftanın ilk günü</td></tr>
+                            <tr><td>Budget Value</td><td>number</td><td>Haftalık bütçe değeri</td></tr>
+                            <tr><td>Consumed</td><td>readonly</td><td>Tüketilen</td></tr>
+                            <tr><td>Open</td><td>readonly</td><td>Kalan</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Action Buttons</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Buton</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Save Monthly Budget</td><td>Aylık bütçe kaydet</td></tr>
+                            <tr><td>Show SL Budgets</td><td>SL bütçelerini göster</td></tr>
+                            <tr><td>Distribute Budget</td><td>Bütçe dağıt</td></tr>
+                            <tr><td>Close Budget</td><td>Bütçeyi kapat</td></tr>
                         </tbody>
                     </table>
                 </div>
                 <div id="businessRules" class="dev-tab-content">
                     <h3>İş Kuralları</h3>
                     <div class="rules-section">
-                        <h4>💰 Bütçe Hesaplama</h4>
+                        <h4>💰 Para Birimi & Fiyatlandırma</h4>
                         <ul>
-                            <li>Tüm değerler <strong>Euro cinsindendir</strong></li>
-                            <li>Open Value = Value - Consumed value (readonly)</li>
-                            <li>Aylık dağılım ekranında görüntülenir</li>
+                            <li>Tüm bütçe aktiviteleri <strong>Euro cinsindendir</strong></li>
+                            <li>Malzeme fiyatı onaylardan önce ve sonra değiştirilebilir</li>
+                            <li>Fiyat onaylandıysa yeni fiyatlar için ek onay gerekmez</li>
+                            <li>Malzeme talepleri bütçe kontrolü için EUR'ya çevrilir</li>
                         </ul>
-                        <h4>📅 Hafta-Ay Dağılımı</h4>
+                        <h4>📊 Bütçe Dağılımı</h4>
                         <ul>
-                            <li>Hafta iki aya denk gelirse günlere göre bölünür</li>
-                            <li>Pazar hariç 6 iş günü hesaplanır</li>
+                            <li>Tüm bütçelerin SL'lere veya aylara dağıtılması zorunlu değil, bir kısmı ayrılabilir</li>
+                            <li>Bütçe Hiyerarşisi: Year → Month → SL Monthly → SL Weekly</li>
+                            <li>Open Value = Value - Consumed value (readonly, otomatik hesaplanır)</li>
+                        </ul>
+                        <h4>⚙️ Bütçe Yönetimi</h4>
+                        <ul>
+                            <li>Yöneticiler istedikleri zaman bütçeyi değiştirebilir veya bütçe aşan talepleri onaylayabilir</li>
+                            <li>SL'ler kendi bütçelerini görüntüleyebilir ancak DEĞİŞTİREMEZ</li>
+                            <li>Değişiklik geçmişi kaydedilir (Last change user info)</li>
+                            <li>Kapatılan bütçe (Budget Closed = true) DEĞİŞTİRİLEMEZ</li>
+                        </ul>
+                        <h4>📅 Hafta-Ay Dağılımı (KRİTİK)</h4>
+                        <ul>
+                            <li>Hafta iki aya denk gelirse bütçe ve tüketim 6 günlük faktöre göre iki aya dağıtılır (Pazar hesaba katılmaz)</li>
+                            <li>Days on the month = Bu aydaki gün sayısı (1-6)</li>
+                            <li>Days on the second month = Diğer aydaki gün sayısı (1-6)</li>
+                            <li>Half Week = true ise hafta iki aya yayılıyor demektir</li>
+                            <li>SL'nin kendisine tanımlı haftalık bütçesi varsa bu bütçe de tüketilmeli</li>
+                        </ul>
+                        <h4>🔄 Bütçe Tüketim Kuralları</h4>
+                        <ul>
+                            <li><strong>Senaryo 1:</strong> Talep eden kullanıcı bir SL'ye bağlıysa, SL bütçesi tanımlı değilse ancak SL onayı gerekiyorsa: "SL budget required" engelleyici uyarı gösterilmeli</li>
+                            <li><strong>Senaryo 2:</strong> Talep eden kullanıcı bir SL'ye bağlıysa, SL bütçesi tanımlıysa ve SL onayı gerekiyorsa: SL aylık bütçe, Departman aylık bütçe ve Departman yıllık bütçe tüketilir</li>
+                            <li><strong>Senaryo 3:</strong> Talep eden kullanıcı bir SL'ye bağlı değilse: Departman aylık bütçe ve Departman yıllık bütçe tüketilir</li>
+                            <li><strong>Senaryo 4:</strong> Talep eden kullanıcı bir SL'ye bağlıysa, SL bütçesi tanımlı değilse ve SL onayı gerekmiyorsa: Departman aylık bütçe ve Departman yıllık bütçe tüketilir</li>
+                            <li><strong>Senaryo 5:</strong> Kullanıcı bir SL'ye bağlı değilse ve Departman aylık bütçe tanımlıysa ancak yönetici onayı gerekiyorsa: Departman yıllık ve aylık bütçe tüketilir</li>
+                        </ul>
+                        <h4>⚠️ Bütçe Aşımı</h4>
+                        <ul>
+                            <li>Bütçe aşımı: Talep toplam değeri > Open Value</li>
+                            <li>Budget Preference'a göre onay süreci tetiklenir</li>
+                            <li>Over budget value = Talep değeri - Open Value</li>
+                        </ul>
+                        <h4>✅ Bütçe Onay Talep Tipleri</h4>
+                        <ul>
+                            <li>SL Approval</li>
+                            <li>SL over budget approval</li>
+                            <li>Manager approval</li>
+                            <li>Manager Over budget Approval</li>
+                            <li>Only TL and above material request</li>
+                            <li>Budget approval doesn't required</li>
                         </ul>
                     </div>
                 </div>

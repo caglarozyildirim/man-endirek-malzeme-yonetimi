@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Muhasebe Islem Onaylari - IMMA</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .filter-section { background: #f8f9fa; padding: 16px; border-radius: 6px; margin-bottom: 20px; }
+        .filter-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+        .filter-group { flex: 1; min-width: 150px; }
+        .filter-group label { display: block; margin-bottom: 4px; font-size: 0.875rem; font-weight: 500; color: #555; }
+        .filter-actions { display: flex; gap: 8px; }
+        .card-header-actions { display: flex; justify-content: space-between; align-items: center; }
+        .card-header-actions h3 { margin: 0; }
+        .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .action-buttons { display: flex; gap: 5px; white-space: nowrap; }
+        .action-buttons .btn { padding: 4px 10px; font-size: 12px; }
+        .status-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-confirmed { background: #d4edda; color: #155724; }
+        .status-rejected { background: #f8d7da; color: #721c24; }
+        .quantity-cell { font-family: monospace; text-align: right; }
+        .bulk-actions { display: flex; gap: 10px; margin-bottom: 15px; padding: 15px; background: #e9ecef; border-radius: 6px; }
+        .select-all-label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .movement-type { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+        .mt-receipt { background: #cce5ff; color: #004085; }
+        .mt-issue { background: #f5c6cb; color: #721c24; }
+        .mt-transfer { background: #d4edda; color: #155724; }
+        .mt-scrap { background: #e2e3e5; color: #383d41; }
+        .mt-count { background: #bee5eb; color: #0c5460; }
+        .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .summary-card { background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center; }
+        .summary-card .number { font-size: 24px; font-weight: 700; color: #667eea; }
+        .summary-card .label { font-size: 12px; color: #666; margin-top: 5px; }
+    </style>
+</head>
+<!--
+================================================================================
+IMMA DEVELOPER DOCUMENTATION
+================================================================================
+
+SCREEN: 27 ACC - Accounting Action Confirmation
+FILE: accounting-confirmation.html
+LAST UPDATED: 2025-12-23
+
+--------------------------------------------------------------------------------
+RELATED DATABASE TABLES
+--------------------------------------------------------------------------------
+
+TABLE: Material Movement Item (Data Structure IMMA.xlsx)
+| Field Name                               | Type     | Length | Description                    |
+|------------------------------------------|----------|--------|--------------------------------|
+| Movement Id                              | int      | 12     | Hareket ID                     |
+| Material number                          | text     | 13     | Malzeme kodu                   |
+| Material Movement type                   | char     | -      | Hareket tipi                   |
+| Material Movement Header Id              | int      | 8      | Hareket header ID              |
+| Cost Center No                           | text     | 10     | Masraf merkezi                 |
+| Accounting actions confirmed check       | bool     | -      | Muhasebe onay durumu           |
+| Accounting actions checked by user info  | int      | 8      | Kontrol eden kullanici         |
+| Accounting actions checked date time     | datetime | -      | Kontrol tarihi                 |
+| Accounting approval requirement check    | bool     | -      | Onay gereksinimi               |
+
+Movement Types:
+1 = Goods Receipt
+2 = Goods Receipt Rollback
+3 = Goods Return
+4 = Material Transfer Entry
+5 = Material Transfer Exit
+6 = Goods Issue
+7 = Goods Issue Rollback
+8 = Inventory Positive Adjustment
+9 = Inventory Negative Adjustment
+10 = Packing Material Receipt
+11 = Packing Material Return
+12 = Scrapping
+13 = Scrapping Rollback
+14 = Other
+
+--------------------------------------------------------------------------------
+IS KURALLARI
+--------------------------------------------------------------------------------
+
+1. Tum mal hareketleri muhasebe onayı gerektirir
+2. Sadece Accountant veya Admin onay verebilir
+3. Onaylanan islemler geri alinamaz
+4. Toplu onay yapilabilir
+5. Islem detaylari goruntuleme linki ile ilgili ekrana yonlendirir
+
+================================================================================
+-->
+<body>
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">M</div>
+                <div class="brand-text">
+                    <span class="brand-name">IMMA</span>
+                    <span class="brand-subtitle">Endirek Malzeme Yonetimi</span>
+                </div>
+            </a>
+            <ul class="navbar-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="material-list.html" class="nav-link">
+                        <span class="nav-icon">📦</span>
+                        Ana Veriler
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="mrp.html" class="nav-link">
+                        <span class="nav-icon">📈</span>
+                        MRP
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="srm-list.html" class="nav-link">
+                        <span class="nav-icon">🛒</span>
+                        Satinalma
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="budget-management.html" class="nav-link">
+                        <span class="nav-icon">💰</span>
+                        Budget
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="material-request-list.html" class="nav-link">
+                        <span class="nav-icon">📋</span>
+                        Talepler
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="transfer-list.html" class="nav-link">
+                        <span class="nav-icon">🏭</span>
+                        Stock
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link active">
+                        <span class="nav-icon">⚙️</span>
+                        Admin
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanici Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item active">Muhasebe Onaylari</a>
+                    </div>
+                </li>
+            </ul>
+            <div class="navbar-user">
+                <span class="user-name">Ahmet Yilmaz</span>
+                <div class="user-avatar">AY</div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="modern-container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Muhasebe Islem Onaylari</h1>
+                <p class="page-subtitle">Ayarlar > Muhasebe Onaylari</p>
+            </div>
+        </div>
+
+        <!-- SUMMARY CARDS -->
+        <div class="summary-cards">
+            <div class="summary-card">
+                <div class="number" id="pendingCount">12</div>
+                <div class="label">Bekleyen Onay</div>
+            </div>
+            <div class="summary-card">
+                <div class="number" id="todayCount">5</div>
+                <div class="label">Bugun Onaylanan</div>
+            </div>
+            <div class="summary-card">
+                <div class="number" id="weekCount">45</div>
+                <div class="label">Bu Hafta Onaylanan</div>
+            </div>
+            <div class="summary-card">
+                <div class="number" id="totalValue">125,450 EUR</div>
+                <div class="label">Bekleyen Toplam Deger</div>
+            </div>
+        </div>
+
+        <!-- FILTER SECTION -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Filtre ve Arama</h3>
+            </div>
+            <div class="card-body">
+                <div class="filter-section">
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label>Hareket Tipi</label>
+                            <select id="filterType" class="form-control">
+                                <option value="">Tum Tipler</option>
+                                <option value="1">Mal Kabul</option>
+                                <option value="3">Mal Iade</option>
+                                <option value="4">Transfer Giris</option>
+                                <option value="5">Transfer Cikis</option>
+                                <option value="6">Malzeme Cikis</option>
+                                <option value="12">Hurda</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Baslangic Tarihi</label>
+                            <input type="date" id="filterStartDate" class="form-control">
+                        </div>
+                        <div class="filter-group">
+                            <label>Bitis Tarihi</label>
+                            <input type="date" id="filterEndDate" class="form-control">
+                        </div>
+                        <div class="filter-group">
+                            <label>Onay Durumu</label>
+                            <select id="filterStatus" class="form-control">
+                                <option value="pending" selected>Bekleyen</option>
+                                <option value="confirmed">Onaylanan</option>
+                                <option value="">Tumu</option>
+                            </select>
+                        </div>
+                        <div class="filter-actions">
+                            <button class="btn btn-primary" id="applyFilterBtn">Ara</button>
+                            <button class="btn btn-outline" id="clearFilterBtn">Temizle</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LIST SECTION -->
+        <div class="card" style="margin-top: 20px;">
+            <div class="card-header card-header-actions">
+                <h3>Onay Bekleyen Islemler</h3>
+            </div>
+            <div class="card-body">
+                <!-- Bulk Actions -->
+                <div class="bulk-actions">
+                    <label class="select-all-label">
+                        <input type="checkbox" id="selectAll">
+                        <span>Tumu Sec</span>
+                    </label>
+                    <button class="btn btn-primary" id="bulkConfirmBtn">Secilenleri Onayla</button>
+                    <span id="selectedCount" style="margin-left: auto; color: #666;">0 secili</span>
+                </div>
+
+                <div class="table-responsive">
+                <table class="table table-hover" id="confirmationTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;">Sec</th>
+                            <th>Hareket Id</th>
+                            <th>Hareket Tipi</th>
+                            <th>Malzeme Kodu</th>
+                            <th>Miktar</th>
+                            <th>Masraf Merkezi</th>
+                            <th>Olusturan</th>
+                            <th>Tarih</th>
+                            <th>Durum</th>
+                            <th>Islemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr data-status="pending">
+                            <td><input type="checkbox" class="row-select"></td>
+                            <td>MVT-2025-0001</td>
+                            <td><span class="movement-type mt-receipt">Mal Kabul</span></td>
+                            <td>20.12345-0001</td>
+                            <td class="quantity-cell">100.000</td>
+                            <td>CC10001001</td>
+                            <td>Ali Yildiz</td>
+                            <td>20.12.2025 09:15</td>
+                            <td><span class="status-badge status-pending">Bekliyor</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-sm btn-primary" onclick="confirmSingle(this)">Onayla</button>
+                                    <a href="accounting-confirmation-detail.html?id=MVT-2025-0001" class="btn btn-sm btn-info">Detay</a>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr data-status="pending">
+                            <td><input type="checkbox" class="row-select"></td>
+                            <td>MVT-2025-0002</td>
+                            <td><span class="movement-type mt-issue">Malzeme Cikis</span></td>
+                            <td>20.12345-0002</td>
+                            <td class="quantity-cell">5.000</td>
+                            <td>CC10002001</td>
+                            <td>Mehmet Demir</td>
+                            <td>20.12.2025 10:30</td>
+                            <td><span class="status-badge status-pending">Bekliyor</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-sm btn-primary" onclick="confirmSingle(this)">Onayla</button>
+                                    <a href="accounting-confirmation-detail.html?id=MVT-2025-0002" class="btn btn-sm btn-info">Detay</a>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr data-status="pending">
+                            <td><input type="checkbox" class="row-select"></td>
+                            <td>MVT-2025-0003</td>
+                            <td><span class="movement-type mt-transfer">Transfer Giris</span></td>
+                            <td>20.12345-0003</td>
+                            <td class="quantity-cell">10.000</td>
+                            <td>CC10003001</td>
+                            <td>Fatma Sahin</td>
+                            <td>20.12.2025 11:00</td>
+                            <td><span class="status-badge status-pending">Bekliyor</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-sm btn-primary" onclick="confirmSingle(this)">Onayla</button>
+                                    <a href="accounting-confirmation-detail.html?id=MVT-2025-0003" class="btn btn-sm btn-info">Detay</a>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr data-status="pending">
+                            <td><input type="checkbox" class="row-select"></td>
+                            <td>MVT-2025-0004</td>
+                            <td><span class="movement-type mt-scrap">Hurda</span></td>
+                            <td>20.12345-0005</td>
+                            <td class="quantity-cell">15.000</td>
+                            <td>CC10001001</td>
+                            <td>Ali Yildiz</td>
+                            <td>19.12.2025 16:45</td>
+                            <td><span class="status-badge status-pending">Bekliyor</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-sm btn-primary" onclick="confirmSingle(this)">Onayla</button>
+                                    <a href="accounting-confirmation-detail.html?id=MVT-2025-0004" class="btn btn-sm btn-info">Detay</a>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr data-status="pending">
+                            <td><input type="checkbox" class="row-select"></td>
+                            <td>MVT-2025-0005</td>
+                            <td><span class="movement-type mt-count">Sayim Duzeltme (+)</span></td>
+                            <td>20.12345-0004</td>
+                            <td class="quantity-cell">2.000</td>
+                            <td>CC10001001</td>
+                            <td>Ayse Kaya</td>
+                            <td>19.12.2025 14:20</td>
+                            <td><span class="status-badge status-pending">Bekliyor</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-sm btn-primary" onclick="confirmSingle(this)">Onayla</button>
+                                    <a href="accounting-confirmation-detail.html?id=MVT-2025-0005" class="btn btn-sm btn-info">Detay</a>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr data-status="confirmed" style="display: none;">
+                            <td><input type="checkbox" class="row-select" disabled></td>
+                            <td>MVT-2025-0000</td>
+                            <td><span class="movement-type mt-receipt">Mal Kabul</span></td>
+                            <td>20.12345-0006</td>
+                            <td class="quantity-cell">50.000</td>
+                            <td>CC10001001</td>
+                            <td>Test User</td>
+                            <td>18.12.2025 10:00</td>
+                            <td><span class="status-badge status-confirmed">Onaylandi</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <span style="color: #28a745; font-size: 12px;">Onaylayan: Admin</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterTypeSelect = document.getElementById('filterType');
+            const filterStartDate = document.getElementById('filterStartDate');
+            const filterEndDate = document.getElementById('filterEndDate');
+            const filterStatusSelect = document.getElementById('filterStatus');
+            const applyBtn = document.getElementById('applyFilterBtn');
+            const clearBtn = document.getElementById('clearFilterBtn');
+            const table = document.getElementById('confirmationTable');
+            const selectAllCheckbox = document.getElementById('selectAll');
+            const bulkConfirmBtn = document.getElementById('bulkConfirmBtn');
+            const selectedCountSpan = document.getElementById('selectedCount');
+
+            // Filter function
+            function applyFilters() {
+                const filterType = filterTypeSelect.value;
+                const filterStatus = filterStatusSelect.value;
+                const rows = table.querySelectorAll('tbody tr');
+
+                rows.forEach(row => {
+                    const status = row.dataset.status;
+                    let showRow = true;
+
+                    if (filterStatus && status !== filterStatus) showRow = false;
+
+                    row.style.display = showRow ? '' : 'none';
+                });
+            }
+
+            function clearFilters() {
+                filterTypeSelect.value = '';
+                filterStartDate.value = '';
+                filterEndDate.value = '';
+                filterStatusSelect.value = 'pending';
+                applyFilters();
+            }
+
+            // Selection handling
+            function updateSelectedCount() {
+                const checked = table.querySelectorAll('tbody tr[data-status="pending"]:not([style*="display: none"]) .row-select:checked').length;
+                selectedCountSpan.textContent = checked + ' secili';
+            }
+
+            selectAllCheckbox.addEventListener('change', function() {
+                const visibleRows = table.querySelectorAll('tbody tr[data-status="pending"]:not([style*="display: none"]) .row-select');
+                visibleRows.forEach(cb => cb.checked = this.checked);
+                updateSelectedCount();
+            });
+
+            table.addEventListener('change', function(e) {
+                if (e.target.classList.contains('row-select')) {
+                    updateSelectedCount();
+                }
+            });
+
+            // Bulk confirm
+            bulkConfirmBtn.addEventListener('click', function() {
+                const checkedRows = table.querySelectorAll('tbody tr[data-status="pending"] .row-select:checked');
+                if (checkedRows.length === 0) {
+                    alert('Lutfen onaylanacak islemleri secin.');
+                    return;
+                }
+
+                if (confirm(`${checkedRows.length} adet islemi onaylamak istediginize emin misiniz?`)) {
+                    checkedRows.forEach(cb => {
+                        const row = cb.closest('tr');
+                        row.dataset.status = 'confirmed';
+                        row.querySelector('.status-badge').textContent = 'Onaylandi';
+                        row.querySelector('.status-badge').className = 'status-badge status-confirmed';
+                        row.querySelector('.action-buttons').innerHTML = '<span style="color: #28a745; font-size: 12px;">Onaylayan: Ahmet Yilmaz</span>';
+                        cb.checked = false;
+                        cb.disabled = true;
+                    });
+                    selectAllCheckbox.checked = false;
+                    updateSelectedCount();
+                    alert(`${checkedRows.length} islem basariyla onaylandi.`);
+                    applyFilters();
+                }
+            });
+
+            applyBtn.addEventListener('click', applyFilters);
+            clearBtn.addEventListener('click', clearFilters);
+            applyFilters();
+        });
+
+        function confirmSingle(btn) {
+            if (confirm('Bu islemi onaylamak istediginize emin misiniz?')) {
+                const row = btn.closest('tr');
+                row.dataset.status = 'confirmed';
+                row.querySelector('.status-badge').textContent = 'Onaylandi';
+                row.querySelector('.status-badge').className = 'status-badge status-confirmed';
+                row.querySelector('.action-buttons').innerHTML = '<span style="color: #28a745; font-size: 12px;">Onaylayan: Ahmet Yilmaz</span>';
+                row.querySelector('.row-select').checked = false;
+                row.querySelector('.row-select').disabled = true;
+                alert('Islem basariyla onaylandi.');
+
+                // Re-apply filters
+                document.getElementById('applyFilterBtn').click();
+            }
+        }
+    </script>
+
+    <!-- DEVELOPER DOCUMENTATION PANEL -->
+    <div id="devDocsPanel" class="dev-docs-panel">
+        <button class="dev-docs-toggle" onclick="toggleDevDocs()">📋 Gelistirici Dokumantasyonu</button>
+        <div class="dev-docs-content" id="devDocsContent">
+            <div class="dev-docs-header">
+                <h2>📋 27 ACC - Accounting Action Confirmation</h2>
+                <button class="dev-docs-close" onclick="toggleDevDocs()">✕</button>
+            </div>
+            <div class="dev-docs-body">
+                <div class="dev-docs-tabs">
+                    <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapilari</button>
+                    <button class="dev-tab" onclick="showDevTab('movementTypes')">Hareket Tipleri</button>
+                    <button class="dev-tab" onclick="showDevTab('businessRules')">Is Kurallari</button>
+                </div>
+                <div id="dataStructure" class="dev-tab-content active">
+                    <h3>Material Movement Item - Muhasebe Alanlari</h3>
+                    <table class="dev-table"><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td>Movement Id</td><td>int(12)</td><td>Hareket ID</td></tr>
+                            <tr><td>Material number</td><td>text(13)</td><td>Malzeme kodu</td></tr>
+                            <tr><td>Material Movement type</td><td>char</td><td>Hareket tipi</td></tr>
+                            <tr><td>Material Movement Header Id</td><td>int(8)</td><td>Hareket header ID</td></tr>
+                            <tr><td>Cost Center No</td><td>text(10)</td><td>Masraf merkezi</td></tr>
+                            <tr><td>Accounting actions confirmed check</td><td>bool</td><td>Onay durumu</td></tr>
+                            <tr><td>Accounting actions checked by user info</td><td>int(8)</td><td>Onaylayan</td></tr>
+                            <tr><td>Accounting actions checked date time</td><td>datetime</td><td>Onay tarihi</td></tr>
+                            <tr><td>Accounting approval requirement check</td><td>bool</td><td>Onay gereksinimi</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="movementTypes" class="dev-tab-content">
+                    <h3>Hareket Tipleri</h3>
+                    <table class="dev-table"><thead><tr><th>Kod</th><th>Tip</th><th>Aciklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>1</td><td>Goods Receipt</td><td>Mal Kabul</td></tr>
+                            <tr><td>2</td><td>GR Rollback</td><td>Mal Kabul Iptal</td></tr>
+                            <tr><td>3</td><td>Goods Return</td><td>Mal Iade</td></tr>
+                            <tr><td>4</td><td>Transfer Entry</td><td>Transfer Giris</td></tr>
+                            <tr><td>5</td><td>Transfer Exit</td><td>Transfer Cikis</td></tr>
+                            <tr><td>6</td><td>Goods Issue</td><td>Malzeme Cikis</td></tr>
+                            <tr><td>7</td><td>GI Rollback</td><td>Cikis Iptal</td></tr>
+                            <tr><td>8</td><td>Inv Positive</td><td>Sayim (+)</td></tr>
+                            <tr><td>9</td><td>Inv Negative</td><td>Sayim (-)</td></tr>
+                            <tr><td>12</td><td>Scrapping</td><td>Hurda</td></tr>
+                            <tr><td>13</td><td>Scrap Rollback</td><td>Hurda Iptal</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="businessRules" class="dev-tab-content">
+                    <h3>Is Kurallari</h3>
+                    <div class="rules-section">
+                        <ul>
+                            <li>Tum mal hareketleri muhasebe onayi gerektirir</li>
+                            <li>Sadece Accountant veya Admin onay verebilir</li>
+                            <li>Onaylanan islemler geri alinamaz</li>
+                            <li>Toplu onay yapilabilir</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>.dev-docs-panel{position:fixed;bottom:0;left:0;right:0;z-index:9999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}.dev-docs-toggle{position:absolute;bottom:100%;right:20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;padding:10px 20px;border-radius:8px 8px 0 0;cursor:pointer;font-weight:600;font-size:14px;box-shadow:0 -2px 10px rgba(0,0,0,0.2)}.dev-docs-content{display:none;background:#1a1a2e;color:#eee;max-height:60vh;overflow-y:auto;box-shadow:0 -5px 20px rgba(0,0,0,0.3)}.dev-docs-content.active{display:block}.dev-docs-header{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);position:sticky;top:0}.dev-docs-header h2{margin:0;font-size:18px}.dev-docs-close{background:rgba(255,255,255,0.2);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px}.dev-docs-body{padding:20px}.dev-docs-tabs{display:flex;gap:10px;margin-bottom:20px;border-bottom:1px solid #333;padding-bottom:10px}.dev-tab{background:#2d2d44;color:#aaa;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;transition:all 0.3s}.dev-tab:hover,.dev-tab.active{background:#667eea;color:#fff}.dev-tab-content{display:none}.dev-tab-content.active{display:block}.dev-table{width:100%;border-collapse:collapse;margin:15px 0;font-size:13px}.dev-table th,.dev-table td{padding:10px;text-align:left;border:1px solid #333}.dev-table th{background:#2d2d44;color:#667eea;font-weight:600}.dev-table tr:nth-child(even){background:#252538}.dev-docs-body h3{color:#667eea;margin:20px 0 10px;font-size:16px;border-bottom:1px solid #333;padding-bottom:5px}.dev-docs-body ul{margin:0 0 15px 20px;line-height:1.8}.rules-section{background:#252538;padding:15px;border-radius:8px;margin-bottom:15px}</style>
+    <script>function toggleDevDocs(){document.getElementById('devDocsContent').classList.toggle('active')}function showDevTab(tabId){document.querySelectorAll('.dev-tab-content').forEach(c=>c.classList.remove('active'));document.querySelectorAll('.dev-tab').forEach(t=>t.classList.remove('active'));document.getElementById(tabId).classList.add('active');event.target.classList.add('active')}</script>
+</body>
+</html>

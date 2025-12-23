@@ -19,7 +19,7 @@ LAST UPDATED: 2025-12-18
 RELATED DATABASE TABLES
 --------------------------------------------------------------------------------
 
-TABLE: Material
+TABLE: Material (Data Structure IMMA.xlsx)
 | Field Name                              | Type     | Length | Description                    |
 |-----------------------------------------|----------|--------|--------------------------------|
 | id                                      | int      | 8      | Primary key                    |
@@ -61,6 +61,36 @@ Material Status Codes:
 - 3: Inactive - Kullanım dışı
 - 4: Preparing to be used - Kullanıma hazırlanıyor
 - 5: Preparing to discontinuation - Kullanımdan kaldırılıyor
+
+--------------------------------------------------------------------------------
+SCREEN FIELDS (UI Elements) - Screen Designs: 2 ML
+--------------------------------------------------------------------------------
+
+FILTER SECTION:
+- Search box (text) - Malzeme no veya başlık ara
+- Material status filter (dropdown) - Status filtreleme
+- Material group filter (dropdown) - Grup filtreleme
+- Storage filter (dropdown) - Depo filtreleme
+
+LIST TABLE:
+| Column           | Description                        |
+|------------------|-----------------------------------|
+| Material number  | Malzeme numarası (link → detail)   |
+| Material title   | Malzeme başlığı                    |
+| Unit of measure  | Ölçü birimi                        |
+| Material status  | Status (badge)                     |
+| Material Group   | Malzeme grubu                      |
+| Total Stock      | Toplam stok miktarı                |
+| Default Storage  | Varsayılan depo                    |
+
+ACTION BUTTONS:
+- New Material (Yeni Malzeme) - material-data.html?mode=create
+- Export to Excel - Liste dışa aktar
+- Refresh - Listeyi yenile
+
+PAGINATION:
+- Page navigation
+- Items per page selection
 
 --------------------------------------------------------------------------------
 BUSINESS RULES (İş Kuralları)
@@ -126,6 +156,8 @@ INTEGRATION NOTES
                         <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
                         <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
                         <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                        <a href="unit-of-measure-list.html" class="dropdown-item">Ölçü Birimleri</a>
+                        <a href="department-cost-center-list.html" class="dropdown-item">Departman-Masraf Merkezi</a>
                     </div>
                 </li>
                 <li class="nav-item">
@@ -176,6 +208,16 @@ INTEGRATION NOTES
                         <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
                         <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
                         <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanıcı Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onayları</a>
                     </div>
                 </li>
             </ul>
@@ -664,6 +706,16 @@ INTEGRATION NOTES
                             <li><strong>Preparing to discontinuation (5)</strong>: Talep/çıkış/transfer OK, yeni SRM YAPILAMAZ</li>
                             <li>Bloklu malzemeler listede görünür ancak <strong>talep için seçilemez</strong></li>
                             <li>3 karakter sonra arama otosuggest aktif olur</li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanıcı Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onayları</a>
+                    </div>
+                </li>
                         </ul>
                     </div>
                     <h3>Liste Özellikleri</h3>

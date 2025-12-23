@@ -19,7 +19,7 @@ LAST UPDATED: 2025-12-18
 RELATED DATABASE TABLES
 --------------------------------------------------------------------------------
 
-TABLE: Inventory Counting Header
+TABLE: Inventory Counting Header (Data Structure IMMA.xlsx)
 | Field Name                    | Type     | Length | Description                  |
 |-------------------------------|----------|--------|------------------------------|
 | Inventory Counting Header Id  | int      | 8      | Primary key                  |
@@ -32,7 +32,7 @@ TABLE: Inventory Counting Header
 | Document group Id             | int      | 8      | Ek dokümanlar grubu          |
 | Correction finalized check    | bool     | -      | Düzeltme tamamlandı mı       |
 
-TABLE: Inventory Counting Item
+TABLE: Inventory Counting Item (Data Structure IMMA.xlsx)
 | Field Name                    | Type     | Length | Description                  |
 |-------------------------------|----------|--------|------------------------------|
 | Inventory Counting item id    | int      | 8      | Primary key                  |
@@ -43,17 +43,32 @@ TABLE: Inventory Counting Item
 | Counting result quantity      | float    | 15     | Sayım sonucu miktarı         |
 
 --------------------------------------------------------------------------------
-BUSINESS RULES
+İŞ KURALLARI (Business Rules)
 --------------------------------------------------------------------------------
 
-1. Sayım oturumu bir depo/lokasyon için oluşturulur
-2. Created for user info sayımı yapacak depo personelini belirtir
-3. Counted by user info fiili sayımı yapan kişidir
-4. Entered by user info veriyi sisteme giren kişidir (farklı olabilir)
-5. Differences by quantity = Counting result quantity - Stock quantity
-6. Pozitif fark: Fazla malzeme (yeşil)
-7. Negatif fark: Eksik malzeme (kırmızı)
-8. Sıfır fark: Eşleşme (gri)
+ENVANTER DÜZELTMELERİ İŞ KURALLARI:
+1. Açık sayım belgesi varsa etkilenen malzemeler için yeni malzeme talebi engellenir
+   ancak onay süreci devam edebilmelidir
+2. Sayım belgesi mevcut stok miktarlarını içermemelidir
+3. Tekli malzeme envanter düzeltmesi için onay süreci olmayacaktır
+4. Sayım bin bazında yapıldığından sayım belgesi kapsamı için seçim listesi
+   bin numaralarına göre ayrılmış bilgi içerecektir
+5. Diğer ve hurda envanter düzeltmeleri için onaylayan yönetici malzeme grubuna
+   bağlı kayıttan seçilecektir. Süreç endirek ve GPS malzeme anahtar kullanıcısı
+   tarafından başlatılacak ve muhasebe ile ilgiliyse muhasebe endirek ve GPS
+   sorumlu kullanıcısı tarafından tamamlanacaktır.
+6. Ek belge zorunludur
+7. Açıklama zorunludur
+8. Onay sırası malzeme grubuna bağlı kayıttaki gibi takip edilecektir
+   (onay sırası, departman kodu, malzeme grubu)
+9. Stok transferleri ile düzeltmeler yalnızca malzemenin tüm stoğu aynı sayım
+   belgesi içinde sayıma seçildiğinde hesaplanır. Bir bin'deki eksik miktarı
+   başka bir bin'deki fazla miktardan karşılamak için öneriler oluşturulacaktır.
+10. Tüm geri almalar yanlışlıkla yapılan bir işlemin düzeltilmesidir.
+    Admin kullanıcı tarafından yapılabilir
+11. Hurda ve diğer düzeltmeler için en az bir yönetici onaylayıcı olarak
+    eklenmelidir. Bu belge endirek malzeme anahtar kullanıcısı tarafından
+    oluşturulabilir ve onaylayıcı eklenebilir.
 
 --------------------------------------------------------------------------------
 MOVEMENT TYPES FOR INVENTORY
@@ -95,6 +110,25 @@ Summary Stats:
 - Items with Difference
 - Total Difference Value
 
+--------------------------------------------------------------------------------
+NAVIGATION & URL PARAMETERS
+--------------------------------------------------------------------------------
+
+URL Parameters:
+- id (required) - Sayım oturumu ID'si
+
+Entry Points:
+- inventory-counting.html'deki "Görüntüle" butonu
+- URL: counting-session-detail.html?id={sessionId}
+
+JavaScript Functions:
+- getUrlParams() - URL'den id parametresini alır
+- initializePage() - Sayfa yüklendiğinde oturumu başlatır
+- loadSessionData(session) - Oturum verilerini UI'a yükler
+
+Supported Session IDs (Demo Data):
+- IC-HDR-2025-0012, IC-HDR-2025-0011, IC-HDR-2025-0010, IC-HDR-2025-0009
+
 ================================================================================
 -->
 <body>
@@ -124,6 +158,16 @@ Summary Stats:
                         <a href="inventory-counting.html" class="dropdown-item active">Sayım İşlemleri</a>
                         <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
                         <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanıcı Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onayları</a>
                     </div>
                 </li>
             </ul>
@@ -199,7 +243,7 @@ Summary Stats:
                 <h3>Counting Items</h3>
             </div>
             <div class="card-body">
-                <div class="table-container" style="max-height: 500px;">
+                <div class="table-container">
                     <table class="table">
                         <thead>
                             <tr>
@@ -255,6 +299,97 @@ Summary Stats:
                                 <td class="difference-zero">0</td>
                                 <td>45.75 TRY</td>
                                 <td class="difference-zero">0.00 TRY</td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td><strong>MAT-ELC-0567</strong></td>
+                                <td>Kontaktör 25A 220V</td>
+                                <td>Merkez Storage</td>
+                                <td>A</td>
+                                <td>A-01</td>
+                                <td>32 PC</td>
+                                <td><strong>30 PC</strong></td>
+                                <td class="difference-negative">-2</td>
+                                <td>245.00 TRY</td>
+                                <td class="difference-negative">-490.00 TRY</td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td><strong>MAT-CON-0123</strong></td>
+                                <td>Conta NBR 30x42x7</td>
+                                <td>Merkez Storage</td>
+                                <td>A</td>
+                                <td>A-02</td>
+                                <td>156 PC</td>
+                                <td><strong>160 PC</strong></td>
+                                <td class="difference-positive">+4</td>
+                                <td>12.50 TRY</td>
+                                <td class="difference-positive">+50.00 TRY</td>
+                            </tr>
+                            <tr>
+                                <td>6</td>
+                                <td><strong>MAT-PNE-0789</strong></td>
+                                <td>Pnömatik Valf 5/2 24V</td>
+                                <td>Merkez Storage</td>
+                                <td>A</td>
+                                <td>A-01</td>
+                                <td>28 PC</td>
+                                <td><strong>28 PC</strong></td>
+                                <td class="difference-zero">0</td>
+                                <td>185.00 TRY</td>
+                                <td class="difference-zero">0.00 TRY</td>
+                            </tr>
+                            <tr>
+                                <td>7</td>
+                                <td><strong>MAT-BRG-0345</strong></td>
+                                <td>Bilyalı Rulman 6208-2RS</td>
+                                <td>Merkez Storage</td>
+                                <td>B</td>
+                                <td>B-01</td>
+                                <td>50 PC</td>
+                                <td><strong>48 PC</strong></td>
+                                <td class="difference-negative">-2</td>
+                                <td>89.00 TRY</td>
+                                <td class="difference-negative">-178.00 TRY</td>
+                            </tr>
+                            <tr>
+                                <td>8</td>
+                                <td><strong>MAT-FLT-0678</strong></td>
+                                <td>Yağ Filtresi HF-150</td>
+                                <td>Merkez Storage</td>
+                                <td>B</td>
+                                <td>B-02</td>
+                                <td>75 PC</td>
+                                <td><strong>77 PC</strong></td>
+                                <td class="difference-positive">+2</td>
+                                <td>35.00 TRY</td>
+                                <td class="difference-positive">+70.00 TRY</td>
+                            </tr>
+                            <tr>
+                                <td>9</td>
+                                <td><strong>MAT-SEN-0901</strong></td>
+                                <td>Proximity Sensör M18</td>
+                                <td>Merkez Storage</td>
+                                <td>B</td>
+                                <td>B-01</td>
+                                <td>24 PC</td>
+                                <td><strong>24 PC</strong></td>
+                                <td class="difference-zero">0</td>
+                                <td>145.00 TRY</td>
+                                <td class="difference-zero">0.00 TRY</td>
+                            </tr>
+                            <tr>
+                                <td>10</td>
+                                <td><strong>MAT-CBL-0234</strong></td>
+                                <td>Kontrol Kablosu 4x1.5</td>
+                                <td>Merkez Storage</td>
+                                <td>C</td>
+                                <td>C-01</td>
+                                <td>500 M</td>
+                                <td><strong>495 M</strong></td>
+                                <td class="difference-negative">-5</td>
+                                <td>8.50 TRY</td>
+                                <td class="difference-negative">-42.50 TRY</td>
                             </tr>
                         </tbody>
                     </table>
@@ -316,18 +451,25 @@ Summary Stats:
             color: #2c3e50;
         }
         .table-container {
-            overflow-y: auto;
+            overflow: auto;
             border: 1px solid #dee2e6;
             border-radius: 8px;
+            max-height: 400px;
         }
         .table-container table {
             margin-bottom: 0;
+            min-width: 1200px;
         }
         .table-container thead {
             position: sticky;
             top: 0;
             background: white;
             z-index: 10;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .table-container thead th {
+            background: #f8f9fa;
+            white-space: nowrap;
         }
         .difference-positive { color: #28a745; font-weight: 700; }
         .difference-negative { color: #dc3545; font-weight: 700; }
@@ -451,5 +593,153 @@ Summary Stats:
 
         document.addEventListener('DOMContentLoaded', initializePage);
     </script>
+
+    <!-- DEVELOPER DOCUMENTATION PANEL -->
+    <div id="devDocsPanel" class="dev-docs-panel">
+        <button class="dev-docs-toggle" onclick="toggleDevDocs()">📋 Geliştirici Dokümantasyonu</button>
+        <div class="dev-docs-content" id="devDocsContent">
+            <div class="dev-docs-header">
+                <h2>📋 22 IC-C - Counting Session Detail</h2>
+                <button class="dev-docs-close" onclick="toggleDevDocs()">✕</button>
+            </div>
+            <div class="dev-docs-body">
+                <div class="dev-docs-tabs">
+                    <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('formFields')">Form Alanları</button>
+                    <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
+                    <button class="dev-tab" onclick="showDevTab('navigation')">Navigasyon</button>
+                </div>
+                <div id="dataStructure" class="dev-tab-content active">
+                    <h3>Inventory Counting Header</h3>
+                    <table class="dev-table"><thead><tr><th>Field Name</th><th>Type</th><th>Length</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td>Inventory Counting Header Id</td><td>int</td><td>8</td><td>Primary key</td></tr>
+                            <tr><td>Correction type</td><td>char</td><td>1</td><td>Düzeltme tipi</td></tr>
+                            <tr><td>Creation date time</td><td>datetime</td><td>-</td><td>Oluşturma tarihi</td></tr>
+                            <tr><td>Created by user info</td><td>int</td><td>8</td><td>Oluşturan kullanıcı</td></tr>
+                            <tr><td>Created for user info</td><td>int</td><td>8</td><td>Sayımı yapacak kullanıcı</td></tr>
+                            <tr><td>Counted by user info</td><td>int</td><td>8</td><td>Sayan kullanıcı</td></tr>
+                            <tr><td>Entered by user info</td><td>int</td><td>8</td><td>Veri giriş kullanıcısı</td></tr>
+                            <tr><td>Document group Id</td><td>int</td><td>8</td><td>Ek dokümanlar grubu</td></tr>
+                            <tr><td>Correction finalized check</td><td>bool</td><td>-</td><td>Düzeltme tamamlandı mı</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Inventory Counting Item</h3>
+                    <table class="dev-table"><thead><tr><th>Field Name</th><th>Type</th><th>Length</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td>Inventory Counting item id</td><td>int</td><td>8</td><td>Primary key</td></tr>
+                            <tr><td>Inventory Counting item number</td><td>int</td><td>4</td><td>Satır numarası</td></tr>
+                            <tr><td>Material number</td><td>text</td><td>13</td><td>Malzeme numarası</td></tr>
+                            <tr><td>Stock record Id</td><td>int</td><td>8</td><td>Stok kaydı referansı</td></tr>
+                            <tr><td>Stock quantity</td><td>float</td><td>15</td><td>Sistem stok miktarı</td></tr>
+                            <tr><td>Counting result quantity</td><td>float</td><td>15</td><td>Sayım sonucu miktarı</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Movement Types</h3>
+                    <table class="dev-table"><thead><tr><th>Code</th><th>Type</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td>8</td><td>Inventory positive record</td><td>Sayım fazlası (stok artışı)</td></tr>
+                            <tr><td>9</td><td>Inventory negative record</td><td>Sayım eksiği (stok azalması)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="formFields" class="dev-tab-content">
+                    <h3>Session Header Information (Readonly)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>ID</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Counting document Id</td><td>detailId</td><td>Sayım oturum numarası</td></tr>
+                            <tr><td>Counting Type</td><td>detailType</td><td>Sayım tipi (Yıllık/Dönemsel)</td></tr>
+                            <tr><td>Storage</td><td>detailStorage</td><td>Depo adı</td></tr>
+                            <tr><td>Status</td><td>detailStatus</td><td>Durum badge</td></tr>
+                            <tr><td>Creation date time</td><td>detailCreationDate</td><td>Oluşturma tarihi</td></tr>
+                            <tr><td>Created by user info</td><td>detailCreatedBy</td><td>Oluşturan kullanıcı</td></tr>
+                            <tr><td>Counted by user info</td><td>detailCreatedFor</td><td>Sayımı yapan kişi</td></tr>
+                            <tr><td>Total Items</td><td>detailTotalItems</td><td>Toplam kalem sayısı</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Counting Items Table (Readonly)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Kolon</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Item</td><td>Satır numarası</td></tr>
+                            <tr><td>Material number</td><td>Malzeme numarası</td></tr>
+                            <tr><td>Material title</td><td>Malzeme başlığı</td></tr>
+                            <tr><td>Storage</td><td>Depo adı</td></tr>
+                            <tr><td>Location</td><td>Lokasyon kodu</td></tr>
+                            <tr><td>Bin</td><td>Bin numarası</td></tr>
+                            <tr><td>System Quantity</td><td>Sistem stok miktarı</td></tr>
+                            <tr><td>Counting result Quantity</td><td>Sayım sonucu</td></tr>
+                            <tr><td>Differences by quantity</td><td>Fark miktarı</td></tr>
+                            <tr><td>Unit value</td><td>Birim değeri</td></tr>
+                            <tr><td>Differences by quantity Value</td><td>Fark değeri TRY</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Summary Stats (Readonly)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>ID</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Total Items</td><td>totalItems</td><td>Toplam kalem sayısı</td></tr>
+                            <tr><td>Counting result Quantity</td><td>countedItems</td><td>Sayılan kalem sayısı</td></tr>
+                            <tr><td>Differences</td><td>differenceItems</td><td>Farklı kalem sayısı</td></tr>
+                            <tr><td>Toplam Differences by quantity Değeri</td><td>totalDifference</td><td>Toplam fark değeri TRY</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="businessRules" class="dev-tab-content">
+                    <h3>Envanter Düzeltmeleri İş Kuralları</h3>
+                    <div class="rules-section">
+                        <ul>
+                            <li><strong>Kural 1:</strong> Açık sayım belgesi varsa etkilenen malzemeler için yeni malzeme talebi engellenir ancak onay süreci devam edebilmelidir</li>
+                            <li><strong>Kural 2:</strong> Sayım belgesi mevcut stok miktarlarını içermemelidir</li>
+                            <li><strong>Kural 3:</strong> Tekli malzeme envanter düzeltmesi için onay süreci olmayacaktır</li>
+                            <li><strong>Kural 4:</strong> Sayım bin bazında yapıldığından sayım belgesi kapsamı için seçim listesi bin numaralarına göre ayrılmış bilgi içerecektir</li>
+                            <li><strong>Kural 5:</strong> Diğer ve hurda envanter düzeltmeleri için onaylayan yönetici malzeme grubuna bağlı kayıttan seçilecektir. Süreç endirek ve GPS malzeme anahtar kullanıcısı tarafından başlatılacak ve muhasebe ile ilgiliyse muhasebe endirek ve GPS sorumlu kullanıcısı tarafından tamamlanacaktır.</li>
+                            <li><strong>Kural 6:</strong> Ek belge zorunludur</li>
+                            <li><strong>Kural 7:</strong> Açıklama zorunludur</li>
+                            <li><strong>Kural 8:</strong> Onay sırası malzeme grubuna bağlı kayıttaki gibi takip edilecektir (onay sırası, departman kodu, malzeme grubu)</li>
+                            <li><strong>Kural 9:</strong> Stok transferleri ile düzeltmeler yalnızca malzemenin tüm stoğu aynı sayım belgesi içinde sayıma seçildiğinde hesaplanır. Bir bin'deki eksik miktarı başka bir bin'deki fazla miktardan karşılamak için öneriler oluşturulacaktır.</li>
+                            <li><strong>Kural 10:</strong> Tüm geri almalar yanlışlıkla yapılan bir işlemin düzeltilmesidir. Admin kullanıcı tarafından yapılabilir</li>
+                            <li><strong>Kural 11:</strong> Hurda ve diğer düzeltmeler için en az bir yönetici onaylayıcı olarak eklenmelidir. Bu belge endirek malzeme anahtar kullanıcısı tarafından oluşturulabilir ve onaylayıcı eklenebilir.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div id="navigation" class="dev-tab-content">
+                    <h3>URL Parametreleri</h3>
+                    <div class="rules-section">
+                        <ul>
+                            <li><strong>id</strong> (required) - Sayım oturumu ID'si</li>
+                        </ul>
+                    </div>
+                    <h3>Giriş Noktaları</h3>
+                    <div class="rules-section">
+                        <ul>
+                            <li>inventory-counting.html'deki "Görüntüle" butonu</li>
+                            <li>URL: counting-session-detail.html?id={sessionId}</li>
+                        </ul>
+                    </div>
+                    <h3>JavaScript Functions</h3>
+                    <div class="rules-section">
+                        <ul>
+                            <li><strong>getUrlParams()</strong> - URL'den id parametresini alır</li>
+                            <li><strong>initializePage()</strong> - Sayfa yüklendiğinde oturumu başlatır</li>
+                            <li><strong>loadSessionData(session)</strong> - Oturum verilerini UI'a yükler</li>
+                        </ul>
+                    </div>
+                    <h3>Demo Session IDs</h3>
+                    <div class="rules-section">
+                        <ul>
+                            <li>IC-HDR-2025-0012 (Yıllık - Merkez Storage)</li>
+                            <li>IC-HDR-2025-0011 (Dönemsel - Hat 1 Deposu)</li>
+                            <li>IC-HDR-2025-0010 (Dönemsel - Konsinye Storage)</li>
+                            <li>IC-HDR-2025-0009 (Yıllık - Yardımcı Storage)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>.dev-docs-panel{position:fixed;bottom:0;left:0;right:0;z-index:9999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}.dev-docs-toggle{position:absolute;bottom:100%;right:20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;padding:10px 20px;border-radius:8px 8px 0 0;cursor:pointer;font-weight:600;font-size:14px;box-shadow:0 -2px 10px rgba(0,0,0,0.2)}.dev-docs-content{display:none;background:#1a1a2e;color:#eee;max-height:60vh;overflow-y:auto;box-shadow:0 -5px 20px rgba(0,0,0,0.3)}.dev-docs-content.active{display:block}.dev-docs-header{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);position:sticky;top:0}.dev-docs-header h2{margin:0;font-size:18px}.dev-docs-close{background:rgba(255,255,255,0.2);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px}.dev-docs-body{padding:20px}.dev-docs-tabs{display:flex;gap:10px;margin-bottom:20px;border-bottom:1px solid #333;padding-bottom:10px}.dev-tab{background:#2d2d44;color:#aaa;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;transition:all 0.3s}.dev-tab:hover,.dev-tab.active{background:#667eea;color:#fff}.dev-tab-content{display:none}.dev-tab-content.active{display:block}.dev-table{width:100%;border-collapse:collapse;margin:15px 0;font-size:13px}.dev-table th,.dev-table td{padding:10px;text-align:left;border:1px solid #333}.dev-table th{background:#2d2d44;color:#667eea;font-weight:600}.dev-table tr:nth-child(even){background:#252538}.dev-docs-body h3{color:#667eea;margin:20px 0 10px;font-size:16px;border-bottom:1px solid #333;padding-bottom:5px}.dev-docs-body h4{color:#aaa;margin:15px 0 8px;font-size:14px}.dev-docs-body ul{margin:0 0 15px 20px;line-height:1.8}.rules-section{background:#252538;padding:15px;border-radius:8px;margin-bottom:15px}</style>
+    <script>function toggleDevDocs(){document.getElementById('devDocsContent').classList.toggle('active')}function showDevTab(tabId){document.querySelectorAll('.dev-tab-content').forEach(c=>c.classList.remove('active'));document.querySelectorAll('.dev-tab').forEach(t=>t.classList.remove('active'));document.getElementById(tabId).classList.add('active');event.target.classList.add('active')}</script>
 </body>
 </html>

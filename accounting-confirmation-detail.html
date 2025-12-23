@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hareket Detayi - IMMA</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .info-item { padding: 12px 0; border-bottom: 1px solid #eee; }
+        .info-item label { display: block; font-size: 12px; color: #666; margin-bottom: 4px; font-weight: 500; }
+        .info-item span { font-size: 14px; color: #333; font-weight: 600; }
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-confirmed { background: #d4edda; color: #155724; }
+        .status-rejected { background: #f8d7da; color: #721c24; }
+        .movement-type-badge { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+        .mt-receipt { background: #cce5ff; color: #004085; }
+        .mt-issue { background: #f5c6cb; color: #721c24; }
+        .mt-transfer { background: #d4edda; color: #155724; }
+        .mt-adjustment { background: #bee5eb; color: #0c5460; }
+        .mt-scrap { background: #e2e3e5; color: #383d41; }
+        .action-section { margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 8px; }
+        .action-buttons { display: flex; gap: 10px; }
+        .detail-card { margin-bottom: 20px; }
+        .timeline { margin-top: 15px; }
+        .timeline-item { display: flex; align-items: flex-start; padding: 10px 0; border-left: 2px solid #667eea; margin-left: 10px; padding-left: 20px; position: relative; }
+        .timeline-item::before { content: ''; width: 10px; height: 10px; background: #667eea; border-radius: 50%; position: absolute; left: -6px; top: 14px; }
+        .timeline-item .time { font-size: 12px; color: #666; min-width: 120px; }
+        .timeline-item .event { font-size: 14px; color: #333; }
+    </style>
+</head>
+<!--
+================================================================================
+IMMA DEVELOPER DOCUMENTATION
+================================================================================
+
+SCREEN: 27 ACC - Accounting Action Confirmation (Detail)
+FILE: accounting-confirmation-detail.html
+LAST UPDATED: 2025-12-23
+
+--------------------------------------------------------------------------------
+RELATED DATABASE TABLES
+--------------------------------------------------------------------------------
+
+TABLE: Material Movement Item (Data Structure IMMA.xlsx)
+| Field Name                               | Type     | Length | Description                    |
+|------------------------------------------|----------|--------|--------------------------------|
+| Movement Id                              | int      | 12     | Hareket ID (Primary Key)       |
+| Material number                          | text     | 13     | Malzeme kodu                   |
+| Material Movement type                   | char     | -      | Hareket tipi (1-14)            |
+| Material Movement Header Id              | int      | 8      | Hareket header ID              |
+| Cost Center No                           | text     | 10     | Masraf merkezi                 |
+| Accounting actions confirmed check       | bool     | -      | Muhasebe onay durumu           |
+| Accounting actions checked by user info  | int      | 8      | Kontrol eden kullanici         |
+| Accounting actions checked date time     | datetime | -      | Kontrol tarihi                 |
+| Accounting approval requirement check    | bool     | -      | Onay gereksinimi               |
+
+Additional Fields (from related tables):
+| Field Name                | Type     | Length | Description                    |
+|---------------------------|----------|--------|--------------------------------|
+| Material title            | text     | 100    | Malzeme adi                    |
+| Movement quantity         | float    | 15     | Hareket miktari                |
+| Unit of measure           | text     | 10     | Olcu birimi                    |
+| Storage type              | text     | 50     | Depo tipi                      |
+| Location                  | text     | 50     | Lokasyon                       |
+| Bin                       | text     | 20     | Raf                            |
+| Created by user info      | int      | 8      | Olusturan kullanici            |
+| Creation date time        | datetime | -      | Olusturma tarihi               |
+
+--------------------------------------------------------------------------------
+MOVEMENT TYPES (Hareket Tipleri)
+--------------------------------------------------------------------------------
+
+| Code | English                    | Turkish                  | CSS Class     |
+|------|----------------------------|--------------------------|---------------|
+| 1    | Goods Receipt              | Mal Kabul                | mt-receipt    |
+| 2    | Goods Receipt Rollback     | Mal Kabul Iptali         | mt-receipt    |
+| 3    | Goods Return               | Mal Iade                 | mt-receipt    |
+| 4    | Material Transfer Entry    | Transfer Giris           | mt-transfer   |
+| 5    | Material Transfer Exit     | Transfer Cikis           | mt-transfer   |
+| 6    | Goods Issue                | Malzeme Cikisi           | mt-issue      |
+| 7    | Goods Issue Rollback       | Cikis Iptali             | mt-issue      |
+| 8    | Inventory Positive Adj.    | Envanter Artis           | mt-adjustment |
+| 9    | Inventory Negative Adj.    | Envanter Azalis          | mt-adjustment |
+| 10   | Packing Material Receipt   | Ambalaj Kabul            | mt-receipt    |
+| 11   | Packing Material Return    | Ambalaj Iade             | mt-receipt    |
+| 12   | Scrapping                  | Hurda                    | mt-scrap      |
+| 13   | Scrapping Rollback         | Hurda Iptali             | mt-scrap      |
+| 14   | Other                      | Diger                    | mt-scrap      |
+
+--------------------------------------------------------------------------------
+IS KURALLARI (Business Rules)
+--------------------------------------------------------------------------------
+
+1. Tum mal hareketleri muhasebe onayi gerektirir
+   - Accounting approval requirement check = true olan hareketler listeye gelir
+2. Sadece Accountant veya Admin rolundeki kullanicilar onay verebilir
+3. Onaylanan islemler geri alinamaz (readonly olur)
+4. Onay/Red islemi timestamp ve kullanici bilgisi ile kaydedilir
+5. Hareket tipi bazinda renk kodlamasi yapilir
+6. Detay ekrani sadece goruntulemedir (view only)
+7. Bekleyen hareketlerde Onayla/Reddet butonlari gosterilir
+8. Onayli/Reddedili hareketlerde butonlar gizlenir
+
+--------------------------------------------------------------------------------
+URL PARAMETERS
+--------------------------------------------------------------------------------
+
+?id=MVT-2025-0001  - Hareket ID
+
+--------------------------------------------------------------------------------
+INTEGRATION NOTES
+--------------------------------------------------------------------------------
+
+- Material Movement tablosundan hareket bilgileri
+- Material tablosundan malzeme adi
+- Material Stock tablosundan lokasyon bilgileri
+- User tablosundan kullanici adlari
+
+================================================================================
+-->
+<body>
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">M</div>
+                <div class="brand-text">
+                    <span class="brand-name">IMMA</span>
+                    <span class="brand-subtitle">Endirek Malzeme Yonetimi</span>
+                </div>
+            </a>
+            <ul class="navbar-menu">
+                <li class="nav-item"><a href="index.html" class="nav-link"><span class="nav-icon">📊</span>Dashboard</a></li>
+                <li class="nav-item"><a href="material-list.html" class="nav-link"><span class="nav-icon">📦</span>Ana Veriler</a></li>
+                <li class="nav-item"><a href="mrp.html" class="nav-link"><span class="nav-icon">📈</span>MRP</a></li>
+                <li class="nav-item"><a href="srm-list.html" class="nav-link"><span class="nav-icon">🛒</span>Satinalma</a></li>
+                <li class="nav-item"><a href="budget-management.html" class="nav-link"><span class="nav-icon">💰</span>Budget</a></li>
+                <li class="nav-item"><a href="material-request-list.html" class="nav-link"><span class="nav-icon">📋</span>Talepler</a></li>
+                <li class="nav-item">
+                    <a href="transfer-list.html" class="nav-link"><span class="nav-icon">🏭</span>Stock</a>
+                    <div class="dropdown-menu">
+                        <a href="direct-issue.html" class="dropdown-item">Dogrudan Cikis</a>
+                        <a href="warehouse-transfer.html" class="dropdown-item">Depo Transferi</a>
+                        <a href="transfer-list.html" class="dropdown-item">Transfer Listesi</a>
+                        <a href="inventory-counting.html" class="dropdown-item">Sayim Islemleri</a>
+                        <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayimi</a>
+                        <a href="scrapping.html" class="dropdown-item">Hurda Islemleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link active">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanici Malzeme Limitleri</a>
+                        <a href="unit-of-measure-list.html" class="dropdown-item">Olcu Birimleri</a>
+                        <a href="department-cost-center-list.html" class="dropdown-item">Departman-Masraf Merkezi</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item active">Muhasebe Onaylari</a>
+                    </div>
+                </li>
+            </ul>
+            <div class="navbar-user">
+                <span class="user-role">Admin</span>
+                <span class="user-name">Ahmet Yilmaz</span>
+                <div class="user-avatar">AY</div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="modern-container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Hareket Detayi</h1>
+                <p class="page-subtitle">Ayarlar > Muhasebe Onaylari > <span id="movementId">MVT-2025-0001</span></p>
+            </div>
+            <div class="page-actions">
+                <a href="accounting-confirmation.html" class="btn btn-outline">← Geri Don</a>
+            </div>
+        </div>
+
+        <!-- Movement Information Card -->
+        <div class="card detail-card">
+            <div class="card-header">
+                <h3>Hareket Bilgileri</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Movement Id:</label>
+                        <span id="displayMovementId">MVT-2025-0001</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Material Movement Header Id:</label>
+                        <span id="displayHeaderId">HDR-2025-0001</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Material Movement type:</label>
+                        <span><span class="movement-type-badge mt-receipt">1 - Mal Kabul</span></span>
+                    </div>
+                    <div class="info-item">
+                        <label>Creation date time:</label>
+                        <span id="displayDate">20.12.2025 09:15</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Created by user info:</label>
+                        <span id="displayCreatedBy">Ali Yildiz</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Accounting actions confirmed check:</label>
+                        <span><span class="status-badge status-pending">Bekliyor</span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Material Information Card -->
+        <div class="card detail-card">
+            <div class="card-header">
+                <h3>Malzeme Bilgileri</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Material number:</label>
+                        <span id="displayMaterialCode">20.12345-0001</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Material title:</label>
+                        <span id="displayMaterialTitle">Endustriyel Yaglama Yagi 5L</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Movement quantity:</label>
+                        <span id="displayQuantity" style="font-family: monospace; font-size: 16px;">100.000</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Unit of measure:</label>
+                        <span id="displayUnit">Adet</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Location Information Card -->
+        <div class="card detail-card">
+            <div class="card-header">
+                <h3>Lokasyon Bilgileri</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Storage type:</label>
+                        <span id="displayStorage">Ana Depo</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Location:</label>
+                        <span id="displayLocation">A Blok</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Bin:</label>
+                        <span id="displayBin">A-01-001</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Cost Center No:</label>
+                        <span id="displayCostCenter">CC10001001</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Accounting Status Card -->
+        <div class="card detail-card">
+            <div class="card-header">
+                <h3>Muhasebe Onay Durumu</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Accounting approval requirement check:</label>
+                        <span>Evet - Onay Gerekli</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Accounting actions confirmed check:</label>
+                        <span><span class="status-badge status-pending">Bekliyor</span></span>
+                    </div>
+                    <div class="info-item">
+                        <label>Accounting actions checked by user info:</label>
+                        <span id="displayConfirmedBy">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Accounting actions checked date time:</label>
+                        <span id="displayConfirmedDate">-</span>
+                    </div>
+                </div>
+
+                <!-- Timeline -->
+                <div class="timeline" style="margin-top: 20px;">
+                    <h4 style="margin-bottom: 15px; color: #667eea;">Islem Gecmisi</h4>
+                    <div class="timeline-item">
+                        <span class="time">20.12.2025 09:15</span>
+                        <span class="event">Hareket olusturuldu - Ali Yildiz</span>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time">20.12.2025 09:16</span>
+                        <span class="event">Muhasebe onayina gonderildi</span>
+                    </div>
+                </div>
+
+                <!-- Action Section (only shown for pending) -->
+                <div class="action-section" id="actionSection">
+                    <h4 style="margin-bottom: 15px;">Onay Islemi</h4>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="confirmNote">Onay Notu (opsiyonel):</label>
+                        <textarea id="confirmNote" class="form-control" rows="2" placeholder="Onay veya red icin not ekleyebilirsiniz..."></textarea>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-success" onclick="confirmMovement()">Onayla</button>
+                        <button class="btn btn-danger" onclick="rejectMovement()">Reddet</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Developer Documentation Panel -->
+    <div class="dev-docs-panel">
+        <button class="dev-docs-toggle" onclick="toggleDevDocs()">📋 Gelistirici Dokumantasyonu</button>
+        <div id="devDocsContent" class="dev-docs-content">
+            <div class="dev-docs-header">
+                <h2>27 ACC - Muhasebe Onay Detayi</h2>
+                <button class="dev-docs-close" onclick="toggleDevDocs()">✕</button>
+            </div>
+            <div class="dev-docs-body">
+                <div class="dev-docs-tabs">
+                    <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapilari</button>
+                    <button class="dev-tab" onclick="showDevTab('movementTypes')">Hareket Tipleri</button>
+                    <button class="dev-tab" onclick="showDevTab('businessRules')">Is Kurallari</button>
+                </div>
+
+                <div id="dataStructure" class="dev-tab-content active">
+                    <h3>Material Movement Item (9 alan)</h3>
+                    <table class="dev-table">
+                        <thead>
+                            <tr><th>Field Name</th><th>Type</th><th>Length</th><th>Description</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Movement Id</td><td>int</td><td>12</td><td>Hareket ID (Primary Key)</td></tr>
+                            <tr><td>Material number</td><td>text</td><td>13</td><td>Malzeme kodu</td></tr>
+                            <tr><td>Material Movement type</td><td>char</td><td>-</td><td>Hareket tipi (1-14)</td></tr>
+                            <tr><td>Material Movement Header Id</td><td>int</td><td>8</td><td>Hareket header ID</td></tr>
+                            <tr><td>Cost Center No</td><td>text</td><td>10</td><td>Masraf merkezi</td></tr>
+                            <tr><td>Accounting actions confirmed check</td><td>bool</td><td>-</td><td>Muhasebe onay durumu</td></tr>
+                            <tr><td>Accounting actions checked by user info</td><td>int</td><td>8</td><td>Kontrol eden kullanici</td></tr>
+                            <tr><td>Accounting actions checked date time</td><td>datetime</td><td>-</td><td>Kontrol tarihi</td></tr>
+                            <tr><td>Accounting approval requirement check</td><td>bool</td><td>-</td><td>Onay gereksinimi</td></tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Iliskili Alanlar (Related Tables)</h3>
+                    <table class="dev-table">
+                        <thead>
+                            <tr><th>Field Name</th><th>Source Table</th><th>Description</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Material title</td><td>Material</td><td>Malzeme adi</td></tr>
+                            <tr><td>Movement quantity</td><td>Material Movement</td><td>Hareket miktari</td></tr>
+                            <tr><td>Unit of measure</td><td>Material</td><td>Olcu birimi</td></tr>
+                            <tr><td>Storage type</td><td>Material Stock</td><td>Depo tipi</td></tr>
+                            <tr><td>Location</td><td>Material Stock</td><td>Lokasyon</td></tr>
+                            <tr><td>Bin</td><td>Material Stock</td><td>Raf</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="movementTypes" class="dev-tab-content">
+                    <h3>Hareket Tipleri (Movement Types)</h3>
+                    <table class="dev-table">
+                        <thead>
+                            <tr><th>Kod</th><th>English</th><th>Turkish</th><th>Kategori</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>1</td><td>Goods Receipt</td><td>Mal Kabul</td><td><span class="movement-type-badge mt-receipt">Receipt</span></td></tr>
+                            <tr><td>2</td><td>Goods Receipt Rollback</td><td>Mal Kabul Iptali</td><td><span class="movement-type-badge mt-receipt">Receipt</span></td></tr>
+                            <tr><td>3</td><td>Goods Return</td><td>Mal Iade</td><td><span class="movement-type-badge mt-receipt">Receipt</span></td></tr>
+                            <tr><td>4</td><td>Material Transfer Entry</td><td>Transfer Giris</td><td><span class="movement-type-badge mt-transfer">Transfer</span></td></tr>
+                            <tr><td>5</td><td>Material Transfer Exit</td><td>Transfer Cikis</td><td><span class="movement-type-badge mt-transfer">Transfer</span></td></tr>
+                            <tr><td>6</td><td>Goods Issue</td><td>Malzeme Cikisi</td><td><span class="movement-type-badge mt-issue">Issue</span></td></tr>
+                            <tr><td>7</td><td>Goods Issue Rollback</td><td>Cikis Iptali</td><td><span class="movement-type-badge mt-issue">Issue</span></td></tr>
+                            <tr><td>8</td><td>Inventory Positive Adjustment</td><td>Envanter Artis</td><td><span class="movement-type-badge mt-adjustment">Adjustment</span></td></tr>
+                            <tr><td>9</td><td>Inventory Negative Adjustment</td><td>Envanter Azalis</td><td><span class="movement-type-badge mt-adjustment">Adjustment</span></td></tr>
+                            <tr><td>10</td><td>Packing Material Receipt</td><td>Ambalaj Kabul</td><td><span class="movement-type-badge mt-receipt">Receipt</span></td></tr>
+                            <tr><td>11</td><td>Packing Material Return</td><td>Ambalaj Iade</td><td><span class="movement-type-badge mt-receipt">Receipt</span></td></tr>
+                            <tr><td>12</td><td>Scrapping</td><td>Hurda</td><td><span class="movement-type-badge mt-scrap">Scrap</span></td></tr>
+                            <tr><td>13</td><td>Scrapping Rollback</td><td>Hurda Iptali</td><td><span class="movement-type-badge mt-scrap">Scrap</span></td></tr>
+                            <tr><td>14</td><td>Other</td><td>Diger</td><td><span class="movement-type-badge mt-scrap">Other</span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="businessRules" class="dev-tab-content">
+                    <h3>Is Kurallari</h3>
+                    <div class="rules-section">
+                        <h4>Muhasebe Onay Kurallari</h4>
+                        <ul>
+                            <li><strong>Kural 1:</strong> Tum mal hareketleri muhasebe onayi gerektirir</li>
+                            <li><strong>Kural 2:</strong> Sadece Accountant veya Admin rolundeki kullanicilar onay verebilir</li>
+                            <li><strong>Kural 3:</strong> Onaylanan islemler geri alinamaz (readonly olur)</li>
+                            <li><strong>Kural 4:</strong> Onay/Red islemi timestamp ve kullanici bilgisi ile kaydedilir</li>
+                            <li><strong>Kural 5:</strong> Hareket tipi bazinda renk kodlamasi yapilir</li>
+                        </ul>
+                    </div>
+                    <div class="rules-section">
+                        <h4>Ekran Davranisi</h4>
+                        <ul>
+                            <li>Detay ekrani sadece goruntulemedir (view only)</li>
+                            <li>Bekleyen hareketlerde Onayla/Reddet butonlari gosterilir</li>
+                            <li>Onayli/Reddedili hareketlerde butonlar gizlenir</li>
+                            <li>Islem gecmisi timeline olarak gosterilir</li>
+                        </ul>
+                    </div>
+                    <div class="rules-section">
+                        <h4>URL Parametreleri</h4>
+                        <ul>
+                            <li><code>?id=MVT-2025-0001</code> - Hareket ID</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .dev-docs-panel{position:fixed;bottom:0;left:0;right:0;z-index:9999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+        .dev-docs-toggle{position:absolute;bottom:100%;right:20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;padding:10px 20px;border-radius:8px 8px 0 0;cursor:pointer;font-weight:600;font-size:14px;box-shadow:0 -2px 10px rgba(0,0,0,0.2)}
+        .dev-docs-content{display:none;background:#1a1a2e;color:#eee;max-height:60vh;overflow-y:auto;box-shadow:0 -5px 20px rgba(0,0,0,0.3)}
+        .dev-docs-content.active{display:block}
+        .dev-docs-header{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);position:sticky;top:0}
+        .dev-docs-header h2{margin:0;font-size:18px}
+        .dev-docs-close{background:rgba(255,255,255,0.2);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px}
+        .dev-docs-body{padding:20px}
+        .dev-docs-tabs{display:flex;gap:10px;margin-bottom:20px;border-bottom:1px solid #333;padding-bottom:10px}
+        .dev-tab{background:#2d2d44;color:#aaa;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;transition:all 0.3s}
+        .dev-tab:hover,.dev-tab.active{background:#667eea;color:#fff}
+        .dev-tab-content{display:none}
+        .dev-tab-content.active{display:block}
+        .dev-table{width:100%;border-collapse:collapse;margin:15px 0;font-size:13px}
+        .dev-table th,.dev-table td{padding:10px;text-align:left;border:1px solid #333}
+        .dev-table th{background:#2d2d44;color:#667eea;font-weight:600}
+        .dev-table tr:nth-child(even){background:#252538}
+        .dev-docs-body h3{color:#667eea;margin:20px 0 10px;font-size:16px;border-bottom:1px solid #333;padding-bottom:5px}
+        .dev-docs-body h4{color:#aaa;margin:15px 0 10px;font-size:14px}
+        .dev-docs-body ul{margin:0 0 15px 20px;line-height:1.8}
+        .dev-docs-body code{background:#2d2d44;padding:2px 6px;border-radius:3px;font-family:monospace}
+        .rules-section{background:#252538;padding:15px;border-radius:8px;margin-bottom:15px}
+    </style>
+
+    <script>
+        function toggleDevDocs() {
+            document.getElementById('devDocsContent').classList.toggle('active');
+        }
+
+        function showDevTab(tabId) {
+            document.querySelectorAll('.dev-tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.dev-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function confirmMovement() {
+            if (confirm('Bu hareketi onaylamak istediginizden emin misiniz?')) {
+                alert('Hareket onaylandi!');
+                window.location.href = 'accounting-confirmation.html';
+            }
+        }
+
+        function rejectMovement() {
+            const note = document.getElementById('confirmNote').value;
+            if (!note.trim()) {
+                alert('Red islemi icin not girmeniz zorunludur.');
+                return;
+            }
+            if (confirm('Bu hareketi reddetmek istediginizden emin misiniz?')) {
+                alert('Hareket reddedildi!');
+                window.location.href = 'accounting-confirmation.html';
+            }
+        }
+
+        // URL'den ID al ve goster
+        const urlParams = new URLSearchParams(window.location.search);
+        const movementId = urlParams.get('id') || 'MVT-2025-0001';
+        document.getElementById('movementId').textContent = movementId;
+        document.getElementById('displayMovementId').textContent = movementId;
+    </script>
+</body>
+</html>

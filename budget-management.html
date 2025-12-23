@@ -13,13 +13,13 @@ IMMA DEVELOPER DOCUMENTATION
 
 SCREEN: 14 MB - Maintain Budget (List)
 FILE: budget-management.html
-LAST UPDATED: 2025-12-18
+LAST UPDATED: 2025-12-23
 
 --------------------------------------------------------------------------------
 RELATED DATABASE TABLES
 --------------------------------------------------------------------------------
 
-TABLE: Budget
+TABLE: Budget (Data Structure IMMA.xlsx)
 | Field Name                 | Type     | Length | Description                      |
 |----------------------------|----------|--------|----------------------------------|
 | Budget Id                  | int      | 8      | Primary key                      |
@@ -63,16 +63,66 @@ BUDGET HIERARCHY (4 Seviye)
    - Shift Leader'ın haftalık bütçesi (en detaylı seviye)
 
 --------------------------------------------------------------------------------
-BUSINESS RULES
+SCREEN FIELDS (UI Elements) - Screen Designs: 14 MB List
 --------------------------------------------------------------------------------
 
-1. Tüm bütçeler Euro cinsinden tutulur
-2. Open Value = Value - Consumed Value (hesaplanan alan)
-3. Open percentage = (Open Value / Value) * 100
-4. Negatif Open Value bütçe aşımını gösterir (kırmızı renk)
-5. Budget Closed check işaretlendiğinde bütçe kapanır
-6. Hafta iki aya denk geliyorsa günlere göre dağıtılır (Pazar hariç 6 gün)
-7. Yöneticiler istedikleri zaman bütçe değiştirebilir
+FILTER SECTION:
+- Year filter (dropdown) - Yıl seçimi
+- Department filter (dropdown) - Departman filtresi
+- Month filter (dropdown) - Ay filtresi
+- Budget Closed filter (checkbox) - Kapalı bütçeleri göster
+
+DEPARTMENT BUDGET LIST TABLE:
+| Column           | Description                        |
+|------------------|-----------------------------------|
+| Budget Id        | Bütçe ID (link → detail)           |
+| Year             | Yıl                                |
+| Department       | Departman                          |
+| Value (EUR)      | Toplam bütçe değeri                |
+| Consumed (EUR)   | Tüketilen miktar                   |
+| Open (EUR)       | Kalan miktar                       |
+| Open %           | Kalan yüzdesi                      |
+| Status           | Durum (badge)                      |
+
+MONTHLY BREAKDOWN (Expandable):
+| Column           | Description                        |
+|------------------|-----------------------------------|
+| Month            | Ay (1-12)                          |
+| Budget Value     | Aylık bütçe                        |
+| Consumed         | Tüketilen                          |
+| Open             | Kalan                              |
+
+ACTION BUTTONS:
+- New Budget - Yeni bütçe oluştur
+- Export to Excel - Excel'e aktar
+- Refresh - Yenile
+
+VISUAL INDICATORS:
+- Yeşil: Open > 20%
+- Sarı: 0 < Open <= 20%
+- Kırmızı: Open <= 0 (bütçe aşımı)
+
+--------------------------------------------------------------------------------
+İŞ KURALLARI
+--------------------------------------------------------------------------------
+
+1. Malzeme fiyatı onaylardan önce ve sonra değiştirilebilir. Onaylandıysa yeni fiyatlar için ek onay gerekmez.
+2. Tüm bütçeler SL'lere veya aylara dağıtılmaz, bir kısmı yedekte tutulabilir.
+3. Yöneticiler istedikleri zaman bütçeyi değiştirebilir veya bütçe aşımı taleplerini onaylayabilir.
+4. Talep eden kullanıcı bir SL'ye bağlıysa, SL bütçesi tanımlı değilse ancak SL onayı gerekiyorsa "SL bütçesi gerekli" uyarısı gösterilmelidir.
+5. Talep eden kullanıcı bir SL'ye bağlıysa, SL bütçesi tanımlıysa ve SL onayı gerekiyorsa; SL aylık bütçesi, Departman aylık bütçesi ve departman yıllık bütçesi tüketilir.
+6. Talep eden kullanıcı bir SL'ye bağlı değilse talep Departman Aylık bütçesini ve departman yıllık bütçesini tüketir.
+7. Talep eden kullanıcı bir SL'ye bağlıysa, SL bütçesi tanımlı değilse ve SL onayı gerekmiyorsa; departman Aylık bütçesi ve departman yıllık bütçesi tüketilir.
+8. Kullanıcı bir SL'ye bağlı değilse ve Departman Aylık bütçesi tanımlıysa ancak yönetici onayı gerekiyorsa; Departman yıllık ve aylık bütçesi tüketilir.
+9. Hafta bütçesi iki ay arasındaysa, bütçe ve tüketim içindeki gün sayısına göre iki aya dağıtılır. Pazar hesaba katılmaz. Dağıtım 6 gün üzerinden yapılır.
+10. SL'nin kendisinde tanımlı haftalık bütçesi varsa, bu bütçenin de tüketilmesi gerekir. Bu bütçe tükenirse bütçe aşımı onay kuralları uygulanmalıdır.
+11. Tüm bütçe aktiviteleri için para birimi Euro'dur.
+
+BÜTÇE ONAY TİPLERİ:
+- SL onayı Gerekli
+- SL bütçe aşımı Gerekli
+- Yönetici Onayı Gerekli
+- Yönetici bütçe aşımı Gerekli
 
 --------------------------------------------------------------------------------
 LIST FEATURES
@@ -114,6 +164,8 @@ Last Change | İşlem
                         <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
                         <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
                         <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                        <a href="unit-of-measure-list.html" class="dropdown-item">Ölçü Birimleri</a>
+                        <a href="department-cost-center-list.html" class="dropdown-item">Departman-Masraf Merkezi</a>
                     </div>
                 </li>
                 <li class="nav-item"><a href="mrp.html" class="nav-link"><span class="nav-icon">📈</span>MRP</a></li>
@@ -147,6 +199,16 @@ Last Change | İşlem
                         <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
                         <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
                         <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanıcı Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onayları</a>
                     </div>
                 </li>
             </ul>
@@ -454,7 +516,7 @@ Last Change | İşlem
                     <button class="dev-tab" onclick="showDevTab('validations')">Validasyonlar</button>
                 </div>
                 <div id="dataStructure" class="dev-tab-content active">
-                    <h3>Budget Tablosu</h3>
+                    <h3>Budget Tablosu (19 Alan)</h3>
                     <table class="dev-table"><thead><tr><th>Field Name</th><th>Type</th><th>Length</th><th>Description</th></tr></thead>
                         <tbody>
                             <tr><td>Budget Id</td><td>int</td><td>8</td><td>Primary key</td></tr>
@@ -465,11 +527,16 @@ Last Change | İşlem
                             <tr><td>Value</td><td>float</td><td>15</td><td>Bütçe değeri (Euro)</td></tr>
                             <tr><td>Consumed value</td><td>float</td><td>15</td><td>Harcanan değer</td></tr>
                             <tr><td>Open Value</td><td>float</td><td>15</td><td>Kalan (hesaplanan)</td></tr>
+                            <tr><td>Creation datetime</td><td>datetime</td><td>-</td><td>Oluşturma tarihi</td></tr>
+                            <tr><td>Created by user info</td><td>int</td><td>8</td><td>Oluşturan kullanıcı</td></tr>
+                            <tr><td>Last change date time</td><td>datetime</td><td>-</td><td>Son değişiklik tarihi</td></tr>
+                            <tr><td>Last change user info</td><td>int</td><td>-</td><td>Son değiştiren kullanıcı</td></tr>
                             <tr><td>responsible SL</td><td>int</td><td>8</td><td>Sorumlu SL ID</td></tr>
                             <tr><td>Department</td><td>text</td><td>8</td><td>Departman kodu</td></tr>
                             <tr><td>Days on the month</td><td>int</td><td>1</td><td>Aydaki gün sayısı</td></tr>
                             <tr><td>Days on the second month</td><td>int</td><td>1</td><td>İkinci aydaki günler</td></tr>
                             <tr><td>Budget Closed check</td><td>bool</td><td>-</td><td>Kapatıldı mı?</td></tr>
+                            <tr><td>Starting on previous month</td><td>bool</td><td>-</td><td>Önceki ayda başlıyor mu</td></tr>
                             <tr><td>Half Week</td><td>bool</td><td>-</td><td>Yarım hafta mı?</td></tr>
                         </tbody>
                     </table>
@@ -486,22 +553,26 @@ Last Change | İşlem
                 <div id="businessRules" class="dev-tab-content">
                     <h3>İş Kuralları</h3>
                     <div class="rules-section">
-                        <h4>💰 Temel Kurallar</h4>
+                        <h4>Bütçe Yönetimi İş Kuralları</h4>
+                        <ol>
+                            <li>Malzemenin fiyatı onaylardan önce ve sonra değiştirilebilir. Onaylanmışsa yeni fiyatlar için ek onay gerekmemelidir.</li>
+                            <li>Tüm bütçeler SL'lere veya aylara dağıtılmaz, bir kısmı ayrılabilir.</li>
+                            <li>Yöneticiler istedikleri zaman bütçeyi değiştirebilir veya bütçe üstü talepleri onaylayabilir.</li>
+                            <li>Talep eden kullanıcı bir SL tarafından denetleniyorsa, SL bütçesi tanımlanmamış ancak SL onayı gerekiyorsa "SL bütçesi gerekli" şeklinde engelleyici uyarı gösterilmelidir.</li>
+                            <li>Talep eden kullanıcı bir SL tarafından denetleniyorsa, SL bütçesi tanımlı ve SL onayı gerekiyorsa SL aylık bütçesi, Departman aylık bütçesi ve departman yıllık bütçesi tüketilir.</li>
+                            <li>Talep eden kullanıcı bir SL'ye ait değilse talep Departman Aylık bütçesini ve departman yıllık bütçesini tüketir.</li>
+                            <li>Talep eden kullanıcı bir SL'ye aitse, SL bütçesi tanımlı değilse ve SL onayı gerekmiyorsa departman Aylık bütçesi ve departman yıllık bütçesi tüketilir.</li>
+                            <li>Kullanıcı bir SL'ye ait değilse ve Departman Aylık bütçesi tanımlıysa ancak yönetici onayı gerekiyorsa Departman yıllık ve aylık bütçesi tüketilir.</li>
+                            <li>Bir haftalık bütçe iki ayın arasındaysa bütçesi ve tüketimi içindeki gün sayısı faktörüne göre iki aya dağıtılır. Pazar günü dikkate alınmaz. Bu nedenle dağıtım 6 gün üzerinden yapılır.</li>
+                            <li>SL'nin kendisinde tanımlı haftalık bütçesi varsa bu bütçenin de tüketilmesi gerekir. Bu bütçe biterse bütçe aşımı onay kuralları uygulanmalıdır.</li>
+                            <li>Tüm bütçe işlemleri için para birimi euro'dur.</li>
+                        </ol>
+                        <h4>Bütçe Onay Tipleri</h4>
                         <ul>
-                            <li>Tüm bütçeler <strong>Euro cinsindendir</strong></li>
-                            <li>Open Value = Value - Consumed Value (otomatik hesaplanır)</li>
-                            <li>Yöneticiler istedikleri zaman bütçe değiştirebilir</li>
-                        </ul>
-                        <h4>📅 Hafta-Ay Dağılımı</h4>
-                        <ul>
-                            <li>Hafta iki aya denk gelirse günlere göre dağıtılır</li>
-                            <li>Pazar hariç 6 iş günü hesaplanır</li>
-                            <li>Days on the month/second month bu dağılımı gösterir</li>
-                        </ul>
-                        <h4>🔒 Bütçe Kapatma</h4>
-                        <ul>
-                            <li>Kapatılan bütçe değiştirilemez</li>
-                            <li>Yeni talep kabul edilmez</li>
+                            <li>SL Onayı Gerekli</li>
+                            <li>SL Bütçe Aşımı Onayı Gerekli</li>
+                            <li>Yönetici Onayı Gerekli</li>
+                            <li>Yönetici Bütçe Aşımı Onayı Gerekli</li>
                         </ul>
                     </div>
                 </div>

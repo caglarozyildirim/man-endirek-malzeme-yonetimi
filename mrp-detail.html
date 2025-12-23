@@ -19,19 +19,29 @@ LAST UPDATED: 2025-12-18
 RELATED DATABASE TABLES
 --------------------------------------------------------------------------------
 
-TABLE: Material (MRP Parameters)
+TABLE: Material (MRP Parameters - Data Structure IMMA.xlsx)
 | Field Name                | Type  | Length | Description                     |
 |---------------------------|-------|--------|---------------------------------|
 | Material number           | text  | 13     | Format: ##.#####-####           |
 | Title                     | text  | 128    | Malzeme başlığı                 |
 | Unit of measure code      | text  | 4      | Ölçü birimi                     |
 | Reordering point quantity | float | 15     | Yeniden sipariş noktası         |
-| Maximum stock quantity    | float | 15     | Maksimum stok miktarı           |
-| Order batch quantity      | float | 15     | Sipariş parti miktarı           |
+| Reordering quantity       | float | 15     | Yeniden sipariş miktarı         |
 | Safety stock quantity     | float | 15     | Güvenlik stoğu                  |
-| Total Stock               | float | 15     | Mevcut toplam stok (hesaplanan) |
 
-TABLE: SRM Suggestion
+TABLE: Material Supplier Info (Data Structure IMMA.xlsx - Tedarikçi MRP parametreleri)
+| Field Name                      | Type  | Length | Description                     |
+|---------------------------------|-------|--------|---------------------------------|
+| Material Supplier Inforecord Id | int   | 8      | Primary key                     |
+| Order batch quantity            | float | 15     | Tedarikçi sipariş parti miktarı |
+| Minimum ordering quantity       | float | 15     | Minimum sipariş miktarı         |
+| Preferred order of the supplier | char  | 1      | Tedarikçi öncelik sırası        |
+
+NOT: "Maximum stock quantity" ve "Order batch quantity" Screen Designs'da tanımlı
+ancak Data Structure Material tablosunda yok. Bu alanlar konfigürasyon olabilir.
+Total Stock ve Open PO/SRM miktarları hesaplanan (aggregated) alanlardır.
+
+TABLE: SRM Suggestion (Data Structure IMMA.xlsx)
 | Field Name                           | Type     | Length | Description                  |
 |--------------------------------------|----------|--------|------------------------------|
 | SRM Suggestion Id                    | int      | 16     | Primary key                  |
@@ -44,34 +54,20 @@ TABLE: SRM Suggestion
 | Assigned Supplier Material inforecord Id | int  | 8      | Atanan info record           |
 
 --------------------------------------------------------------------------------
-MRP CALCULATION LOGIC
+BUSINESS RULES (İş Kuralları - Material Requirement Planning)
 --------------------------------------------------------------------------------
 
-Önerilen Sipariş Miktarı Hesaplama:
-
-needed = Maximum stock - Current stock - Open PO - Open SRM + Safety stock
-suggested_qty = ceil(needed / Order batch) * Order batch
-
-Örnek:
-- Maximum stock: 200
-- Current stock: 45
-- Open PO: 50
-- Open SRM: 0
-- Safety stock: 20
-- Order batch: 100
-
-needed = 200 - 45 - 50 - 0 + 20 = 125
-suggested_qty = ceil(125 / 100) * 100 = 200
-
---------------------------------------------------------------------------------
-BUSINESS RULES
---------------------------------------------------------------------------------
-
-1. Stok, reorder point altına düşünce SRM önerisi oluşturulur
-2. Öneri miktarı max stock'a kadar hesaplanır
-3. Açık PO ve SRM miktarları hesaplamadan düşülür
-4. Order batch varsa önerilen miktar katları olarak hesaplanır
-5. Safety stock her zaman hesaplamaya eklenir (buffer)
+MRP İŞ KURALLARI (MRP - Paragraf 338-341):
+1. Stok, yeniden sipariş miktarının altına düştüğünde, stoğu maksimum stok
+   miktarına tamamlamak için yeni bir SRM önerisi oluşturulur.
+2. Halihazırda açık satınalma siparişi kalemleri ve açık SRM Talebi kalemleri
+   varsa, bu açık miktarlar toplam öneriden düşülür.
+3. Sipariş parti miktarı tanımlıysa, öneri miktarı bu sipariş parti miktarının
+   katı olarak hesaplanır; ancak stok, açık Satınalma siparişi ve açık SRM
+   talebi ile toplandığında maksimum stok seviyesini geçmemeli, yeniden
+   sipariş seviyesinin üzerinde olmalıdır.
+4. Tedarikçi info kaydında sipariş parti miktarı varsa, hesaplamalarda
+   malzeme sipariş parti miktarını geçersiz kılar (override eder).
 
 --------------------------------------------------------------------------------
 FORM MODES
@@ -133,6 +129,8 @@ MRP Parameters (Editable):
                         <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
                         <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
                         <a href="material-group.html" class="dropdown-item">Malzeme Gruplari</a>
+                        <a href="unit-of-measure-list.html" class="dropdown-item">Olcu Birimleri</a>
+                        <a href="department-cost-center-list.html" class="dropdown-item">Dept-Masraf Merkezi</a>
                     </div>
                 </li>
                 <li class="nav-item">
@@ -185,6 +183,16 @@ MRP Parameters (Editable):
                         <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
                     </div>
                 </li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanıcı Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onayları</a>
+                    </div>
+                </li>
             </ul>
             <div class="navbar-user">
                 <span class="user-name">Ahmet Yilmaz</span>
@@ -222,20 +230,16 @@ MRP Parameters (Editable):
                         </div>
                     </div>
                     <div class="form-row">
-                        <div class="form-group col-3">
+                        <div class="form-group col-4">
                             <label>Unit of measure</label>
                             <input type="text" id="unit" class="form-control" readonly>
                         </div>
-                        <div class="form-group col-3">
-                            <label>Available quantity</label>
-                            <input type="number" id="currentStock" class="form-control" readonly>
-                        </div>
-                        <div class="form-group col-3">
-                            <label>Total Open PO</label>
+                        <div class="form-group col-4">
+                            <label>Current open po order total quantity</label>
                             <input type="number" id="openPo" class="form-control" readonly>
                         </div>
-                        <div class="form-group col-3">
-                            <label>Total Open SRM</label>
+                        <div class="form-group col-4">
+                            <label>Current open SRM requests total quantity</label>
                             <input type="number" id="openSrm" class="form-control" readonly>
                         </div>
                     </div>
@@ -293,9 +297,9 @@ MRP Parameters (Editable):
 
     <script>
         const mrpData = {
-            '1': { id: '1', materialNumber: '01.00001-0001', materialTitle: 'Elektrik Motoru 5.5kW', unit: 'AD', currentStock: 2, openPo: 0, openSrm: 0, reorderPoint: 5, maxStock: 20, orderBatch: 10, safetyStock: 3 },
-            '2': { id: '2', materialNumber: '02.00003-0001', materialTitle: 'Pnomatik Silindir 100x200', unit: 'AD', currentStock: 3, openPo: 0, openSrm: 0, reorderPoint: 3, maxStock: 15, orderBatch: 5, safetyStock: 2 },
-            '3': { id: '3', materialNumber: '01.00002-0001', materialTitle: 'Rulman 6205-2RS', unit: 'AD', currentStock: 45, openPo: 50, openSrm: 0, reorderPoint: 50, maxStock: 200, orderBatch: 100, safetyStock: 20 }
+            '1': { id: '1', materialNumber: '01.00001-0001', materialTitle: 'Elektrik Motoru 5.5kW', unit: 'AD', openPo: 0, openSrm: 0, reorderPoint: 5, maxStock: 20, orderBatch: 10, safetyStock: 3 },
+            '2': { id: '2', materialNumber: '02.00003-0001', materialTitle: 'Pnomatik Silindir 100x200', unit: 'AD', openPo: 0, openSrm: 0, reorderPoint: 3, maxStock: 15, orderBatch: 5, safetyStock: 2 },
+            '3': { id: '3', materialNumber: '01.00002-0001', materialTitle: 'Rulman 6205-2RS', unit: 'AD', openPo: 50, openSrm: 0, reorderPoint: 50, maxStock: 200, orderBatch: 100, safetyStock: 20 }
         };
 
         function getUrlParams() {
@@ -305,13 +309,13 @@ MRP Parameters (Editable):
 
         function calculateSuggestedQty() {
             const maxStock = parseInt(document.getElementById('maxStock').value) || 0;
-            const currentStock = parseInt(document.getElementById('currentStock').value) || 0;
             const openPo = parseInt(document.getElementById('openPo').value) || 0;
             const openSrm = parseInt(document.getElementById('openSrm').value) || 0;
-            const safetyStock = parseInt(document.getElementById('safetyStock').value) || 0;
             const orderBatch = parseInt(document.getElementById('orderBatch').value) || 1;
 
-            const needed = maxStock - currentStock - openPo - openSrm + safetyStock;
+            // MRP Formula: Suggested Qty = Max Stock Qty - Open PO Qty - Open SRM Request Qty
+            const needed = maxStock - openPo - openSrm;
+            // Batch rounding: suggested_qty = ceil(needed / Order batch) * Order batch
             const suggestedQty = Math.ceil(needed / orderBatch) * orderBatch;
             document.getElementById('suggestedQty').value = Math.max(0, suggestedQty);
         }
@@ -352,7 +356,6 @@ MRP Parameters (Editable):
             document.getElementById('materialNumber').value = data.materialNumber;
             document.getElementById('materialTitle').value = data.materialTitle;
             document.getElementById('unit').value = data.unit;
-            document.getElementById('currentStock').value = data.currentStock;
             document.getElementById('openPo').value = data.openPo;
             document.getElementById('openSrm').value = data.openSrm;
             document.getElementById('reorderPoint').value = data.reorderPoint;
@@ -382,6 +385,7 @@ MRP Parameters (Editable):
             <div class="dev-docs-body">
                 <div class="dev-docs-tabs">
                     <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('formFields')">Form Alanları</button>
                     <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
                     <button class="dev-tab" onclick="showDevTab('calculation')">Hesaplama</button>
                 </div>
@@ -412,45 +416,61 @@ MRP Parameters (Editable):
                         </tbody>
                     </table>
                 </div>
+                <div id="formFields" class="dev-tab-content">
+                    <h3>MRP Detay Görüntüleme (Readonly)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Material Number</td><td>Malzeme numarası</td></tr>
+                            <tr><td>Material Title</td><td>Malzeme başlığı</td></tr>
+                            <tr><td>Unit of Measure</td><td>Ölçü birimi</td></tr>
+                            <tr><td>Total Stock</td><td>Mevcut toplam stok</td></tr>
+                            <tr><td>Reordering point quantity</td><td>Yeniden sipariş noktası</td></tr>
+                            <tr><td>Safety stock quantity</td><td>Güvenlik stoğu</td></tr>
+                            <tr><td>Maximum stock quantity</td><td>Maksimum stok</td></tr>
+                            <tr><td>Order batch quantity</td><td>Sipariş parti miktarı</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>SRM Suggestion Info</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Suggested quantity</td><td>readonly</td><td>Önerilen sipariş miktarı</td></tr>
+                            <tr><td>Assigned Supplier</td><td>dropdown</td><td>Tedarikçi info record seçimi</td></tr>
+                            <tr><td>Open SRM Qty</td><td>readonly</td><td>Açık SRM miktarı</td></tr>
+                            <tr><td>Open PO Qty</td><td>readonly</td><td>Açık PO miktarı</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Action Buttons</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Buton</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Convert to SRM</td><td>Öneriyi SRM talebine dönüştür</td></tr>
+                            <tr><td>Change Supplier</td><td>Tedarikçi değiştir</td></tr>
+                            <tr><td>Back to List</td><td>MRP listesine dön</td></tr>
+                        </tbody>
+                    </table>
+                </div>
                 <div id="businessRules" class="dev-tab-content">
                     <div class="rules-section">
-                        <h4>MRP Kuralları (Doküman 3.1.3)</h4>
+                        <h4>MRP İş Kuralları (MRP - Paragraf 338-341)</h4>
                         <ul>
-                            <li>Stok reorder point altına düşünce MRP önerisi oluşur</li>
-                            <li>Öneri miktarı max stock'a kadar hesaplanır</li>
-                            <li>Açık PO ve SRM miktarları düşülür</li>
-                            <li>Order batch quantity varsa katları olarak yuvarlanır</li>
-                            <li>Safety stock öneri hesaplamasına dahil edilir</li>
-                        </ul>
-                    </div>
-                    <div class="rules-section">
-                        <h4>Tedarikçi Seçimi</h4>
-                        <ul>
-                            <li>Birincil tedarikçi: "Preferred order" en düşük olan</li>
-                            <li>Info record aktif olmalı</li>
-                            <li>Sözleşme süresi geçmemeli</li>
+                            <li><strong>Kural 1:</strong> Stok, yeniden sipariş miktarının altına düştüğünde, stoğu maksimum stok miktarına tamamlamak için yeni bir SRM önerisi oluşturulur.</li>
+                            <li><strong>Kural 2:</strong> Halihazırda açık satınalma siparişi kalemleri ve açık SRM Talebi kalemleri varsa, bu açık miktarlar toplam öneriden düşülür.</li>
+                            <li><strong>Kural 3:</strong> Sipariş parti miktarı tanımlıysa, öneri miktarı bu sipariş parti miktarının katı olarak hesaplanır; ancak stok, açık Satınalma siparişi ve açık SRM talebi ile toplandığında maksimum stok seviyesini geçmemeli, yeniden sipariş seviyesinin üzerinde olmalıdır.</li>
+                            <li><strong>Kural 4:</strong> Tedarikçi info kaydında sipariş parti miktarı varsa, hesaplamalarda malzeme sipariş parti miktarını geçersiz kılar (override eder).</li>
                         </ul>
                     </div>
                 </div>
                 <div id="calculation" class="dev-tab-content">
                     <div class="rules-section">
-                        <h4>MRP Hesaplama Formülü</h4>
-                        <div style="background:#2d2d44;padding:15px;border-radius:6px;font-family:monospace;margin:10px 0;">
-                            <p style="color:#ffd700;margin:0 0 10px 0;"><strong>İhtiyaç = Max Stock - Mevcut Stock - Açık PO - Açık SRM + Safety Stock</strong></p>
-                            <p style="color:#98c379;margin:0;">Eğer Order Batch varsa: İhtiyaç = Batch * CEILING(İhtiyaç / Batch)</p>
-                        </div>
-                    </div>
-                    <div class="rules-section">
-                        <h4>Örnek Hesaplama</h4>
-                        <table class="dev-table">
-                            <tr><td>Max Stock</td><td>100</td></tr>
-                            <tr><td>Mevcut Stock</td><td>15</td></tr>
-                            <tr><td>Açık PO</td><td>0</td></tr>
-                            <tr><td>Açık SRM</td><td>0</td></tr>
-                            <tr><td>Safety Stock</td><td>10</td></tr>
-                            <tr><td>Order Batch</td><td>25</td></tr>
-                            <tr style="background:#28a745;"><td><strong>Önerilen Miktar</strong></td><td><strong>100 (4 x 25)</strong></td></tr>
-                        </table>
+                        <h4>MRP İş Kuralları (MRP - Paragraf 338-341)</h4>
+                        <ul>
+                            <li><strong>Kural 1:</strong> Stok, yeniden sipariş miktarının altına düştüğünde, stoğu maksimum stok miktarına tamamlamak için yeni bir SRM önerisi oluşturulur.</li>
+                            <li><strong>Kural 2:</strong> Halihazırda açık satınalma siparişi kalemleri ve açık SRM Talebi kalemleri varsa, bu açık miktarlar toplam öneriden düşülür.</li>
+                            <li><strong>Kural 3:</strong> Sipariş parti miktarı tanımlıysa, öneri miktarı bu sipariş parti miktarının katı olarak hesaplanır; ancak stok, açık Satınalma siparişi ve açık SRM talebi ile toplandığında maksimum stok seviyesini geçmemeli, yeniden sipariş seviyesinin üzerinde olmalıdır.</li>
+                            <li><strong>Kural 4:</strong> Tedarikçi info kaydında sipariş parti miktarı varsa, hesaplamalarda malzeme sipariş parti miktarını geçersiz kılar (override eder).</li>
+                        </ul>
                     </div>
                 </div>
             </div>

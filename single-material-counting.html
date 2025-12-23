@@ -19,7 +19,7 @@ LAST UPDATED: 2025-12-18
 RELATED DATABASE TABLES
 --------------------------------------------------------------------------------
 
-TABLE: Inventory Counting Header (simplified for single)
+TABLE: Inventory Counting Header (Data Structure IMMA.xlsx - simplified for single)
 | Field Name                    | Type     | Length | Description                  |
 |-------------------------------|----------|--------|------------------------------|
 | Inventory Counting Header Id  | int      | 8      | Primary key (IC-SMC-XXXX)    |
@@ -29,7 +29,7 @@ TABLE: Inventory Counting Header (simplified for single)
 | Counted by user info          | int      | 8      | Sayan kullanıcı              |
 | Correction finalized check    | bool     | -      | Düzeltme tamamlandı mı       |
 
-TABLE: Inventory Counting Item (single record)
+TABLE: Inventory Counting Item (Data Structure IMMA.xlsx - single record)
 | Field Name                    | Type     | Length | Description                  |
 |-------------------------------|----------|--------|------------------------------|
 | Inventory Counting item id    | int      | 8      | Primary key                  |
@@ -63,17 +63,32 @@ CORRECTION TYPES
 - emergency: Acil Düzeltme
 
 --------------------------------------------------------------------------------
-BUSINESS RULES
+İŞ KURALLARI (Business Rules)
 --------------------------------------------------------------------------------
 
-1. Tek malzeme için hızlı sayım ekranı
-2. Malzeme arama: Malzeme numarası veya açıklama ile
-3. Min 2 karakter ile autocomplete aktif
-4. Storage ve Location filtreleri isteğe bağlı
-5. Sayım değeri girildiğinde fark otomatik hesaplanır
-6. Fark tespit edildiğinde gerekçe zorunlu
-7. "Sayımı Onayla" ile stok otomatik güncellenir
-8. "Taslak Kaydet" ile daha sonra devam edilebilir
+ENVANTER DÜZELTMELERİ İŞ KURALLARI:
+1. Açık sayım belgesi varsa etkilenen malzemeler için yeni malzeme talebi engellenir
+   ancak onay süreci devam edebilmelidir
+2. Sayım belgesi mevcut stok miktarlarını içermemelidir
+3. Tekli malzeme envanter düzeltmesi için onay süreci olmayacaktır
+4. Sayım bin bazında yapıldığından sayım belgesi kapsamı için seçim listesi
+   bin numaralarına göre ayrılmış bilgi içerecektir
+5. Diğer ve hurda envanter düzeltmeleri için onaylayan yönetici malzeme grubuna
+   bağlı kayıttan seçilecektir. Süreç endirek ve GPS malzeme anahtar kullanıcısı
+   tarafından başlatılacak ve muhasebe ile ilgiliyse muhasebe endirek ve GPS
+   sorumlu kullanıcısı tarafından tamamlanacaktır.
+6. Ek belge zorunludur
+7. Açıklama zorunludur
+8. Onay sırası malzeme grubuna bağlı kayıttaki gibi takip edilecektir
+   (onay sırası, departman kodu, malzeme grubu)
+9. Stok transferleri ile düzeltmeler yalnızca malzemenin tüm stoğu aynı sayım
+   belgesi içinde sayıma seçildiğinde hesaplanır. Bir bin'deki eksik miktarı
+   başka bir bin'deki fazla miktardan karşılamak için öneriler oluşturulacaktır.
+10. Tüm geri almalar yanlışlıkla yapılan bir işlemin düzeltilmesidir.
+    Admin kullanıcı tarafından yapılabilir
+11. Hurda ve diğer düzeltmeler için en az bir yönetici onaylayıcı olarak
+    eklenmelidir. Bu belge endirek malzeme anahtar kullanıcısı tarafından
+    oluşturulabilir ve onaylayıcı eklenebilir.
 
 --------------------------------------------------------------------------------
 DISPLAYED FIELDS
@@ -151,6 +166,8 @@ MOVEMENT TYPES
                         <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
                         <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
                         <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                        <a href="unit-of-measure-list.html" class="dropdown-item">Ölçü Birimleri</a>
+                        <a href="department-cost-center-list.html" class="dropdown-item">Departman-Masraf Merkezi</a>
                     </div>
                 </li>
                 <li class="nav-item">
@@ -201,6 +218,16 @@ MOVEMENT TYPES
                         <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
                         <a href="single-material-counting.html" class="dropdown-item active">Tekli Malzeme Sayımı</a>
                         <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanıcı Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onayları</a>
                     </div>
                 </li>
             </ul>
@@ -346,7 +373,7 @@ MOVEMENT TYPES
                     <div class="form-row">
                         <div class="form-group col-2">
                             <label>Open material requests</label>
-                            <div class="form-control-static" id="displayOpenMaterial Request">-</div>
+                            <div class="form-control-static" id="displayOpenMaterialRequest">-</div>
                         </div>
                         <div class="form-group col-2">
                             <label>Open SRM requests</label>
@@ -610,7 +637,7 @@ MOVEMENT TYPES
                 totalValue: 5647.50,
                 costId: 'CC-MAINT-001',
                 costingDate: '2025-12-01',
-                openMaterial Request: 3,
+                openMaterialRequest: 3,
                 openSRM: 1,
                 openPO: 2,
                 goodsMovementId: null,
@@ -632,7 +659,7 @@ MOVEMENT TYPES
                 totalValue: 1200.00,
                 costId: 'CC-PROD-002',
                 costingDate: '2025-11-15',
-                openMaterial Request: 0,
+                openMaterialRequest: 0,
                 openSRM: 2,
                 openPO: 0,
                 goodsMovementId: 'GM-2025-00456',
@@ -654,7 +681,7 @@ MOVEMENT TYPES
                 totalValue: 10200.00,
                 costId: 'CC-MAINT-001',
                 costingDate: '2025-12-05',
-                openMaterial Request: 1,
+                openMaterialRequest: 1,
                 openSRM: 0,
                 openPO: 1,
                 goodsMovementId: null,
@@ -676,7 +703,7 @@ MOVEMENT TYPES
                 totalValue: 3825.00,
                 costId: 'CC-MAINT-001',
                 costingDate: '2025-12-08',
-                openMaterial Request: 2,
+                openMaterialRequest: 2,
                 openSRM: 0,
                 openPO: 1,
                 goodsMovementId: null,
@@ -698,7 +725,7 @@ MOVEMENT TYPES
                 totalValue: 25500.00,
                 costId: 'CC-MAINT-002',
                 costingDate: '2025-11-20',
-                openMaterial Request: 0,
+                openMaterialRequest: 0,
                 openSRM: 1,
                 openPO: 0,
                 goodsMovementId: null,
@@ -720,7 +747,7 @@ MOVEMENT TYPES
                 totalValue: 4800.00,
                 costId: 'CC-PROD-001',
                 costingDate: '2025-12-10',
-                openMaterial Request: 1,
+                openMaterialRequest: 1,
                 openSRM: 0,
                 openPO: 2,
                 goodsMovementId: null,
@@ -742,7 +769,7 @@ MOVEMENT TYPES
                 totalValue: 5180.00,
                 costId: 'CC-ELEC-001',
                 costingDate: '2025-12-12',
-                openMaterial Request: 0,
+                openMaterialRequest: 0,
                 openSRM: 0,
                 openPO: 0,
                 goodsMovementId: 'GM-2025-00789',
@@ -764,7 +791,7 @@ MOVEMENT TYPES
                 totalValue: 4275.00,
                 costId: 'CC-MAINT-001',
                 costingDate: '2025-12-05',
-                openMaterial Request: 5,
+                openMaterialRequest: 5,
                 openSRM: 1,
                 openPO: 0,
                 goodsMovementId: null,
@@ -901,7 +928,7 @@ MOVEMENT TYPES
             document.getElementById('displayTotalValue').textContent = material.totalValue.toLocaleString('tr-TR') + ' TRY';
             document.getElementById('displayCostId').textContent = material.costId;
             document.getElementById('displayCostingDate').textContent = material.costingDate || '-';
-            document.getElementById('displayOpenMaterial Request').textContent = material.openMaterial Request;
+            document.getElementById('displayOpenMaterialRequest').textContent = material.openMaterialRequest;
             document.getElementById('displayOpenSRM').textContent = material.openSRM;
             document.getElementById('displayOpenPO').textContent = material.openPO;
             document.getElementById('displayGoodsMovementId').textContent = material.goodsMovementId || 'Yeni oluşturulacak';
@@ -1135,6 +1162,7 @@ MOVEMENT TYPES
             <div class="dev-docs-body">
                 <div class="dev-docs-tabs">
                     <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('formFields')">Form Alanları</button>
                     <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
                     <button class="dev-tab" onclick="showDevTab('workflow')">İş Akışı</button>
                 </div>
@@ -1167,24 +1195,87 @@ MOVEMENT TYPES
                         </tbody>
                     </table>
                 </div>
+                <div id="formFields" class="dev-tab-content">
+                    <h3>Material Information (Read-only)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>ID</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Material number</td><td>displayMaterialNo</td><td>Malzeme numarası</td></tr>
+                            <tr><td>Material description</td><td>displayMaterialTitle</td><td>Malzeme açıklaması</td></tr>
+                            <tr><td>Stock Record ID</td><td>displayStockRecordId</td><td>Stok kaydı referans numarası</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Stock Information (Read-only)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>ID</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Storage</td><td>displayStorage</td><td>Depo adı</td></tr>
+                            <tr><td>Location</td><td>displayLocation</td><td>Lokasyon kodu</td></tr>
+                            <tr><td>Bin</td><td>displayBin</td><td>Bin numarası</td></tr>
+                            <tr><td>System Stock Quantity</td><td>displayStockQty</td><td>Sistem stok miktarı</td></tr>
+                            <tr><td>Unit of measure</td><td>displayUoM</td><td>Ölçü birimi</td></tr>
+                            <tr><td>Currency</td><td>displayCurrency</td><td>Para birimi</td></tr>
+                            <tr><td>Unit value (TRY)</td><td>displayUnitValue</td><td>Birim fiyat TRY</td></tr>
+                            <tr><td>Unit value (EUR)</td><td>displayUnitValueEUR</td><td>Birim fiyat EUR</td></tr>
+                            <tr><td>Total Stock Value</td><td>displayTotalValue</td><td>Toplam stok değeri</td></tr>
+                            <tr><td>Cost Center</td><td>displayCostId</td><td>Masraf merkezi</td></tr>
+                            <tr><td>Cost Date</td><td>displayCostingDate</td><td>Maliyet tarihi</td></tr>
+                            <tr><td>Open material requests</td><td>displayOpenMaterialRequest</td><td>Açık malzeme talepleri sayısı</td></tr>
+                            <tr><td>Open SRM requests</td><td>displayOpenSRM</td><td>Açık SRM talepleri sayısı</td></tr>
+                            <tr><td>Open purchasing orders</td><td>displayOpenPO</td><td>Açık satınalma siparişleri sayısı</td></tr>
+                            <tr><td>Goods Movement ID</td><td>displayGoodsMovementId</td><td>Mal hareketi referansı</td></tr>
+                            <tr><td>Approved by user info / Date</td><td>displayConfirmedBy</td><td>Onaylayan ve tarih</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Correction Document Information</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>ID</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Correction document Id *</td><td>correctionDocId</td><td>readonly</td><td>Otomatik oluşturulan düzeltme belge no (IC-SMC-XXXX)</td></tr>
+                            <tr><td>Correction document title *</td><td>correctionDocTitle</td><td>input</td><td>Düzeltme belge başlığı</td></tr>
+                            <tr><td>Correction type *</td><td>correctionType</td><td>select</td><td>Düzeltme tipi (spot_count, recount, discrepancy, emergency)</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Physical Counting (Warehouse Manager)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Alan</th><th>ID</th><th>Tip</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>Counting value *</td><td>countingValue</td><td>number input</td><td>Fiziksel sayım sonucu</td></tr>
+                            <tr><td>Differences by quantity</td><td>difference</td><td>readonly</td><td>Fark miktarı (hesaplanan)</td></tr>
+                            <tr><td>TRY differences value</td><td>differenceValue</td><td>readonly</td><td>TRY fark değeri (hesaplanan)</td></tr>
+                            <tr><td>Euro differences value</td><td>differenceValueEUR</td><td>readonly</td><td>EUR fark değeri (hesaplanan)</td></tr>
+                            <tr><td>Differences status</td><td>differenceStatus</td><td>badge</td><td>Fark durumu (Yok/Fazla/Eksik)</td></tr>
+                            <tr><td>Differences reason</td><td>countReason</td><td>textarea</td><td>Fark gerekçesi (fark varsa zorunlu)</td></tr>
+                            <tr><td>Counting Date *</td><td>countDate</td><td>datetime-local</td><td>Sayım tarihi</td></tr>
+                            <tr><td>Counted by</td><td>countedBy</td><td>readonly</td><td>Sayan kişi (Warehouse Manager)</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Correction Types (Düzeltme Tipleri)</h3>
+                    <table class="dev-table">
+                        <thead><tr><th>Value</th><th>Label</th><th>Açıklama</th></tr></thead>
+                        <tbody>
+                            <tr><td>spot_count</td><td>Spot Counting</td><td>Anlık/rastgele sayım</td></tr>
+                            <tr><td>recount</td><td>Yeniden Counting</td><td>Tekrar sayım</td></tr>
+                            <tr><td>discrepancy</td><td>Differences by quantity İncelemesi</td><td>Fark tespit sonrası inceleme</td></tr>
+                            <tr><td>emergency</td><td>Acil Düzeltme</td><td>Acil stok düzeltmesi</td></tr>
+                        </tbody>
+                    </table>
+                </div>
                 <div id="businessRules" class="dev-tab-content">
                     <div class="rules-section">
-                        <h4>Tekli Sayım Kuralları</h4>
+                        <h4>Envanter Düzeltmeleri İş Kuralları</h4>
                         <ul>
-                            <li>Spot check veya hızlı doğrulama için kullanılır</li>
-                            <li>Tek bir malzeme/stok kaydı seçilir</li>
-                            <li>Fark varsa gerekçe zorunludur</li>
-                            <li>Sayım onaylandığında stok otomatik güncellenir</li>
-                            <li>Taslak olarak kaydedilip sonra devam edilebilir</li>
-                        </ul>
-                    </div>
-                    <div class="rules-section">
-                        <h4>Fark Hesaplama</h4>
-                        <ul>
-                            <li><strong>Fark = Sayım Değeri - Sistem Stoğu</strong></li>
-                            <li>Pozitif fark: Fazla stok (Movement Type 8)</li>
-                            <li>Negatif fark: Eksik stok (Movement Type 9)</li>
-                            <li>Fark değeri = Fark miktarı × Birim fiyat</li>
+                            <li><strong>Kural 1:</strong> Açık sayım belgesi varsa etkilenen malzemeler için yeni malzeme talebi engellenir ancak onay süreci devam edebilmelidir</li>
+                            <li><strong>Kural 2:</strong> Sayım belgesi mevcut stok miktarlarını içermemelidir</li>
+                            <li><strong>Kural 3:</strong> Tekli malzeme envanter düzeltmesi için onay süreci olmayacaktır</li>
+                            <li><strong>Kural 4:</strong> Sayım bin bazında yapıldığından sayım belgesi kapsamı için seçim listesi bin numaralarına göre ayrılmış bilgi içerecektir</li>
+                            <li><strong>Kural 5:</strong> Diğer ve hurda envanter düzeltmeleri için onaylayan yönetici malzeme grubuna bağlı kayıttan seçilecektir. Süreç endirek ve GPS malzeme anahtar kullanıcısı tarafından başlatılacak ve muhasebe ile ilgiliyse muhasebe endirek ve GPS sorumlu kullanıcısı tarafından tamamlanacaktır.</li>
+                            <li><strong>Kural 6:</strong> Ek belge zorunludur</li>
+                            <li><strong>Kural 7:</strong> Açıklama zorunludur</li>
+                            <li><strong>Kural 8:</strong> Onay sırası malzeme grubuna bağlı kayıttaki gibi takip edilecektir (onay sırası, departman kodu, malzeme grubu)</li>
+                            <li><strong>Kural 9:</strong> Stok transferleri ile düzeltmeler yalnızca malzemenin tüm stoğu aynı sayım belgesi içinde sayıma seçildiğinde hesaplanır. Bir bin'deki eksik miktarı başka bir bin'deki fazla miktardan karşılamak için öneriler oluşturulacaktır.</li>
+                            <li><strong>Kural 10:</strong> Tüm geri almalar yanlışlıkla yapılan bir işlemin düzeltilmesidir. Admin kullanıcı tarafından yapılabilir</li>
+                            <li><strong>Kural 11:</strong> Hurda ve diğer düzeltmeler için en az bir yönetici onaylayıcı olarak eklenmelidir. Bu belge endirek malzeme anahtar kullanıcısı tarafından oluşturulabilir ve onaylayıcı eklenebilir.</li>
                         </ul>
                     </div>
                 </div>

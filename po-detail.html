@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sipariş Detayı - IMMA</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<!--
+================================================================================
+IMMA DEVELOPER DOCUMENTATION
+================================================================================
+
+SCREEN: 12 PO D - Purchasing Order Detail
+FILE: po-detail.html
+LAST UPDATED: 2025-12-23
+
+--------------------------------------------------------------------------------
+RELATED DATABASE TABLES
+--------------------------------------------------------------------------------
+
+TABLE: Purchasing Order (Data Structure IMMA.xlsx)
+| Field Name                  | Type     | Length | Description                    |
+|-----------------------------|----------|--------|--------------------------------|
+| Purchasing Order Id         | int      | 8      | Primary key                    |
+| Purchasing Order SAP number | int      | 10     | SAP sipariş numarası           |
+| Supplier number             | int      | 10     | Tedarikçi numarası             |
+| SRM number                  | int      | 10     | İlişkili SRM numarası          |
+| creation datetime           | datetime | -      | Oluşturma tarihi               |
+| Created by user id          | int      | 8      | Oluşturan kullanıcı            |
+
+TABLE: Purchasing Order Item (Data Structure IMMA.xlsx)
+| Field Name                   | Type     | Length | Description                    |
+|------------------------------|----------|--------|--------------------------------|
+| Purchasing Order item Id     | int      | 12     | Primary key                    |
+| Purchasing Order SAP no      | int      | 10     | SAP sipariş numarası           |
+| Purchasing Order SAP Item No | int      | 4      | SAP satır numarası             |
+| Material number              | text     | 13     | Malzeme numarası               |
+| Unit of measure code         | text     | 3      | Ölçü birimi                    |
+| Order quantity               | float    | 15     | Sipariş miktarı                |
+| Goods receipt quantity       | float    | 15     | Teslim alınan toplam           |
+| currency code                | text     | 3      | Para birimi                    |
+| Unit price                   | float    | 14     | Birim fiyat                    |
+| creation datetime            | datetime | -      | Kayıt oluşturma tarihi/saati   |
+| Created by user id           | int      | 8      | Kaydı oluşturan kullanıcı ID   |
+
+--------------------------------------------------------------------------------
+SCREEN FIELDS (UI Elements) - Screen Designs: 12 PO D
+--------------------------------------------------------------------------------
+
+ORDER HEADER INFORMATION:
+- Order number (readonly) - PO SAP numarası
+- SRM number (readonly) - İlişkili SRM numarası
+- Supplier number (readonly) - Tedarikçi numarası
+- Supplier title (readonly) - Tedarikçi adı
+- Creation date time (readonly) - Oluşturma tarihi
+- Created by user info (readonly) - Oluşturan kullanıcı
+
+ORDER ITEMS TABLE:
+| Column                       | Description                    |
+|------------------------------|--------------------------------|
+| Purchasing Order SAP Item No | SAP satır numarası             |
+| Material number              | Malzeme numarası               |
+| Material title               | Malzeme başlığı                |
+| Unit of measure code         | Ölçü birimi                    |
+| Order quantity               | Sipariş miktarı                |
+| Goods receipt quantity       | Teslim alınan miktar           |
+| Open quantity                | Kalan miktar (hesaplanan)      |
+| Unit price                   | Birim fiyat                    |
+| Currency code                | Para birimi                    |
+
+ACTION BUTTONS:
+- Geri (Liste) - po-list.html'e dön
+- Mal Kabul - goods-receipt.html?po=X sayfasına git
+
+--------------------------------------------------------------------------------
+İŞ KURALLARI (Business Rules)
+--------------------------------------------------------------------------------
+
+1. Bu sayfa sadece görüntüleme modundadır (readonly)
+2. Başlık ve kalem bilgileri birlikte gösterilir
+3. Açık miktar = Sipariş miktarı - Mal kabul miktarı
+4. Mal kabul butonu ile ilgili siparişe mal kabul yapılabilir
+
+================================================================================
+-->
+<body>
+    <!-- NAVBAR -->
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <div class="navbar-logo">M</div>
+                <div class="brand-text">
+                    <span class="brand-name">IMMA</span>
+                    <span class="brand-subtitle">Endirek Malzeme Yönetimi</span>
+                </div>
+            </a>
+            <ul class="navbar-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="material-list.html" class="nav-link">
+                        <span class="nav-icon">📦</span>
+                        Ana Veriler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-list.html" class="dropdown-item">Malzeme Listesi</a>
+                        <a href="supplier-list.html" class="dropdown-item">Tedarikçi Listesi</a>
+                        <a href="storage-type-list.html" class="dropdown-item">Depo Tipi Listesi</a>
+                        <a href="number-series.html" class="dropdown-item">Numara Serileri</a>
+                        <a href="material-group.html" class="dropdown-item">Malzeme Grupları</a>
+                        <a href="unit-of-measure-list.html" class="dropdown-item">Ölçü Birimleri</a>
+                        <a href="department-cost-center-list.html" class="dropdown-item">Departman-Masraf Merkezi</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="mrp.html" class="nav-link">
+                        <span class="nav-icon">📈</span>
+                        MRP
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="srm-list.html" class="nav-link active">
+                        <span class="nav-icon">🛒</span>
+                        Satınalma
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="srm-list.html" class="dropdown-item">Talep Listesi</a>
+                        <a href="goods-receipt.html" class="dropdown-item">Mal Kabul</a>
+                        <a href="po-list.html" class="dropdown-item active">Satınalma Siparişleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="budget-management.html" class="nav-link">
+                        <span class="nav-icon">💰</span>
+                        Budget
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="budget-management.html" class="dropdown-item">Bütçe Yönetimi</a>
+                        <a href="budget-preference.html" class="dropdown-item">Bütçe Tercihleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="material-request-list.html" class="nav-link">
+                        <span class="nav-icon">📋</span>
+                        Talepler
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="material-request-list.html" class="dropdown-item">Talep Listesi</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="transfer-list.html" class="nav-link">
+                        <span class="nav-icon">🏭</span>
+                        Stock
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="direct-issue.html" class="dropdown-item">Doğrudan Çıkış</a>
+                        <a href="warehouse-transfer.html" class="dropdown-item">Depo Transferi</a>
+                        <a href="transfer-list.html" class="dropdown-item">Transfer Listesi</a>
+                        <a href="inventory-counting.html" class="dropdown-item">Sayım İşlemleri</a>
+                        <a href="single-material-counting.html" class="dropdown-item">Tekli Malzeme Sayımı</a>
+                        <a href="scrapping.html" class="dropdown-item">Hurda İşlemleri</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="user-material-limit-list.html" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Ayarlar
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="user-material-limit-list.html" class="dropdown-item">Kullanıcı Malzeme Limitleri</a>
+                        <a href="accounting-confirmation.html" class="dropdown-item">Muhasebe Onayları</a>
+                    </div>
+                </li>
+            </ul>
+            <div class="navbar-user">
+                <span class="user-name">Ahmet Yılmaz</span>
+                <div class="user-avatar">AY</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="modern-container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Sipariş Detayı - <span id="pagePoNo">4500012345</span></h1>
+                <p class="page-subtitle">Satınalma > Siparişler > Detay</p>
+            </div>
+            <div class="page-actions">
+                <a href="po-list.html" class="btn btn-outline">← Listeye Dön</a>
+                <button class="btn btn-primary" onclick="goToGoodsReceipt()">Mal Kabul Yap</button>
+            </div>
+        </div>
+
+        <!-- Order Header Information -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Order Header Information</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-row">
+                    <div class="form-group col-3">
+                        <label>Order number (PO SAP Number)</label>
+                        <input type="text" class="form-control" id="poNo" readonly>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>SRM number</label>
+                        <input type="text" class="form-control" id="srmNo" readonly>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Supplier number (Supplier Number)</label>
+                        <input type="text" class="form-control" id="supplierNo" readonly>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Creation date time (Creation DateTime)</label>
+                        <input type="text" class="form-control" id="creationDate" readonly>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-6">
+                        <label>Supplier title (Supplier Title)</label>
+                        <input type="text" class="form-control" id="supplierTitle" readonly>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Created by user info (Created by User)</label>
+                        <input type="text" class="form-control" id="createdBy" readonly>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Currency Code</label>
+                        <input type="text" class="form-control" id="currencyCode" readonly>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Items -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Order Items</h3>
+                <span class="result-count" id="itemCount">2 kalem</span>
+            </div>
+            <div class="card-body" style="padding: 0; overflow-x: auto;">
+                <table class="table" id="itemsTable">
+                    <thead>
+                        <tr>
+                            <th>Purchasing Order SAP Item No</th>
+                            <th>Material number</th>
+                            <th>Material title</th>
+                            <th>Unit of measure code</th>
+                            <th class="text-right">Order quantity</th>
+                            <th class="text-right">Goods receipt quantity</th>
+                            <th class="text-right">Open quantity</th>
+                            <th class="text-right">Unit price</th>
+                            <th>Currency code</th>
+                            <th class="text-center">İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemsBody">
+                        <!-- JavaScript ile doldurulacak -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Order Summary</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-row">
+                    <div class="form-group col-3">
+                        <label>Toplam Kalem Sayısı</label>
+                        <input type="text" class="form-control" id="totalItems" readonly>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Toplam Sipariş Değeri</label>
+                        <input type="text" class="form-control" id="totalValue" readonly>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Teslim Alınan Değer</label>
+                        <input type="text" class="form-control" id="receivedValue" readonly>
+                    </div>
+                    <div class="form-group col-3">
+                        <label>Kalan Değer</label>
+                        <input type="text" class="form-control" id="openValue" readonly>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Mock data
+        const mockOrders = {
+            '4500012345': {
+                poNo: '4500012345',
+                srmNo: '1000056789',
+                supplierNo: '1000045678',
+                supplierTitle: 'ABC Endüstriyel Malzeme A.Ş.',
+                creationDate: '10.12.2025',
+                createdBy: 'SAP Entegrasyon',
+                currency: 'EUR',
+                items: [
+                    { itemNo: '10', materialNo: '01.00002-0001', materialTitle: 'Rulman 6205-2RS SKF', uom: 'AD', orderQty: 100, grQty: 0, unitPrice: 125.50, currency: 'EUR' },
+                    { itemNo: '20', materialNo: '01.00015-0003', materialTitle: 'Hidrolik Yag ISO 46', uom: 'LT', orderQty: 200, grQty: 0, unitPrice: 45.00, currency: 'EUR' }
+                ]
+            },
+            '4500012346': {
+                poNo: '4500012346',
+                srmNo: '1000056790',
+                supplierNo: '1000045679',
+                supplierTitle: 'XYZ Elektrik San. Tic. Ltd.',
+                creationDate: '11.12.2025',
+                createdBy: 'SAP Entegrasyon',
+                currency: 'EUR',
+                items: [
+                    { itemNo: '10', materialNo: '01.00028-0001', materialTitle: 'Elektrik Motoru 5.5kW', uom: 'AD', orderQty: 5, grQty: 0, unitPrice: 1850.00, currency: 'EUR' }
+                ]
+            },
+            '4500012347': {
+                poNo: '4500012347',
+                srmNo: '1000056791',
+                supplierNo: '1000045680',
+                supplierTitle: 'Kablo Sanayi A.Ş.',
+                creationDate: '05.12.2025',
+                createdBy: 'SAP Entegrasyon',
+                currency: 'TRY',
+                items: [
+                    { itemNo: '10', materialNo: '01.00030-0002', materialTitle: 'Kablo NYM 3x2,5mm', uom: 'MT', orderQty: 500, grQty: 250, unitPrice: 12.50, currency: 'TRY' },
+                    { itemNo: '20', materialNo: '01.00031-0001', materialTitle: 'Sigorta 16A C Tipi', uom: 'AD', orderQty: 100, grQty: 50, unitPrice: 35.00, currency: 'TRY' }
+                ]
+            },
+            '4500012348': {
+                poNo: '4500012348',
+                srmNo: '1000056792',
+                supplierNo: '1000045681',
+                supplierTitle: 'German Bearings GmbH',
+                creationDate: '12.12.2025',
+                createdBy: 'SAP Entegrasyon',
+                currency: 'EUR',
+                items: [
+                    { itemNo: '10', materialNo: '01.00040-0001', materialTitle: 'Rulman 6308-2RS', uom: 'AD', orderQty: 50, grQty: 0, unitPrice: 185.00, currency: 'EUR' },
+                    { itemNo: '20', materialNo: '01.00041-0001', materialTitle: 'Rulman NU 309', uom: 'AD', orderQty: 30, grQty: 0, unitPrice: 220.00, currency: 'EUR' }
+                ]
+            },
+            '4500012349': {
+                poNo: '4500012349',
+                srmNo: '1000056793',
+                supplierNo: '1000045678',
+                supplierTitle: 'ABC Endüstriyel Malzeme A.Ş.',
+                creationDate: '08.12.2025',
+                createdBy: 'SAP Entegrasyon',
+                currency: 'TRY',
+                items: [
+                    { itemNo: '10', materialNo: '01.00050-0001', materialTitle: 'Yağlama Gresi 5kg', uom: 'AD', orderQty: 20, grQty: 10, unitPrice: 450.00, currency: 'TRY' }
+                ]
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // URL'den PO numarasını al
+            const urlParams = new URLSearchParams(window.location.search);
+            const poNo = urlParams.get('po') || '4500012345';
+
+            loadOrderData(poNo);
+        });
+
+        function loadOrderData(poNo) {
+            const order = mockOrders[poNo];
+
+            if (!order) {
+                alert('Sipariş bulunamadı!');
+                window.location.href = 'po-list.html';
+                return;
+            }
+
+            // Header bilgilerini doldur
+            document.getElementById('pagePoNo').textContent = order.poNo;
+            document.getElementById('poNo').value = order.poNo;
+            document.getElementById('srmNo').value = order.srmNo;
+            document.getElementById('supplierNo').value = order.supplierNo;
+            document.getElementById('supplierTitle').value = order.supplierTitle;
+            document.getElementById('creationDate').value = order.creationDate;
+            document.getElementById('createdBy').value = order.createdBy;
+            document.getElementById('currencyCode').value = order.currency;
+
+            // Items tablosunu doldur
+            const tbody = document.getElementById('itemsBody');
+            tbody.innerHTML = '';
+
+            let totalOrderValue = 0;
+            let totalReceivedValue = 0;
+
+            order.items.forEach(item => {
+                const openQty = item.orderQty - item.grQty;
+                const orderValue = item.orderQty * item.unitPrice;
+                const receivedValue = item.grQty * item.unitPrice;
+
+                totalOrderValue += orderValue;
+                totalReceivedValue += receivedValue;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.itemNo}</td>
+                    <td>${item.materialNo}</td>
+                    <td>${item.materialTitle}</td>
+                    <td>${item.uom}</td>
+                    <td class="text-right">${item.orderQty.toLocaleString('tr-TR')}</td>
+                    <td class="text-right">${item.grQty.toLocaleString('tr-TR')}</td>
+                    <td class="text-right"><strong>${openQty.toLocaleString('tr-TR')}</strong></td>
+                    <td class="text-right">${item.unitPrice.toLocaleString('tr-TR', {minimumFractionDigits: 2})}</td>
+                    <td>${item.currency}</td>
+                    <td class="text-center">
+                        ${openQty > 0 ? `<button class="btn btn-xs btn-primary" onclick="goToGoodsReceiptItem('${order.poNo}', '${item.itemNo}')">Mal Kabul</button>` : '<span class="badge badge-success">Tamamlandı</span>'}
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // Summary bilgilerini doldur
+            document.getElementById('itemCount').textContent = order.items.length + ' kalem';
+            document.getElementById('totalItems').value = order.items.length;
+            document.getElementById('totalValue').value = totalOrderValue.toLocaleString('tr-TR', {minimumFractionDigits: 2}) + ' ' + order.currency;
+            document.getElementById('receivedValue').value = totalReceivedValue.toLocaleString('tr-TR', {minimumFractionDigits: 2}) + ' ' + order.currency;
+            document.getElementById('openValue').value = (totalOrderValue - totalReceivedValue).toLocaleString('tr-TR', {minimumFractionDigits: 2}) + ' ' + order.currency;
+        }
+
+        function goToGoodsReceipt() {
+            const poNo = document.getElementById('poNo').value;
+            window.location.href = `goods-receipt.html?po=${poNo}`;
+        }
+
+        function goToGoodsReceiptItem(poNo, itemNo) {
+            window.location.href = `goods-receipt.html?po=${poNo}&item=${itemNo}`;
+        }
+    </script>
+
+    <!-- DEVELOPER DOCUMENTATION PANEL -->
+    <div id="devDocsPanel" class="dev-docs-panel">
+        <button class="dev-docs-toggle" onclick="toggleDevDocs()">📋 Geliştirici Dokümantasyonu</button>
+        <div class="dev-docs-content" id="devDocsContent">
+            <div class="dev-docs-header">
+                <h2>📋 12 PO D - Purchasing Order Detail</h2>
+                <button class="dev-docs-close" onclick="toggleDevDocs()">✕</button>
+            </div>
+            <div class="dev-docs-body">
+                <div class="dev-docs-tabs">
+                    <button class="dev-tab active" onclick="showDevTab('dataStructure')">Veri Yapıları</button>
+                    <button class="dev-tab" onclick="showDevTab('businessRules')">İş Kuralları</button>
+                </div>
+                <div id="dataStructure" class="dev-tab-content active">
+                    <h3>Purchasing Order Tablosu (6 Alan)</h3>
+                    <table class="dev-table"><thead><tr><th>Field Name</th><th>Type</th><th>Length</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td>Purchasing Order Id</td><td>int</td><td>8</td><td>Primary key</td></tr>
+                            <tr><td>Purchasing Order SAP number</td><td>int</td><td>10</td><td>SAP sipariş numarası</td></tr>
+                            <tr><td>Supplier number</td><td>int</td><td>10</td><td>Tedarikçi numarası</td></tr>
+                            <tr><td>SRM number</td><td>int</td><td>10</td><td>SRM referansı</td></tr>
+                            <tr><td>creation datetime</td><td>datetime</td><td>-</td><td>Oluşturma tarihi</td></tr>
+                            <tr><td>Created by user id</td><td>int</td><td>8</td><td>Oluşturan kullanıcı</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Purchasing Order Item Tablosu (11 Alan)</h3>
+                    <table class="dev-table"><thead><tr><th>Field Name</th><th>Type</th><th>Length</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td>Purchasing Order item Id</td><td>int</td><td>12</td><td>Primary key</td></tr>
+                            <tr><td>Purchasing Order SAP no</td><td>int</td><td>10</td><td>Header referansı</td></tr>
+                            <tr><td>Purchasing Order SAP Item No</td><td>int</td><td>4</td><td>SAP item numarası</td></tr>
+                            <tr><td>Material number</td><td>text</td><td>13</td><td>Malzeme numarası</td></tr>
+                            <tr><td>Unit of measure code</td><td>text</td><td>3</td><td>Ölçü birimi</td></tr>
+                            <tr><td>Order quantity</td><td>float</td><td>15</td><td>Sipariş miktarı</td></tr>
+                            <tr><td>Goods receipt quantity</td><td>float</td><td>15</td><td>Mal kabul miktarı</td></tr>
+                            <tr><td>Unit price</td><td>float</td><td>14</td><td>Birim fiyat</td></tr>
+                            <tr><td>currency code</td><td>text</td><td>3</td><td>Döviz kodu</td></tr>
+                            <tr><td>creation datetime</td><td>datetime</td><td>-</td><td>Kayıt oluşturma tarihi</td></tr>
+                            <tr><td>Created by user id</td><td>int</td><td>8</td><td>Oluşturan kullanıcı ID</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="businessRules" class="dev-tab-content">
+                    <h3>İş Kuralları</h3>
+                    <div class="rules-section">
+                        <ul>
+                            <li>Bu sayfa <strong>sadece görüntüleme</strong> modundadır</li>
+                            <li>Başlık ve kalem bilgileri birlikte gösterilir</li>
+                            <li><strong>Açık miktar</strong> = Sipariş miktarı - Mal kabul miktarı</li>
+                            <li>Mal kabul butonu ile goods-receipt.html sayfasına yönlendirme</li>
+                            <li>PO'lar SAP entegrasyonu ile oluşturulur, düzenlenemez</li>
+                        </ul>
+                    </div>
+                    <h3>URL Parametreleri</h3>
+                    <div class="rules-section">
+                        <ul>
+                            <li><code>?po=4500012345</code> - PO numarası</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>.dev-docs-panel{position:fixed;bottom:0;left:0;right:0;z-index:9999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}.dev-docs-toggle{position:absolute;bottom:100%;right:20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;padding:10px 20px;border-radius:8px 8px 0 0;cursor:pointer;font-weight:600;font-size:14px;box-shadow:0 -2px 10px rgba(0,0,0,0.2)}.dev-docs-content{display:none;background:#1a1a2e;color:#eee;max-height:60vh;overflow-y:auto;box-shadow:0 -5px 20px rgba(0,0,0,0.3)}.dev-docs-content.active{display:block}.dev-docs-header{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);position:sticky;top:0}.dev-docs-header h2{margin:0;font-size:18px}.dev-docs-close{background:rgba(255,255,255,0.2);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px}.dev-docs-body{padding:20px}.dev-docs-tabs{display:flex;gap:10px;margin-bottom:20px;border-bottom:1px solid #333;padding-bottom:10px}.dev-tab{background:#2d2d44;color:#aaa;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;transition:all 0.3s}.dev-tab:hover,.dev-tab.active{background:#667eea;color:#fff}.dev-tab-content{display:none}.dev-tab-content.active{display:block}.dev-table{width:100%;border-collapse:collapse;margin:15px 0;font-size:13px}.dev-table th,.dev-table td{padding:10px;text-align:left;border:1px solid #333}.dev-table th{background:#2d2d44;color:#667eea;font-weight:600}.dev-table tr:nth-child(even){background:#252538}.dev-docs-body h3{color:#667eea;margin:20px 0 10px;font-size:16px;border-bottom:1px solid #333;padding-bottom:5px}.dev-docs-body ul{margin:0 0 15px 20px;line-height:1.8}.rules-section{background:#252538;padding:15px;border-radius:8px;margin-bottom:15px}code{background:#3d3d5c;padding:2px 6px;border-radius:3px;font-size:12px}</style>
+    <script>function toggleDevDocs(){document.getElementById('devDocsContent').classList.toggle('active')}function showDevTab(tabId){document.querySelectorAll('.dev-tab-content').forEach(c=>c.classList.remove('active'));document.querySelectorAll('.dev-tab').forEach(t=>t.classList.remove('active'));document.getElementById(tabId).classList.add('active');event.target.classList.add('active')}</script>
+</body>
+</html>
